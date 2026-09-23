@@ -60,28 +60,31 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 
 <p class="small">綾川イオンでは、固定の案内文ではなく通路ネットワークから最短経路と歩行距離を計算します。距離は公式フロア情報を基準にした図面スケール推定で、センチ単位の実測値ではありません。最終的な実用版では現地実測で各通路長を校正します。</p>
 
+
 <section class="card">
 <div class="learnbox">
-<h3>🧠 利用者が歩くほど精度が上がる学習モード</h3>
-<label style="font-size:11px;color:#4f5962"><input id="learnConsent" type="checkbox"> 歩行データの記録に同意する（生のGPS座標は保存しません）</label>
-<div class="learngrid">
-<button onclick="startLearning()">▶ 学習開始</button>
-<button onclick="finishLearning()">■ 到着して保存</button>
-<button onclick="markTurn('left')">↩ 左に曲がった</button>
-<button onclick="markTurn('right')">↪ 右に曲がった</button>
-<button onclick="markCheckpoint()">📍 位置補正</button>
-<button onclick="resetLearning()">🗑 今回を破棄</button>
-</div>
+<h3>🧠 自動学習モード</h3>
+<label style="font-size:11px;color:#4f5962">
+<input id="learnConsent" type="checkbox" onchange="saveAutoConsent()">
+歩行・方位センサーで自動記録する
+</label>
+<div class="learnnote">目的地を選んで案内を開始すると、歩数・推定距離・向きの変化を自動で記録します。左・右の手入力は不要です。</div>
 <div class="learnstats">
 <div><b id="learnSteps">0</b><span>歩数</span></div>
 <div><b id="learnMeters">0m</b><span>推定距離</span></div>
-<div><b id="learnTime">0:00</b><span>経過時間</span></div>
+<div><b id="learnTurns">0</b><span>自動検出ターン</span></div>
 </div>
-<div id="learnStatus" class="learnnote">目的地を選んでから「学習開始」を押してください。</div>
+<div id="learnStatus" class="learnnote">待機中</div>
 <table class="learntable"><thead><tr><th>学習済みルート</th><th>回数</th><th>平均距離</th></tr></thead><tbody id="learnedRoutes"></tbody></table>
-<div class="learngrid"><button onclick="exportLearningData()">⬇ データを書き出す</button><button onclick="clearAllLearning()">全削除</button></div>
+<div class="learngrid">
+<button onclick="confirmArrivalAndSave()">✅ 到着して保存</button>
+<button onclick="resetLearning()">今回を破棄</button>
+<button onclick="exportLearningData()">⬇ データを書き出す</button>
+<button onclick="clearAllLearning()">全削除</button>
+</div>
 </div>
 </section>
+
 </main>
 
 <script>
@@ -191,38 +194,87 @@ function enableGPS(){if(!navigator.geolocation){accuracyNow.textContent="GPS非�
 if("serviceWorker"in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}))}
 init();
 
-const LEARN_KEY="indoorNavLearningV1";
-let learnSession=null, learnTimer=null, learnLastPeak=0, learnMotionOn=false;
+
+
+const LEARN_KEY="indoorNavAutoLearningV2";
+const CONSENT_KEY="indoorNavAutoConsentV1";
+let autoLearn=null, autoTimer=null, lastPeak=0, motionReady=false, orientationReady=false;
+let stableHeading=null, lastTurnAt=0;
+
 function ldb(){try{return JSON.parse(localStorage.getItem(LEARN_KEY)||"{}")}catch(e){return{}}}
 function sdb(x){localStorage.setItem(LEARN_KEY,JSON.stringify(x))}
-function learningKey(){return `${currentFacility().name}::${currentAnchor||"不明"}::${selected?.name||"未選択"}`}
-function avg(samples){if(!samples?.length)return 0;return samples.reduce((a,b)=>a+(+b.meters||0),0)/samples.length}
-async function startLearning(){
- if(!learnConsent.checked){learnStatus.textContent="同意チェックを入れてください。";return}
- if(!selected){learnStatus.textContent="先に目的地を選んで案内を開始してください。";return}
- learnSession={startedAt:Date.now(),facility:currentFacility().name,from:currentAnchor,destination:selected.name,steps:0,meters:0,left:0,right:0,checkpoints:0};
- learnStatus.textContent=`${learnSession.from} → ${learnSession.destination} を記録中`;
- if(!learnMotionOn){try{
-   if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){const p=await DeviceMotionEvent.requestPermission();if(p!=="granted")throw 0}
-   window.addEventListener("devicemotion",e=>{if(!learnSession)return;const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();if(m>12.2&&now-learnLastPeak>450){learnLastPeak=now;learnSession.steps++;learnSession.meters=+(learnSession.steps*.72).toFixed(1);updateLearning()}},true);
-   learnMotionOn=true;
- }catch(e){learnStatus.textContent+="（歩数センサー未許可）"}}
- learnTimer=setInterval(updateLearning,1000);updateLearning();
+function avg(v){return v?.length?v.reduce((a,b)=>a+(+b.meters||0),0)/v.length:0}
+function routeKey(){return `${currentFacility().name}::${currentAnchor||"不明"}::${selected?.name||"未選択"}`}
+
+function saveAutoConsent(){
+  localStorage.setItem(CONSENT_KEY,learnConsent.checked?"1":"0");
+  if(learnConsent.checked) prepareSensors();
 }
-function markTurn(d){if(!learnSession)return;if(d==="left")learnSession.left++;else learnSession.right++;learnStatus.textContent=`左${learnSession.left}回 / 右${learnSession.right}回`}
-function markCheckpoint(){if(!learnSession)return;learnSession.checkpoints++;learnStatus.textContent=`位置補正 ${learnSession.checkpoints}回`}
-function finishLearning(){
- if(!learnSession){learnStatus.textContent="学習中ではありません。";return}
- if(!confirm(`${learnSession.destination} に到着しましたか？`))return;
- const sample={at:new Date().toISOString(),facility:learnSession.facility,from:learnSession.from,destination:learnSession.destination,steps:learnSession.steps,meters:learnSession.meters,durationSec:Math.round((Date.now()-learnSession.startedAt)/1000),leftTurns:learnSession.left,rightTurns:learnSession.right,checkpoints:learnSession.checkpoints};
- const db=ldb(),k=learningKey();db[k]=db[k]||[];db[k].push(sample);if(db[k].length>100)db[k]=db[k].slice(-100);sdb(db);
- learnStatus.textContent=`保存しました。${db[k].length}回分の平均距離は約${avg(db[k]).toFixed(1)}m`;
- learnSession=null;if(learnTimer){clearInterval(learnTimer);learnTimer=null}updateLearning();renderLearned();
+function loadAutoConsent(){
+  learnConsent.checked=localStorage.getItem(CONSENT_KEY)==="1";
+  if(learnConsent.checked) prepareSensors();
 }
-function resetLearning(){learnSession=null;if(learnTimer){clearInterval(learnTimer);learnTimer=null}learnStatus.textContent="今回の記録を破棄しました。";updateLearning()}
-function updateLearning(){if(!learnSession){learnSteps.textContent="0";learnMeters.textContent="0m";learnTime.textContent="0:00";return}learnSteps.textContent=learnSession.steps;learnMeters.textContent=learnSession.meters.toFixed(1)+"m";const s=Math.floor((Date.now()-learnSession.startedAt)/1000);learnTime.textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
-function renderLearned(){const db=ldb();const rows=Object.entries(db).map(([k,v])=>{const a=k.split("::");return `<tr><td>${a[0]}<br><small>${a[1]} → ${a[2]}</small></td><td>${v.length}</td><td>${avg(v).toFixed(1)}m</td></tr>`});learnedRoutes.innerHTML=rows.length?rows.join(""):'<tr><td colspan="3">まだ学習データはありません</td></tr>'}
+async function prepareSensors(){
+  try{
+    if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
+      const p=await DeviceMotionEvent.requestPermission(); if(p!=="granted") throw 0;
+    }
+    if(!motionReady){
+      window.addEventListener("devicemotion",e=>{
+        if(!autoLearn)return;
+        const a=e.accelerationIncludingGravity;if(!a)return;
+        const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();
+        if(mag>12.2&&now-lastPeak>450){
+          lastPeak=now;autoLearn.steps++;autoLearn.meters=+(autoLearn.steps*0.72).toFixed(1);updateLearnUI();
+        }
+      },true); motionReady=true;
+    }
+  }catch(e){ learnStatus.textContent="歩行センサーを許可すると自動記録できます。"; }
+
+  try{
+    if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
+      const p=await DeviceOrientationEvent.requestPermission(); if(p!=="granted") throw 0;
+    }
+    if(!orientationReady){
+      window.addEventListener("deviceorientation",e=>{
+        if(!autoLearn||e.alpha==null)return;
+        const h=(360-e.alpha)%360;
+        if(stableHeading==null){stableHeading=h;return;}
+        const signed=(((h-stableHeading)+540)%360)-180;
+        const diff=Math.abs(signed),now=Date.now();
+        if(diff>=35&&autoLearn.steps-autoLearn.lastTurnStep>=2&&now-lastTurnAt>2200){
+          autoLearn.turns.push({dir:signed>0?"right":"left",step:autoLearn.steps});
+          autoLearn.lastTurnStep=autoLearn.steps;lastTurnAt=now;stableHeading=h;
+          learnStatus.textContent=`${signed>0?"右":"左"}への曲がりを自動検出`;
+          updateLearnUI();
+        }else if(diff<15){
+          stableHeading=(stableHeading*0.85+h*0.15)%360;
+        }
+      },true); orientationReady=true;
+    }
+  }catch(e){}
+}
+function startAutoLearning(){
+  if(!learnConsent?.checked||!selected)return;
+  if(autoLearn&&autoLearn.destination===selected.name)return;
+  autoLearn={startedAt:Date.now(),facility:currentFacility().name,from:currentAnchor||"不明",destination:selected.name,steps:0,meters:0,turns:[],lastTurnStep:0};
+  stableHeading=null;lastTurnAt=0;prepareSensors();
+  if(autoTimer)clearInterval(autoTimer);autoTimer=setInterval(updateLearnUI,1000);
+  learnStatus.textContent=`自動記録中：${autoLearn.from} → ${autoLearn.destination}`;updateLearnUI();
+}
+function confirmArrivalAndSave(){
+  if(!autoLearn){learnStatus.textContent="現在、学習中ではありません。";return}
+  const sample={at:new Date().toISOString(),facility:autoLearn.facility,from:autoLearn.from,destination:autoLearn.destination,steps:autoLearn.steps,meters:autoLearn.meters,durationSec:Math.round((Date.now()-autoLearn.startedAt)/1000),turns:autoLearn.turns};
+  const db=ldb(),k=routeKey();db[k]=db[k]||[];db[k].push(sample);if(db[k].length>100)db[k]=db[k].slice(-100);sdb(db);
+  learnStatus.textContent=`保存完了：${db[k].length}回分の平均距離 約${avg(db[k]).toFixed(1)}m`;
+  autoLearn=null;if(autoTimer){clearInterval(autoTimer);autoTimer=null}updateLearnUI();renderLearned();
+}
+function resetLearning(){autoLearn=null;if(autoTimer){clearInterval(autoTimer);autoTimer=null}learnStatus.textContent="今回の記録を破棄しました。";updateLearnUI()}
+function updateLearnUI(){learnSteps.textContent=autoLearn?autoLearn.steps:0;learnMeters.textContent=autoLearn?autoLearn.meters.toFixed(1)+"m":"0m";learnTurns.textContent=autoLearn?autoLearn.turns.length:0}
+function renderLearned(){const db=ldb(),rows=Object.entries(db).map(([k,v])=>{const a=k.split("::");return `<tr><td>${a[0]}<br><small>${a[1]} → ${a[2]}</small></td><td>${v.length}</td><td>${avg(v).toFixed(1)}m</td></tr>`});learnedRoutes.innerHTML=rows.length?rows.join(""):'<tr><td colspan="3">まだ学習データはありません</td></tr>'}
 function clearAllLearning(){if(confirm("この端末の学習データを全部削除しますか？")){localStorage.removeItem(LEARN_KEY);renderLearned();learnStatus.textContent="削除しました。"}}
-function exportLearningData(){const blob=new Blob([JSON.stringify({schema:"indoor-nav-learning-v1",exportedAt:new Date().toISOString(),data:ldb()},null,2)],{type:"application/json"});const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="indoor-nav-learning.json";a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
-window.addEventListener("load",renderLearned);
+function exportLearningData(){const blob=new Blob([JSON.stringify({schema:"indoor-nav-auto-learning-v2",data:ldb()},null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="indoor-nav-auto-learning.json";a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
+const _startNavByName=startNavByName;
+startNavByName=function(name){_startNavByName(name);setTimeout(()=>{if(selected)startAutoLearning()},0)};
+window.addEventListener("load",()=>{renderLearned();loadAutoConsent();});
 </script></body></html>
