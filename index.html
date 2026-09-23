@@ -4,359 +4,295 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>綾川イオン館内ナビ v4</title>
+<title>館内ナビ｜イオンモール綾川</title>
 <style>
-*{box-sizing:border-box}
-:root{--blue:#1477ff;--orange:#ff8a00;--ink:#18212a;--muted:#6b7580;--line:#dbe1e6;--bg:#f4f6f8}
-body{margin:0;background:var(--bg);color:var(--ink);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif}
-header{position:sticky;top:0;z-index:20;background:#fff;border-bottom:1px solid var(--line);padding:12px}
-h1{font-size:18px;margin:0 0 5px}.sub{font-size:12px;color:var(--muted)}
-.search{display:flex;gap:7px;margin-top:9px}.search input{flex:1;min-width:0;padding:12px;border:1px solid #cbd2d8;border-radius:12px;font-size:15px}.search button{border:0;border-radius:12px;background:var(--blue);color:white;padding:0 14px;font-weight:800}
-.tabs{display:flex;gap:6px;margin-top:9px}.tabs button{flex:1;padding:9px;border:1px solid #ccd2d8;border-radius:10px;background:#fff;font-weight:800}.tabs .on{background:var(--ink);color:#fff}
-main{max-width:920px;margin:auto;padding:10px}
-.card{background:#fff;border:1px solid var(--line);border-radius:16px;overflow:hidden;margin-bottom:10px;box-shadow:0 2px 10px #00000008}
-.mapbar{display:flex;gap:7px;align-items:center;padding:9px 10px;border-bottom:1px solid #edf0f2;overflow:auto}.mapbar button{white-space:nowrap;border:1px solid #cfd6dc;background:white;border-radius:999px;padding:7px 10px;font-size:12px}
-.mapwrap{position:relative;aspect-ratio:1.45;background:#edf1f4;overflow:hidden;touch-action:pan-x pan-y}
-svg{width:100%;height:100%;display:block}
-.building{fill:#fff;stroke:#7f8b95;stroke-width:4}
-.corridor{fill:#f8fafb;stroke:#c3cbd2;stroke-width:2}.spine{fill:#f9fbfc;stroke:#c3cbd2;stroke-width:2}
-.zone{fill:#f8fbff;stroke:#aeb9c3}.store rect{fill:#fff;stroke:#b8c0c7;stroke-width:1.2}.store text{font-size:9px;pointer-events:none}.store:hover rect{stroke:#1477ff}
-.core{fill:#e9edf1;stroke:#aab4bd}.court{fill:#eef7ef;stroke:#77a77f}.food{fill:#fff6e8;stroke:#d2ae74}
-.node{fill:#fff;stroke:#8ca0b4;stroke-width:1}.route{fill:none;stroke:var(--blue);stroke-width:10;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 1px 1px #fff)}.route2{fill:none;stroke:white;stroke-width:3;stroke-linecap:round;stroke-linejoin:round}
-.me{fill:var(--blue);stroke:#fff;stroke-width:4}.heading{fill:var(--blue);stroke:white;stroke-width:2}.dest{fill:var(--orange);stroke:#fff;stroke-width:3}
-.badge{font-size:11px;fill:#49545e}.label{font-size:11px;fill:#29323a}
-.status{display:flex;justify-content:space-between;gap:8px;padding:9px 11px;border-top:1px solid #edf0f2;font-size:11px;color:var(--muted)}
-.panel{padding:13px}.panel h2{font-size:15px;margin:0 0 9px}
-.chips{display:flex;gap:6px;flex-wrap:wrap}.chip{border:1px solid #ccd3d9;background:#fff;border-radius:999px;padding:7px 10px;font-size:12px}
-.results{display:grid;gap:7px;margin-top:9px}.result{padding:10px;border:1px solid #e0e5e9;border-radius:10px;background:#fff}.result b{font-size:13px}.result span{font-size:11px;color:#6b7580;margin-left:6px}
-.routebox{background:#f2f7ff;border-radius:12px;padding:12px;line-height:1.6}.routehead{display:flex;justify-content:space-between;gap:8px;align-items:center}.routehead b{font-size:15px}.distance{font-size:12px;color:#496173}.steps{margin:8px 0 0;padding-left:21px}.steps li{margin:6px 0}.warn{font-size:11px;line-height:1.5;color:#6b7580}.cta{display:flex;gap:7px;margin-top:9px}.cta button{flex:1;border:0;border-radius:11px;padding:10px;font-weight:800}.primary{background:var(--blue);color:#fff}.secondary{background:#eef1f4;color:#29323a}
-@media(max-width:520px){.store text{font-size:8px}.label{font-size:9px}}
+*{box-sizing:border-box}:root{--blue:#1378ff;--ink:#17202a;--muted:#68727c;--bg:#f5f7f9;--line:#dce2e7}
+body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;color:var(--ink)}
+header{background:white;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line);padding:13px}
+h1{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted)}main{max-width:760px;margin:auto;padding:10px}
+.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px}
+.search{display:flex;gap:7px;margin-top:10px}.search input{flex:1;min-width:0;border:1px solid #cbd2d8;border-radius:12px;padding:13px;font-size:15px}.search button{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:800;padding:0 16px}
+.floorrow{display:flex;gap:6px;margin-top:9px}.floorrow button{flex:1;padding:9px;border:1px solid #ccd3d9;border-radius:10px;background:#fff;font-weight:800}.floorrow .on{background:#17202a;color:white}
+.bigstep{background:linear-gradient(180deg,#1477ff,#0d66dc);color:#fff;border-radius:18px;padding:18px;text-align:center}
+.arrow{font-size:68px;line-height:1;margin:6px 0}.distance{font-size:33px;font-weight:900}.instruction{font-size:22px;font-weight:900;margin-top:5px}
+.next{margin-top:10px;padding-top:10px;border-top:1px solid #ffffff40;font-size:13px}.progress{height:9px;border-radius:999px;background:#e7ebef;overflow:hidden;margin-top:9px}.progress span{display:block;height:100%;background:var(--blue);width:0%}
+.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:7px}.pills{display:flex;gap:7px;flex-wrap:wrap}.pill{border:1px solid #ccd3d9;background:#fff;border-radius:999px;padding:8px 11px;font-size:12px}
+.result{padding:11px;border:1px solid #e1e6ea;border-radius:11px;margin-top:7px}.result b{font-size:14px}.result span{font-size:11px;color:var(--muted);margin-left:6px}
+.row{display:flex;gap:7px;flex-wrap:wrap}.row button,.row a{flex:1;min-width:130px;text-decoration:none;text-align:center;border:1px solid #cbd2d8;background:#fff;color:var(--ink);border-radius:11px;padding:11px;font-weight:800}
+.primary{background:var(--blue)!important;color:#fff!important;border:0!important}.danger{background:#fff1ef!important;color:#a44235!important}
+.status{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.status div{background:#f7f9fb;border-radius:12px;padding:10px;text-align:center}.status b{display:block;font-size:18px}.status span{font-size:10px;color:var(--muted)}
+.small{font-size:11px;color:var(--muted);line-height:1.5}.hidden{display:none}
 </style>
-<link rel="manifest" href="/manifest.webmanifest">
+
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="館内ナビ">
+
 </head>
 <body>
-<header>
-  <h1>📍 館内ナビ｜イオンモール綾川</h1>
-  <div class="sub">「無印に行きたい」「映画館どこ？」「トイレ」などで検索</div>
-  <div class="search">
-    <input id="q" placeholder="施設内を検索…">
-    <button onclick="searchPlace()">検索</button>
-  </div>
-  <div class="tabs">
-    <button class="on" onclick="setFloor(1,this)">1F</button>
-    <button onclick="setFloor(2,this)">2F</button>
-    <button onclick="setFloor(3,this)">3F</button>
-  </div>
-</header>
-
+<header><h1>🧭 館内ナビ｜イオンモール綾川</h1><div class="sub">地図を見続けなくても「何m直進・右・左」で案内</div></header>
 <main>
 <section class="card">
-  <div class="mapbar">
-    <button onclick="recenter()">◎ 現在地へ</button>
-    <button onclick="setDemoLocation('west')">西側に移動</button>
-    <button onclick="setDemoLocation('center')">中央に移動</button>
-    <button onclick="setDemoLocation('east')">東側に移動</button>
-  </div>
-  <div class="mapwrap">
-    <svg id="map" viewBox="0 0 1000 690" aria-label="イオンモール綾川 館内ナビ">
-      <rect width="1000" height="690" fill="#eef1f3"/>
-      <path class="building" d="M48 60 H952 V620 H48 Z"/>
-      <!-- main walkable mall spine -->
-      <path class="corridor" d="M120 270 H880 V410 H120 Z"/>
-      <path class="spine" d="M430 95 H570 V585 H430 Z"/>
-      <path class="corridor" d="M95 305 H180 V375 H95 Z"/>
-      <path class="corridor" d="M820 305 H905 V375 H820 Z"/>
-      <rect class="court" x="430" y="270" width="140" height="140" rx="12"/>
-      <text x="500" y="342" text-anchor="middle" class="label" font-size="13">中央イベントコート</text>
-
-      <!-- vertical cores -->
-      <g>
-        <rect class="core" x="75" y="88" width="85" height="125" rx="9"/>
-        <rect class="core" x="840" y="88" width="85" height="125" rx="9"/>
-        <rect class="core" x="75" y="477" width="85" height="115" rx="9"/>
-        <rect class="core" x="840" y="477" width="85" height="115" rx="9"/>
-        <text x="117" y="145" text-anchor="middle" class="label">EV / ES</text>
-        <text x="882" y="145" text-anchor="middle" class="label">EV / ES</text>
-        <text x="117" y="535" text-anchor="middle" class="label">EV / ES</text>
-        <text x="882" y="535" text-anchor="middle" class="label">EV / ES</text>
-      </g>
-
-      <g class="badge">
-        <text x="185" y="255">🚻 WC</text>
-        <text x="765" y="255">🚻 WC</text>
-        <text x="185" y="435">🚻 WC</text>
-        <text x="765" y="435">🚻 WC</text>
-      </g>
-
-      <path d="M455 620 H545" stroke="#45a56a" stroke-width="10"/>
-      <text x="500" y="648" text-anchor="middle" class="label">中央入口</text>
-      <path d="M48 320 V370" stroke="#45a56a" stroke-width="10"/>
-      <text x="82" y="300" text-anchor="start" class="label">西入口</text>
-      <path d="M952 320 V370" stroke="#45a56a" stroke-width="10"/>
-      <text x="918" y="300" text-anchor="end" class="label">東入口</text>
-
-      <g id="floorDecor"></g>
-      <g id="stores"></g>
-      <g id="debugNodes" opacity="0"></g>
-
-      <polyline id="route" class="route" points="" style="display:none"/>
-      <polyline id="route2" class="route2" points="" style="display:none"/>
-      <polygon id="heading" class="heading" points="500,590 490,612 510,612"/>
-      <circle id="me" class="me" cx="500" cy="610" r="11"/>
-      <circle id="dest" class="dest" cx="500" cy="610" r="9" style="display:none"/>
-    </svg>
-  </div>
-  <div class="status">
-    <span id="floorStatus">1F・中央入口付近</span>
-    <span>青＝現在地　橙＝目的地</span>
-  </div>
+<div class="search"><input id="q" placeholder="無印に行きたい / 映画館 / トイレ"><button onclick="searchPlace()">検索</button></div>
+<div class="floorrow"><button class="on" onclick="setFloor(1,this)">1F</button><button onclick="setFloor(2,this)">2F</button><button onclick="setFloor(3,this)">3F</button></div>
+<div id="results"></div>
 </section>
 
-<section class="card panel">
-  <h2>よく使う場所</h2>
-  <div class="chips">
-    <button class="chip" onclick="quick('無印')">無印良品</button>
-    <button class="chip" onclick="quick('映画館')">🎬 映画館</button>
-    <button class="chip" onclick="quick('トイレ')">🚻 トイレ</button>
-    <button class="chip" onclick="quick('フードコート')">🍜 フードコート</button>
-    <button class="chip" onclick="quick('エレベーター')">🛗 エレベーター</button>
-    <button class="chip" onclick="quick('入口')">🚪 入口</button>
-  </div>
-  <div id="results" class="results"></div>
+<section class="card">
+<div class="row">
+<a href="https://www.aeon.jp/sc/ayagawa/shop/floor/ebook/ayagawa/pageindices/" target="_blank">🗺 公式マップを見る</a>
+<button onclick="setAnchor('中央入口')">📍 中央入口にいる</button>
+</div>
 </section>
 
-<section class="card panel">
-  <h2>ルート案内</h2>
-  <div id="routeText" class="routebox">目的地を選ぶと、曲がる場所・階移動・おおよその距離を表示します。</div>
-  <div class="cta">
-    <button class="primary" onclick="startNavigation()">案内開始</button>
-    <button class="secondary" onclick="stopNavigation()">案内終了</button>
-  </div>
+<section id="navCard" class="card hidden">
+<div class="bigstep">
+<div id="stepNo" style="font-size:12px;opacity:.85">案内 1 / 4</div>
+<div id="arrow" class="arrow">↑</div>
+<div id="distanceBig" class="distance">30m</div>
+<div id="instruction" class="instruction">まっすぐ進む</div>
+<div id="nextText" class="next">次：右へ曲がる</div>
+</div>
+<div class="progress"><span id="progressBar"></span></div>
+<div class="meta"><span id="fromTo">現在地 → 目的地</span><span id="remaining">残り 約85m</span></div>
+<div class="row" style="margin-top:10px">
+<button class="primary" onclick="advance()">1歩進む（デモ）</button>
+<button onclick="reroute()">現在地から再計算</button>
+<button onclick="simulateWalking()">▶ 自動歩行デモ</button><button onclick="markOffRoute()">↩ ルートを外れる</button><button class="danger" onclick="stopNav()">案内終了</button>
+</div>
 </section>
 
-<p class="warn">
-※v4はナビ機能を本格化した試作版です。公式フロアガイドと公式ショップ情報を参照していますが、
-店舗境界・通路・EV/ES・WCの正確な位置は、公開前に公式図面と現地で最終照合してください。
-</p>
+<section class="card">
+<b>現在地の補正</b>
+<div class="pills" style="margin-top:9px">
+<button class="pill" onclick="setAnchor('中央入口')">中央入口</button>
+<button class="pill" onclick="setAnchor('中央コート')">中央コート</button>
+<button class="pill" onclick="setAnchor('西EV')">西EV</button>
+<button class="pill" onclick="setAnchor('東EV')">東EV</button>
+</div>
+<div class="status" style="margin-top:10px">
+<div><b id="placeNow">中央入口</b><span>現在地</span></div>
+<div><b id="headingNow">0°</b><span>向き</span></div>
+<div><b id="accuracyNow">補正済</b><span>位置精度</span></div>
+</div>
+<div class="row" style="margin-top:10px">
+<button onclick="enableCompass()">🧭 方位センサー</button>
+<button onclick="enableMotion()">👣 歩数センサー</button>
+<button onclick="enableGPS()">📡 GPS精度を見る</button>
+</div>
+</section>
+
+<p class="small">このv2では、歩くにつれて「30m → 20m → 5m」と残り距離が減り、曲がり角の手前で「あと5mで右です」と表示します。ルートから外れた時の再計算デモも入れています。GPSだけでは屋内の正確な位置が取りにくいため、実用版では入口/QRチェックポイント、歩数・方位、BLEビーコン・UWB・Wi‑Fi RTTなどを組み合わせる想定です。</p>
 </main>
 
 <script>
-const FLOOR_DATA = {
+const DATA={
 1:[
- {name:"無印良品",x:150,y:280,w:120,h:42,cat:"生活雑貨"},
- {name:"アメリカンホリック",x:285,y:280,w:120,h:42,cat:"ファッション"},
- {name:"カルディ",x:595,y:280,w:90,h:42,cat:"食品"},
- {name:"倉式珈琲店",x:700,y:280,w:115,h:42,cat:"カフェ"},
- {name:"サイゼリヤ",x:595,y:358,w:95,h:38,cat:"レストラン"},
- {name:"果汁工房 果琳",x:705,y:358,w:110,h:38,cat:"スイーツ"},
- {name:"おひつごはん四六時中",x:285,y:358,w:120,h:38,cat:"レストラン"},
- {name:"グリーンパークス",x:285,y:190,w:120,h:42,cat:"ファッション"},
- {name:"わくわく広場",x:705,y:190,w:110,h:42,cat:"食品"}
+{name:"無印良品",floor:1,steps:[
+ {arrow:"↑",meters:30,text:"まっすぐ進む",next:"次：右へ曲がる"},
+ {arrow:"→",meters:15,text:"右へ進む",next:"次：そのまま直進"},
+ {arrow:"↑",meters:20,text:"まっすぐ進む",next:"次：左側に目的地"},
+ {arrow:"●",meters:0,text:"到着",next:"無印良品です"}]},
+{name:"カルディ",floor:1,steps:[
+ {arrow:"↑",meters:35,text:"まっすぐ進む",next:"次：左へ曲がる"},
+ {arrow:"←",meters:20,text:"左へ進む",next:"次：目的地"},
+ {arrow:"●",meters:0,text:"到着",next:"カルディです"}]},
+{name:"トイレ",floor:1,steps:[
+ {arrow:"↑",meters:20,text:"まっすぐ進む",next:"次：左へ"},
+ {arrow:"←",meters:10,text:"左へ進む",next:"次：トイレ"},
+ {arrow:"●",meters:0,text:"到着",next:"トイレです"}]}
 ],
 2:[
- {name:"アスビー",x:150,y:280,w:110,h:42,cat:"靴"},
- {name:"ABCマート スポーツ",x:275,y:280,w:130,h:42,cat:"靴"},
- {name:"ikka",x:595,y:280,w:90,h:42,cat:"ファッション"},
- {name:"グローバルワーク",x:700,y:280,w:120,h:42,cat:"ファッション"},
- {name:"靴下屋",x:150,y:358,w:95,h:38,cat:"ファッション"},
- {name:"ダイソー・Standard Products",x:595,y:358,w:155,h:38,cat:"生活雑貨"},
- {name:"タイムステーションNEO",x:765,y:358,w:120,h:38,cat:"時計"},
- {name:"ラフィネ",x:595,y:190,w:95,h:42,cat:"サービス"}
+{name:"ABCマート スポーツ",floor:2,steps:[
+ {arrow:"↑",meters:15,text:"EV/ESまで進む",next:"次：2Fへ"},
+ {arrow:"↟",meters:0,text:"2Fへ上がる",next:"次：右へ"},
+ {arrow:"→",meters:25,text:"右へ進む",next:"次：目的地"},
+ {arrow:"●",meters:0,text:"到着",next:"ABCマート スポーツです"}]}
 ],
 3:[
- {name:"イオンシネマ綾川",x:610,y:105,w:230,h:60,cat:"シネマ"},
- {name:"ホビーゾーン",x:150,y:280,w:110,h:42,cat:"ホビー"},
- {name:"JINS",x:595,y:280,w:85,h:42,cat:"メガネ"},
- {name:"ストーンマーケット",x:695,y:280,w:125,h:42,cat:"グッズ"},
- {name:"すき家",x:150,y:358,w:90,h:38,cat:"フードコート"},
- {name:"はなまるうどん",x:255,y:358,w:120,h:38,cat:"フードコート"},
- {name:"マクドナルド",x:595,y:358,w:110,h:38,cat:"フードコート"},
- {name:"サーティワン",x:720,y:358,w:105,h:38,cat:"フードコート"},
- {name:"ロゴスショップ",x:285,y:190,w:115,h:42,cat:"アウトドア"},
- {name:"日乃屋カレー",x:705,y:190,w:110,h:42,cat:"フードコート"}
-]};
-
-// Walkable graph. Coordinates are intentionally explicit so we can later replace with surveyed/official coordinates.
-const NODES = {
- W:{x:95,y:340}, W1:{x:170,y:340}, A:{x:285,y:340}, B:{x:430,y:340}, C:{x:500,y:340},
- D:{x:570,y:340}, E:{x:715,y:340}, E1:{x:830,y:340}, X:{x:905,y:340},
- N:{x:500,y:190}, N2:{x:500,y:115}, S:{x:500,y:480}, S2:{x:500,y:610},
- NW:{x:117,y:210}, NE:{x:882,y:210}, SW:{x:117,y:477}, SE:{x:882,y:477}
+{name:"イオンシネマ綾川",floor:3,steps:[
+ {arrow:"↑",meters:15,text:"EV/ESまで進む",next:"次：3Fへ"},
+ {arrow:"↟",meters:0,text:"3Fへ上がる",next:"次：まっすぐ"},
+ {arrow:"↑",meters:45,text:"まっすぐ進む",next:"次：右側"},
+ {arrow:"●",meters:0,text:"到着",next:"イオンシネマ綾川です"}]},
+{name:"フードコート",floor:3,steps:[
+ {arrow:"↑",meters:15,text:"EV/ESまで進む",next:"次：3Fへ"},
+ {arrow:"↟",meters:0,text:"3Fへ上がる",next:"次：左へ"},
+ {arrow:"←",meters:30,text:"左へ進む",next:"次：フードコート"},
+ {arrow:"●",meters:0,text:"到着",next:"フードコートです"}]}
+]
 };
-const EDGES = [
- ["W","W1"],["W1","A"],["A","B"],["B","C"],["C","D"],["D","E"],["E","E1"],["E1","X"],
- ["C","N"],["N","N2"],["C","S"],["S","S2"],
- ["W1","NW"],["E1","NE"],["W1","SW"],["E1","SE"]
-];
 
-let floor=1;
-let current={floor:1,node:"S2",x:NODES.S2.x,y:NODES.S2.y};
-let selected=null;
-let navOn=false;
+let floor=1,currentAnchor="中央入口",selected=null,stepIndex=0,heading=0;
+let stepRemaining=0,totalRemaining=0,lastMotion=0,walking=false,offRouteCount=0;
+let autoTimer=null;
 
-function storeNode(s){
-  const cx=s.x+s.w/2, cy=s.y+s.h/2;
-  let best=null, bd=1e9;
-  Object.entries(NODES).forEach(([id,n])=>{
-    const d=Math.hypot(cx-n.x,cy-n.y);
-    if(d<bd){bd=d;best=id;}
-  });
-  return best;
+function setFloor(f,b){
+ floor=f;
+ document.querySelectorAll(".floorrow button").forEach(x=>x.classList.remove("on"));
+ (b||document.querySelectorAll(".floorrow button")[f-1]).classList.add("on");
 }
-function graph(){
-  const g={}; Object.keys(NODES).forEach(k=>g[k]=[]);
-  EDGES.forEach(([a,b])=>{
-    const w=Math.hypot(NODES[a].x-NODES[b].x,NODES[a].y-NODES[b].y);
-    g[a].push([b,w]); g[b].push([a,w]);
-  }); return g;
+function normalize(q){
+ q=q.replace(/[？?！!。、\s]/g,"");
+ if(q.includes("無印"))return"無印良品";
+ if(q.includes("映画")||q.includes("シネマ"))return"イオンシネマ綾川";
+ if(q.includes("トイレ")||q.includes("お手洗い"))return"トイレ";
+ if(q.includes("フード")||q.includes("ご飯")||q.includes("食事"))return"フードコート";
+ return q;
 }
-const G=graph();
-
-function shortest(start,end){
-  const dist={},prev={},q=new Set(Object.keys(NODES));
-  Object.keys(NODES).forEach(k=>dist[k]=Infinity); dist[start]=0;
-  while(q.size){
-    let u=null,du=Infinity; q.forEach(k=>{if(dist[k]<du){du=dist[k];u=k}});
-    if(u===null)break; q.delete(u); if(u===end)break;
-    G[u].forEach(([v,w])=>{if(!q.has(v))return; const nd=dist[u]+w;if(nd<dist[v]){dist[v]=nd;prev[v]=u}});
-  }
-  const path=[]; let u=end; while(u){path.unshift(u); if(u===start)break; u=prev[u]}
-  return {path,dist:dist[end]};
-}
-function routeToPoint(point){
-  const destNode=point.node||nearestNode(point.x,point.y);
-  const startNode=current.node||nearestNode(current.x,current.y);
-  return shortest(startNode,destNode);
-}
-function nearestNode(x,y){
- let best=null,bd=1e9; Object.entries(NODES).forEach(([id,n])=>{const d=Math.hypot(x-n.x,y-n.y); if(d<bd){bd=d;best=id}}); return best;
-}
-function draw(){
- const g=document.getElementById("stores"); g.innerHTML="";
- FLOOR_DATA[floor].forEach(s=>{
-   const el=document.createElementNS("http://www.w3.org/2000/svg","g"); el.setAttribute("class","store");
-   el.innerHTML=`<rect x="${s.x}" y="${s.y}" width="${s.w}" height="${s.h}" rx="6"/><text x="${s.x+s.w/2}" y="${s.y+s.h/2+3}" text-anchor="middle">${s.name}</text>`;
-   el.onclick=()=>chooseStore(s); g.appendChild(el);
- });
- drawDecor();
- updateMe();
-}
-function drawDecor(){
- const d=document.getElementById("floorDecor");
- if(floor===3){
-   d.innerHTML='<rect class="food" x="115" y="350" width="745" height="60" rx="10" opacity=".35"/><text x="487" y="448" text-anchor="middle" class="label">フードコートエリア</text>';
- }else if(floor===1){
-   d.innerHTML='<text x="500" y="82" text-anchor="middle" class="label">専門店街</text>';
- }else{
-   d.innerHTML='<text x="500" y="82" text-anchor="middle" class="label">ファッション・生活雑貨</text>';
- }
-}
-function setFloor(f,btn){
- floor=f; document.querySelectorAll(".tabs button").forEach(b=>b.classList.remove("on"));
- (btn||document.querySelectorAll(".tabs button")[f-1]).classList.add("on");
- document.getElementById("floorStatus").textContent=f+"F";
- if(current.floor!==floor){document.getElementById("me").style.opacity=.35;document.getElementById("heading").style.opacity=.35}else{document.getElementById("me").style.opacity=1;document.getElementById("heading").style.opacity=1}
- hideRoute(); draw();
-}
-function chooseStore(s){
- selected={name:s.name,floor:floor,x:s.x+s.w/2,y:s.y+s.h/2,node:storeNode(s),cat:s.cat};
- showRoute(selected);
-}
-function facilityPoint(type){
- if(type==="WC") return {name:"トイレ",floor,x:185,y:255,node:"A"};
- if(type==="EV") return {name:"エレベーター / エスカレーター",floor,x:117,y:210,node:"NW"};
- if(type==="ENTRY") return {name:"中央入口",floor:1,x:500,y:610,node:"S2"};
- if(type==="FOOD") return {name:"フードコート",floor:3,x:620,y:380,node:"E"};
-}
-function showRoute(target){
- if(target.floor!==floor) setFloor(target.floor,document.querySelectorAll(".tabs button")[target.floor-1]);
- selected=target;
- const dest=document.getElementById("dest"); dest.setAttribute("cx",target.x);dest.setAttribute("cy",target.y);dest.style.display="";
- let floorPrefix="";
- let startNode=current.node;
- if(current.floor!==target.floor){
-   // Demo: floor change via southwest core, then continue on target floor.
-   startNode="SW";
-   floorPrefix=`${current.floor}Fからエレベーター/エスカレーターで${target.floor}Fへ移動します。`;
- }
- const res=shortest(startNode,target.node||nearestNode(target.x,target.y));
- const pts=[];
- if(current.floor===target.floor)pts.push(`${current.x},${current.y}`);
- else pts.push(`${NODES[startNode].x},${NODES[startNode].y}`);
- res.path.forEach(id=>pts.push(`${NODES[id].x},${NODES[id].y}`));
- pts.push(`${target.x},${target.y}`);
- route.setAttribute("points",pts.join(" "));route2.setAttribute("points",pts.join(" "));
- route.style.display="";route2.style.display="";
- const meters=Math.max(10,Math.round((res.dist+Math.hypot(target.x-NODES[target.node||nearestNode(target.x,target.y)].x,target.y-NODES[target.node||nearestNode(target.x,target.y)].y))/8)*5);
- const turns=turnInstructions(res.path);
- const steps=[];
- if(floorPrefix)steps.push(floorPrefix);
- steps.push(...turns);
- steps.push(`${target.name}に到着です。`);
- routeText.innerHTML=`<div class="routehead"><b>📍 ${target.name}</b><span class="distance">約${meters}m</span></div><ol class="steps">${steps.map(x=>`<li>${x}</li>`).join("")}</ol>`;
-}
-function turnInstructions(path){
- if(path.length<2)return ["そのまま目的地へ進みます。"];
- const out=[]; let prevDir=null, run=0;
- for(let i=0;i<path.length-1;i++){
-   const a=NODES[path[i]],b=NODES[path[i+1]], dx=b.x-a.x,dy=b.y-a.y;
-   const dir=Math.abs(dx)>Math.abs(dy)?(dx>0?"東":"西"):(dy>0?"南":"北");
-   if(prevDir===null){prevDir=dir;run=1;continue}
-   if(dir===prevDir){run++;continue}
-   out.push(`${jpDir(prevDir)}へ直進します。`);
-   out.push(`${turnWord(prevDir,dir)}。`);
-   prevDir=dir;run=1;
- }
- out.push(`${jpDir(prevDir)}へ進みます。`);
- return out.slice(0,5);
-}
-function jpDir(d){return {東:"右方向",西:"左方向",北:"奥方向",南:"入口方向"}[d]||d}
-function turnWord(a,b){
- const angle={北:0,東:90,南:180,西:270}; let diff=(angle[b]-angle[a]+360)%360;
- if(diff===90)return "右へ曲がります"; if(diff===270)return "左へ曲がります"; if(diff===180)return "折り返します"; return "そのまま直進します";
-}
-function hideRoute(){route.style.display="none";route2.style.display="none";dest.style.display="none"}
 function searchPlace(){
- let q=document.getElementById("q").value.trim(); if(!q)return;
- const norm=q.replace(/[？?！!。、\s]/g,"");
- const aliases=[
-   [["無印","MUJI"],"無印良品"],[["映画館","映画","シネマ"],"イオンシネマ綾川"],
-   [["トイレ","お手洗い","便所"],"__WC__"],[["エレベーター","エスカレーター","EV","ES"],"__EV__"],
-   [["フードコート","ご飯","食事","ごはん"],"__FOOD__"],[["入口","出口","中央入口"],"__ENTRY__"]
- ];
- let key=norm;
- for(const [words,val] of aliases){if(words.some(w=>norm.includes(w))){key=val;break}}
- const box=document.getElementById("results");
- if(key.startsWith("__")){
-   const map={__WC__:"WC",__EV__:"EV",__FOOD__:"FOOD",__ENTRY__:"ENTRY"};
-   const p=facilityPoint(map[key]); box.innerHTML=`<div class="result" onclick='showRoute(${JSON.stringify(p)})'><b>${p.name}</b><span>${p.floor}F</span></div>`; return;
+ const q=normalize(document.getElementById("q").value.trim());
+ if(!q)return;
+ let found=[];
+ Object.values(DATA).flat().forEach(x=>{if(x.name.includes(q)||q.includes(x.name))found.push(x)});
+ results.innerHTML=found.length
+   ? found.map(x=>`<div class="result" onclick='startNav(${JSON.stringify(x)})'><b>${x.name}</b><span>${x.floor}F</span></div>`).join("")
+   : `<div class="result">見つかりませんでした。</div>`;
+}
+function startNav(x){
+ selected=JSON.parse(JSON.stringify(x));
+ stepIndex=0;
+ setFloor(x.floor);
+ navCard.classList.remove("hidden");
+ resetStepDistances();
+ renderStep();
+}
+function resetStepDistances(){
+ if(!selected)return;
+ stepRemaining=selected.steps[stepIndex]?.meters||0;
+ totalRemaining=selected.steps.slice(stepIndex).reduce((a,b)=>a+b.meters,0);
+}
+function renderStep(){
+ if(!selected)return;
+ const s=selected.steps[stepIndex];
+ arrow.textContent=s.arrow;
+ distanceBig.textContent=s.meters>0?Math.max(0,Math.round(stepRemaining))+"m":"";
+ instruction.textContent=s.text;
+ nextText.textContent=warningText(s);
+ stepNo.textContent="案内 "+(stepIndex+1)+" / "+selected.steps.length;
+ fromTo.textContent=currentAnchor+" → "+selected.name;
+ totalRemaining=selected.steps.slice(stepIndex).reduce((a,b,i)=>a+(i===0?stepRemaining:b.meters),0);
+ remaining.textContent=totalRemaining>0?"残り 約"+Math.max(0,Math.round(totalRemaining))+"m":"到着";
+ progressBar.style.width=((stepIndex+1)/selected.steps.length*100)+"%";
+}
+function warningText(s){
+ if(s.meters<=0)return s.next;
+ if(stepRemaining<=5 && s.next.includes("右")) return "⚠️ あと5mで右です";
+ if(stepRemaining<=5 && s.next.includes("左")) return "⚠️ あと5mで左です";
+ if(stepRemaining<=3 && s.next.includes("2F")) return "⚠️ まもなく2Fへ上がります";
+ if(stepRemaining<=3 && s.next.includes("3F")) return "⚠️ まもなく3Fへ上がります";
+ return s.next;
+}
+function advanceMeters(m=5){
+ if(!selected)return;
+ const s=selected.steps[stepIndex];
+ if(s.meters===0){
+   advanceStep();
+   return;
  }
- const found=[];
- Object.entries(FLOOR_DATA).forEach(([f,arr])=>arr.forEach(s=>{
-   if(s.name.includes(key)||key.includes(s.name)||s.cat.includes(key))found.push([Number(f),s]);
- }));
- box.innerHTML=found.length?found.map(([f,s])=>`<div class="result" onclick='goStore(${f},${JSON.stringify(s)})'><b>${s.name}</b><span>${f}F・${s.cat}</span></div>`).join(""):`<div class="result">見つかりませんでした。店名・「映画」「トイレ」「ご飯」などでも検索できます。</div>`;
+ stepRemaining=Math.max(0,stepRemaining-m);
+ if(stepRemaining===0) advanceStep();
+ else renderStep();
 }
-function goStore(f,s){setFloor(f,document.querySelectorAll(".tabs button")[f-1]);chooseStore(s)}
-function quick(q){document.getElementById("q").value=q;searchPlace()}
-function setDemoLocation(pos){
- const map={west:["W1",170,340],center:["C",500,340],east:["E1",830,340]};
- const [node,x,y]=map[pos]; current={floor,node,x,y}; updateMe();
- if(selected)showRoute(selected);
+function advanceStep(){
+ if(!selected)return;
+ if(stepIndex<selected.steps.length-1){
+   stepIndex++;
+   stepRemaining=selected.steps[stepIndex].meters;
+   renderStep();
+ } else {
+   renderStep();
+ }
 }
-function updateMe(){
- me.setAttribute("cx",current.x);me.setAttribute("cy",current.y);
- heading.setAttribute("points",`${current.x},${current.y-22} ${current.x-11},${current.y+2} ${current.x+11},${current.y+2}`);
+function advance(){advanceMeters(5)}
+function reroute(){
+ if(!selected)return;
+ offRouteCount=0;
+ stepIndex=0;
+ resetStepDistances();
+ instruction.textContent="現在地から再計算しました";
+ setTimeout(renderStep,500);
 }
-function recenter(){updateMe()}
-function startNavigation(){navOn=true;if(selected)showRoute(selected);routeText.insertAdjacentHTML("afterbegin","<div style='font-size:11px;color:#1477ff;font-weight:700;margin-bottom:5px'>● 案内中</div>")}
-function stopNavigation(){navOn=false;selected=null;hideRoute();routeText.textContent="案内を終了しました。目的地を選ぶと再開できます。"}
-draw();
+function stopNav(){
+ selected=null;
+ if(autoTimer){clearInterval(autoTimer);autoTimer=null}
+ navCard.classList.add("hidden");
+}
+function setAnchor(name){
+ currentAnchor=name;
+ placeNow.textContent=name;
+ accuracyNow.textContent="補正済";
+ if(selected)reroute();
+}
+
+function simulateWalking(){
+ if(autoTimer){clearInterval(autoTimer);autoTimer=null;walking=false;accuracyNow.textContent="停止";return}
+ walking=true;
+ accuracyNow.textContent="歩行デモ中";
+ autoTimer=setInterval(()=>{
+   if(!selected){clearInterval(autoTimer);autoTimer=null;return}
+   advanceMeters(2);
+ },900);
+}
+
+function markOffRoute(){
+ if(!selected)return;
+ offRouteCount++;
+ instruction.textContent="ルートから外れました";
+ nextText.textContent="🔄 新しいルートを計算中…";
+ setTimeout(reroute,700);
+}
+
+async function enableCompass(){
+ try{
+  if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
+    const p=await DeviceOrientationEvent.requestPermission();
+    if(p!=="granted")throw 0;
+  }
+  window.addEventListener("deviceorientation",e=>{
+    if(e.alpha!=null){
+      heading=(360-e.alpha)%360;
+      headingNow.textContent=Math.round(heading)+"°";
+    }
+  },true);
+  accuracyNow.textContent="方位ON";
+ }catch(e){accuracyNow.textContent="方位未許可"}
+}
+async function enableMotion(){
+ try{
+  if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
+    const p=await DeviceMotionEvent.requestPermission();
+    if(p!=="granted")throw 0;
+  }
+  window.addEventListener("devicemotion",e=>{
+    const a=e.accelerationIncludingGravity;
+    if(!a)return;
+    const m=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();
+    if(m>12.2&&now-lastMotion>450){
+      lastMotion=now;
+      if(selected)advanceMeters(0.75);
+    }
+  },true);
+  accuracyNow.textContent="歩数ON";
+ }catch(e){accuracyNow.textContent="歩数未許可"}
+}
+function enableGPS(){
+ if(!navigator.geolocation){accuracyNow.textContent="GPS非対応";return}
+ navigator.geolocation.getCurrentPosition(p=>{
+   accuracyNow.textContent="±"+Math.round(p.coords.accuracy)+"m";
+ },()=>{accuracyNow.textContent="GPS未許可"},{enableHighAccuracy:true,timeout:8000});
+}
 </script>
+
 <script>
 if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => navigator.serviceWorker.register("/service-worker.js").catch(()=>{}));
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
+  });
 }
 </script>
+
 </body>
 </html>

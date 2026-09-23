@@ -1,21 +1,23 @@
-綾川イオン館内ナビ - Replitでそのまま動かせる版
-================================================
+館内ナビ｜イオンモール綾川 - アプリ化版（PWA）
+=================================================
 
-入っているファイル
-- index.html : 館内ナビ本体
-- main.py : Replitで公開するためのWebサーバー
-- .replit : Runボタン用設定
-- manifest.webmanifest : ホーム画面追加用
-- service-worker.js : 最低限のオフライン対応
+これはブラウザで動くWeb版を「ホーム画面に追加できるアプリ」にした版です。
 
-Replitで動かす手順
-1. 新しいReplitプロジェクトを作る
-2. このZIPをアップロードして展開する
-3. index.html / main.py / .replit などがプロジェクト直下にある状態にする
-4. 「Run」を押す
-5. Webviewに綾川イオン館内ナビが表示されれば成功
-6. Publish/Deployできる状態なら、そのまま公開URLを作れる
+入っているもの
+- index.html : アプリ本体
+- manifest.webmanifest : アプリ名・アイコン・起動設定
+- service-worker.js : オフライン対応
+- icon-192.png / icon-512.png / apple-touch-icon.png : アプリアイコン
+- .nojekyll : GitHub Pages向け
 
-注意
-この版は「アプリとして動く」状態にしてありますが、
-館内地図の店舗座標・通路・EV/ES・WCは最終的に公式図面/現地照合が必要です。
+iPhoneでアプリとして使うには
+1. このフォルダをGitHub Pages / Cloudflare Pages / Replit等で公開
+2. Safariで公開URLを開く
+3. 共有ボタン → 「ホーム画面に追加」
+4. ホーム画面の「館内ナビ」アイコンから起動
+
+この方法ならApp Store審査なしでアプリのように使えます。
+
+将来App Storeに正式公開する場合
+- このPWAをCapacitor等でiOSアプリ化
+- Mac + Xcode + Apple Developer Programで署名・提出
