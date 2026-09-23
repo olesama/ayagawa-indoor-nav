@@ -24,25 +24,6 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 .badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;margin-top:6px;background:#eaf8f1;color:var(--green)}.badge.proto{background:#fff5e6;color:#a45b00}
 .precision{background:#f3fbf7;border:1px solid #cdebdc;border-radius:12px;padding:10px;margin-top:10px;font-size:12px;line-height:1.5}
 </style>
-<style>
-.learnbox{background:#f8fbff;border:1px solid #cfe1ff;border-radius:14px;padding:12px}
-.learnbox h3{margin:0 0 6px;font-size:15px}.learngrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
-.learngrid button{padding:10px;border:1px solid #cbd2d8;background:#fff;border-radius:10px;font-weight:800}
-.learnstats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.learnstats div{background:#fff;border:1px solid #e4e9ee;border-radius:10px;padding:8px;text-align:center}
-.learnstats b{display:block;font-size:16px}.learnstats span{font-size:10px;color:#68727c}.learnnote{font-size:11px;color:#68727c;line-height:1.5;margin-top:8px}
-.learntable{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}.learntable td,.learntable th{border-bottom:1px solid #edf0f2;padding:6px 3px;text-align:left}
-</style>
-
-<style>
-.autoLearnPanel{background:#f3fbf7;border:1px solid #cfe8da;border-radius:14px;padding:12px;margin-top:10px}
-.autoLearnTitle{font-weight:900;font-size:14px}
-.autoLearnStatus{font-size:11px;color:#56616b;line-height:1.55;margin-top:6px}
-.autoLearnStats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
-.autoLearnStats div{background:#fff;border:1px solid #e2e8ed;border-radius:10px;padding:8px;text-align:center}
-.autoLearnStats b{display:block;font-size:15px}.autoLearnStats span{font-size:10px;color:#68727c}
-.autoCloud{display:inline-block;margin-top:6px;padding:4px 8px;border-radius:999px;background:#eef4ff;color:#1166cc;font-size:10px;font-weight:800}
-</style>
-
 </head>
 <body>
 <header><h1><span id="headerTitle">🧭 館内ナビ</span> <span style="font-size:10px;background:#222;color:#fff;border-radius:999px;padding:4px 7px">PRIVATE DEV</span></h1><div id="headerSub" class="sub">50施設・20言語対応</div></header>
@@ -68,52 +49,12 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 </section>
 
 <section class="card"><b id="correctionTitle">現在地の補正</b><div id="anchorsEl" class="chips" style="margin-top:9px"></div>
+<div id="autoSensorNote" class="small" style="margin-top:8px">センサーは案内開始時に自動で起動します。</div>
 <div class="status" style="margin-top:10px"><div><b id="placeNow">-</b><span id="currentLocLabel">現在地</span></div><div><b id="headingNow">0°</b><span id="headingLabel">向き</span></div><div><b id="accuracyNow">補正済</b><span id="accuracyLabel">位置精度</span></div></div>
 <div class="row" style="margin-top:10px"><button id="compassBtn" onclick="enableCompass()">🧭 方位</button><button id="motionBtn" onclick="enableMotion()">👣 歩数</button><button id="gpsBtn" onclick="enableGPS()">📡 GPS精度</button></div></section>
 
-<p id="footNote" class="small">施設によってルート精度が異なります。綾川イオンは通路グラフ計算、その他は学習対象の試作ルートです。</p>
+<p id="footNote" class="small">施設によってルート精度が異なります。距離は公式マップの概算値と実際の利用データから自動調整されます。</p>
 
-
-<section class="card">
-<div class="learnbox">
-<h3 id="learnTitle">🧠 自動学習モード</h3>
-<label style="font-size:11px;color:#4f5962">
-<input id="learnConsent" type="checkbox" onchange="saveAutoConsent()">
-<span id="learnConsentText">歩行・方位センサーで自動記録する</span>
-</label>
-<div id="learnDesc" class="learnnote">目的地を選んで案内を開始すると、歩数・推定距離・向きの変化を自動で記録します。左・右の手入力は不要です。</div>
-<div class="learnstats">
-<div><b id="learnSteps">0</b><span id="learnStepsLabel">歩数</span></div>
-<div><b id="learnMeters">0m</b><span id="learnMetersLabel">推定距離</span></div>
-<div><b id="learnTurns">0</b><span id="learnTurnsLabel">自動検出ターン</span></div>
-</div>
-<div id="learnStatus" class="learnnote">待機中</div>
-<table class="learntable"><thead><tr><th id="learnedRouteTh">学習済みルート</th><th id="countTh">回数</th><th id="avgDistanceTh">平均距離</th></tr></thead><tbody id="learnedRoutes"></tbody></table>
-<div class="learngrid">
-<button id="arrivalSaveBtn" onclick="confirmArrivalAndSave()">✅ 到着して保存</button>
-<button id="discardBtn" onclick="resetLearning()">今回を破棄</button>
-<button id="exportBtn" onclick="exportLearningData()">⬇ データを書き出す</button>
-<button id="clearBtn" onclick="clearAllLearning()">全削除</button>
-</div>
-</div>
-</section>
-
-
-<section class="card">
-<div class="autoLearnPanel">
-<div class="autoLearnTitle">🤖 完全自動・みんなの平均距離学習</div>
-<div class="autoLearnStatus">
-目的地を選ぶだけで記録開始。歩数と向きから移動距離を推定し、ナビが到着判定したら自動保存します。途中の入力は不要です。
-</div>
-<div class="autoLearnStats">
-<div><b id="autoSampleCount">0</b><span>このルートの記録数</span></div>
-<div><b id="autoAvgMeters">-</b><span>平均距離</span></div>
-<div><b id="autoThisMeters">0m</b><span>今回の距離</span></div>
-</div>
-<div id="autoLearnMsg" class="autoLearnStatus">待機中</div>
-<span id="autoCloudBadge" class="autoCloud">端末内学習</span>
-</div>
-</section>
 
 </main>
 
@@ -259,11 +200,11 @@ function reroute(){if(!selected)return;if(key==="f0")startPrecision(selected);el
 function stopNav(){selected=null;navSteps=[];if(autoTimer){clearInterval(autoTimer);autoTimer=null}navCard.classList.add("hidden")}
 function setAnchor(v){currentAnchor=v;placeNow.textContent=v;accuracyNow.textContent="補正済";if(key==="f0")currentNode=AY_ANCHORS[v];if(q.value.trim())searchPlace();if(selected)reroute()}
 async function enableCompass(){try{if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){const p=await DeviceOrientationEvent.requestPermission();if(p!=="granted")throw 0}window.addEventListener("deviceorientation",e=>{if(e.alpha!=null){heading=(360-e.alpha)%360;headingNow.textContent=Math.round(heading)+"°"}},true);accuracyNow.textContent="方位ON"}catch(e){accuracyNow.textContent="方位未許可"}}
-async function enableMotion(){try{if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){const p=await DeviceMotionEvent.requestPermission();if(p!=="granted")throw 0}window.addEventListener("devicemotion",e=>{const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();if(m>12.2&&now-lastMotion>450){lastMotion=now;if(selected)advanceMeters(.75)}},true);accuracyNow.textContent="歩数ON"}catch(e){accuracyNow.textContent="歩数未許可"}}
+async function enableMotion(){try{if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){const p=await DeviceMotionEvent.requestPermission();if(p!=="granted")throw 0}window.addEventListener("devicemotion",e=>{const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();if(m>12.2&&now-lastMotion>450){lastMotion=now;if(selected)advanceMeters(.75)}},true);accuracyNow.textContent="歩行ON"}catch(e){accuracyNow.textContent="歩数未許可"}}
 function enableGPS(){if(!navigator.geolocation){accuracyNow.textContent="GPS非対応";return}navigator.geolocation.getCurrentPosition(p=>accuracyNow.textContent="±"+Math.round(p.coords.accuracy)+"m",()=>accuracyNow.textContent="GPS未許可",{enableHighAccuracy:true,timeout:8000})}
 if("serviceWorker"in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}))}
 
-const I18N={"ja":{"name":"日本語","app":"🧭 館内ナビ","sub":"50施設・20言語対応","official":"公式マップ/案内","fix":"📍 現在地を補正","searchph":"行きたい場所を入力","search":"検索","notfound":"見つかりませんでした。","correction":"現在地の補正","current":"現在地","heading":"向き","accuracy":"位置精度","compass":"🧭 方位","motion":"👣 歩数","gps":"📡 GPS精度","demo":"5m進む（デモ）","autowalk":"▶ 自動歩行","reroute":"🔄 再ルート","stop":"案内終了","straight":"まっすぐ進む","left":"左へ曲がる","right":"右へ曲がる","up":"上の階へ移動","down":"下の階へ移動","arrived":"到着","step":"案内 {x} / {y}","remaining":"残り 約{m}m","in5right":"あと5mで右です","in5left":"あと5mで左です","next":"次の案内へ","learn":"🧠 自動学習モード","consent":"歩行・方位センサーで自動記録する","learndesc":"目的地を選んで案内を開始すると、歩数・推定距離・向きの変化を自動記録します。左右の手入力は不要です。","steps":"歩数","estdist":"推定距離","turns":"自動検出ターン","waiting":"待機中","learned":"学習済みルート","count":"回数","avg":"平均距離","save":"✅ 到着して保存","discard":"今回を破棄","export":"⬇ データを書き出す","clear":"全削除","foot":"施設によってルート精度が異なります。綾川イオンは通路グラフ計算、その他は学習対象の試作ルートです。"},"en":{"name":"English","app":"🧭 Indoor Navigation","sub":"50 facilities · 20 languages","official":"Official map / guide","fix":"📍 Correct current location","searchph":"Where do you want to go?","search":"Search","notfound":"No result found.","correction":"Location correction","current":"Current location","heading":"Heading","accuracy":"Accuracy","compass":"🧭 Compass","motion":"👣 Steps","gps":"📡 GPS accuracy","demo":"Move 5 m (demo)","autowalk":"▶ Auto walk","reroute":"🔄 Reroute","stop":"End navigation","straight":"Go straight","left":"Turn left","right":"Turn right","up":"Go to the floor above","down":"Go to the floor below","arrived":"Arrived","step":"Step {x} / {y}","remaining":"About {m} m remaining","in5right":"Turn right in 5 m","in5left":"Turn left in 5 m","next":"Next instruction","learn":"🧠 Auto learning","consent":"Automatically record motion and heading sensors","learndesc":"After you choose a destination, steps, estimated distance and direction changes are recorded automatically. No left/right input is needed.","steps":"Steps","estdist":"Estimated distance","turns":"Detected turns","waiting":"Waiting","learned":"Learned routes","count":"Samples","avg":"Average distance","save":"✅ Arrived & save","discard":"Discard this trip","export":"⬇ Export data","clear":"Delete all","foot":"Route accuracy varies by facility. Ayagawa uses a corridor graph; other facilities currently use prototype routes that can be improved by learning."},"zh-CN":{"name":"简体中文","app":"🧭 室内导航","sub":"50个设施 · 20种语言","official":"官方地图 / 指南","fix":"📍 校正当前位置","searchph":"输入目的地","search":"搜索","notfound":"未找到结果。","correction":"位置校正","current":"当前位置","heading":"方向","accuracy":"定位精度","compass":"🧭 指南针","motion":"👣 步数","gps":"📡 GPS精度","demo":"前进5米（演示）","autowalk":"▶ 自动行走","reroute":"🔄 重新规划","stop":"结束导航","straight":"直行","left":"左转","right":"右转","up":"前往上一层","down":"前往下一层","arrived":"已到达","step":"导航 {x} / {y}","remaining":"剩余约 {m} 米","in5right":"5米后右转","in5left":"5米后左转","next":"下一步","learn":"🧠 自动学习模式","consent":"自动记录步行和方向传感器","learndesc":"选择目的地后，自动记录步数、估算距离和方向变化，无需手动输入左右转。","steps":"步数","estdist":"估算距离","turns":"检测到的转弯","waiting":"等待中","learned":"已学习路线","count":"次数","avg":"平均距离","save":"✅ 到达并保存","discard":"放弃本次","export":"⬇ 导出数据","clear":"全部删除","foot":"不同设施的路线精度不同。绫川使用通道图计算，其他设施目前为可通过学习改进的试验路线。"},"zh-TW":{"name":"繁體中文","app":"🧭 室內導航","sub":"50個設施 · 20種語言","official":"官方地圖 / 指南","fix":"📍 校正目前位置","searchph":"輸入目的地","search":"搜尋","notfound":"找不到結果。","correction":"位置校正","current":"目前位置","heading":"方向","accuracy":"定位精度","compass":"🧭 指南針","motion":"👣 步數","gps":"📡 GPS精度","demo":"前進5公尺（示範）","autowalk":"▶ 自動行走","reroute":"🔄 重新規劃","stop":"結束導航","straight":"直走","left":"向左轉","right":"向右轉","up":"前往上一層","down":"前往下一層","arrived":"已抵達","step":"導航 {x} / {y}","remaining":"剩餘約 {m} 公尺","in5right":"5公尺後右轉","in5left":"5公尺後左轉","next":"下一步","learn":"🧠 自動學習模式","consent":"自動記錄步行與方向感測器","learndesc":"選擇目的地後，自動記錄步數、估算距離與方向變化，不需手動輸入左右轉。","steps":"步數","estdist":"估算距離","turns":"偵測轉彎","waiting":"等待中","learned":"已學習路線","count":"次數","avg":"平均距離","save":"✅ 抵達並儲存","discard":"放棄本次","export":"⬇ 匯出資料","clear":"全部刪除","foot":"各設施的路線精度不同。綾川使用通道圖計算，其他設施目前為可透過學習改善的試作路線。"},"ko":{"name":"한국어","app":"🧭 실내 내비게이션","sub":"50개 시설 · 20개 언어","official":"공식 지도 / 안내","fix":"📍 현재 위치 보정","searchph":"목적지를 입력하세요","search":"검색","notfound":"결과를 찾지 못했습니다.","correction":"위치 보정","current":"현재 위치","heading":"방향","accuracy":"위치 정확도","compass":"🧭 나침반","motion":"👣 걸음 수","gps":"📡 GPS 정확도","demo":"5m 이동(데모)","autowalk":"▶ 자동 이동","reroute":"🔄 경로 재탐색","stop":"안내 종료","straight":"직진","left":"좌회전","right":"우회전","up":"위층으로 이동","down":"아래층으로 이동","arrived":"도착","step":"안내 {x} / {y}","remaining":"약 {m}m 남음","in5right":"5m 후 우회전","in5left":"5m 후 좌회전","next":"다음 안내","learn":"🧠 자동 학습 모드","consent":"걸음 및 방향 센서를 자동 기록","learndesc":"목적지를 선택하면 걸음 수, 추정 거리, 방향 변화를 자동 기록합니다. 좌우 입력은 필요 없습니다.","steps":"걸음 수","estdist":"추정 거리","turns":"감지된 회전","waiting":"대기 중","learned":"학습된 경로","count":"횟수","avg":"평균 거리","save":"✅ 도착 및 저장","discard":"이번 기록 삭제","export":"⬇ 데이터 내보내기","clear":"전체 삭제","foot":"시설마다 경로 정확도가 다릅니다. 아야가와는 통로 그래프를 사용하며 다른 시설은 학습으로 개선되는 시험 경로입니다."},"es":{"name":"Español","app":"🧭 Navegación interior","sub":"50 instalaciones · 20 idiomas","official":"Mapa / guía oficial","fix":"📍 Corregir ubicación","searchph":"¿A dónde quieres ir?","search":"Buscar","notfound":"No se encontraron resultados.","correction":"Corrección de ubicación","current":"Ubicación actual","heading":"Dirección","accuracy":"Precisión","compass":"🧭 Brújula","motion":"👣 Pasos","gps":"📡 Precisión GPS","demo":"Avanzar 5 m (demo)","autowalk":"▶ Caminata automática","reroute":"🔄 Recalcular","stop":"Finalizar navegación","straight":"Sigue recto","left":"Gira a la izquierda","right":"Gira a la derecha","up":"Sube un piso","down":"Baja un piso","arrived":"Has llegado","step":"Paso {x} / {y}","remaining":"Quedan aprox. {m} m","in5right":"Gira a la derecha en 5 m","in5left":"Gira a la izquierda en 5 m","next":"Siguiente indicación","learn":"🧠 Aprendizaje automático","consent":"Registrar automáticamente movimiento y dirección","learndesc":"Al elegir un destino se registran automáticamente pasos, distancia estimada y cambios de dirección.","steps":"Pasos","estdist":"Distancia estimada","turns":"Giros detectados","waiting":"En espera","learned":"Rutas aprendidas","count":"Muestras","avg":"Distancia media","save":"✅ Llegué y guardar","discard":"Descartar recorrido","export":"⬇ Exportar datos","clear":"Borrar todo","foot":"La precisión varía según la instalación. Ayagawa usa un grafo de pasillos; las demás rutas son prototipos que mejoran con aprendizaje."},"fr":{"name":"Français","app":"🧭 Navigation intérieure","sub":"50 sites · 20 langues","official":"Plan / guide officiel","fix":"📍 Corriger la position","searchph":"Où voulez-vous aller ?","search":"Rechercher","notfound":"Aucun résultat.","correction":"Correction de position","current":"Position actuelle","heading":"Direction","accuracy":"Précision","compass":"🧭 Boussole","motion":"👣 Pas","gps":"📡 Précision GPS","demo":"Avancer de 5 m (démo)","autowalk":"▶ Marche auto","reroute":"🔄 Recalculer","stop":"Fin de navigation","straight":"Continuez tout droit","left":"Tournez à gauche","right":"Tournez à droite","up":"Montez à l’étage supérieur","down":"Descendez à l’étage inférieur","arrived":"Arrivé","step":"Étape {x} / {y}","remaining":"Environ {m} m restants","in5right":"Tournez à droite dans 5 m","in5left":"Tournez à gauche dans 5 m","next":"Instruction suivante","learn":"🧠 Apprentissage automatique","consent":"Enregistrer automatiquement mouvement et orientation","learndesc":"Après choix de la destination, les pas, la distance estimée et les changements de direction sont enregistrés automatiquement.","steps":"Pas","estdist":"Distance estimée","turns":"Virages détectés","waiting":"En attente","learned":"Itinéraires appris","count":"Échantillons","avg":"Distance moyenne","save":"✅ Arrivé et enregistrer","discard":"Ignorer ce trajet","export":"⬇ Exporter les données","clear":"Tout supprimer","foot":"La précision varie selon le site. Ayagawa utilise un graphe de couloirs ; les autres itinéraires sont des prototypes améliorables par apprentissage."},"de":{"name":"Deutsch","app":"🧭 Indoor-Navigation","sub":"50 Einrichtungen · 20 Sprachen","official":"Offizieller Plan / Guide","fix":"📍 Standort korrigieren","searchph":"Ziel eingeben","search":"Suchen","notfound":"Kein Ergebnis gefunden.","correction":"Standortkorrektur","current":"Aktueller Standort","heading":"Richtung","accuracy":"Genauigkeit","compass":"🧭 Kompass","motion":"👣 Schritte","gps":"📡 GPS-Genauigkeit","demo":"5 m gehen (Demo)","autowalk":"▶ Automatisch gehen","reroute":"🔄 Neu berechnen","stop":"Navigation beenden","straight":"Geradeaus","left":"Links abbiegen","right":"Rechts abbiegen","up":"Eine Etage nach oben","down":"Eine Etage nach unten","arrived":"Angekommen","step":"Schritt {x} / {y}","remaining":"Noch ca. {m} m","in5right":"In 5 m rechts abbiegen","in5left":"In 5 m links abbiegen","next":"Nächste Anweisung","learn":"🧠 Automatisches Lernen","consent":"Bewegung und Richtung automatisch erfassen","learndesc":"Nach Auswahl des Ziels werden Schritte, geschätzte Distanz und Richtungsänderungen automatisch aufgezeichnet.","steps":"Schritte","estdist":"Geschätzte Distanz","turns":"Erkannte Abbiegungen","waiting":"Warten","learned":"Gelernte Routen","count":"Messungen","avg":"Durchschnittsdistanz","save":"✅ Angekommen & speichern","discard":"Fahrt verwerfen","export":"⬇ Daten exportieren","clear":"Alles löschen","foot":"Die Routengenauigkeit variiert. Ayagawa nutzt ein Korridornetz; andere Routen sind lernfähige Prototypen."},"it":{"name":"Italiano","app":"🧭 Navigazione indoor","sub":"50 strutture · 20 lingue","official":"Mappa / guida ufficiale","fix":"📍 Correggi posizione","searchph":"Dove vuoi andare?","search":"Cerca","notfound":"Nessun risultato.","correction":"Correzione posizione","current":"Posizione attuale","heading":"Direzione","accuracy":"Precisione","compass":"🧭 Bussola","motion":"👣 Passi","gps":"📡 Precisione GPS","demo":"Avanza 5 m (demo)","autowalk":"▶ Cammino automatico","reroute":"🔄 Ricalcola","stop":"Termina navigazione","straight":"Vai dritto","left":"Gira a sinistra","right":"Gira a destra","up":"Sali al piano superiore","down":"Scendi al piano inferiore","arrived":"Arrivato","step":"Passo {x} / {y}","remaining":"Circa {m} m rimanenti","in5right":"Gira a destra tra 5 m","in5left":"Gira a sinistra tra 5 m","next":"Prossima indicazione","learn":"🧠 Apprendimento automatico","consent":"Registra automaticamente movimento e direzione","learndesc":"Dopo aver scelto la destinazione, passi, distanza stimata e cambi di direzione vengono registrati automaticamente.","steps":"Passi","estdist":"Distanza stimata","turns":"Svolte rilevate","waiting":"In attesa","learned":"Percorsi appresi","count":"Campioni","avg":"Distanza media","save":"✅ Arrivato e salva","discard":"Scarta percorso","export":"⬇ Esporta dati","clear":"Elimina tutto","foot":"La precisione varia per struttura. Ayagawa usa una rete di corridoi; le altre rotte sono prototipi migliorabili con l’apprendimento."},"pt":{"name":"Português","app":"🧭 Navegação interna","sub":"50 locais · 20 idiomas","official":"Mapa / guia oficial","fix":"📍 Corrigir localização","searchph":"Para onde você quer ir?","search":"Buscar","notfound":"Nenhum resultado encontrado.","correction":"Correção de localização","current":"Localização atual","heading":"Direção","accuracy":"Precisão","compass":"🧭 Bússola","motion":"👣 Passos","gps":"📡 Precisão GPS","demo":"Avançar 5 m (demo)","autowalk":"▶ Caminhada automática","reroute":"🔄 Recalcular","stop":"Encerrar navegação","straight":"Siga em frente","left":"Vire à esquerda","right":"Vire à direita","up":"Suba um andar","down":"Desça um andar","arrived":"Chegou","step":"Passo {x} / {y}","remaining":"Cerca de {m} m restantes","in5right":"Vire à direita em 5 m","in5left":"Vire à esquerda em 5 m","next":"Próxima instrução","learn":"🧠 Aprendizado automático","consent":"Registrar movimento e direção automaticamente","learndesc":"Ao escolher um destino, passos, distância estimada e mudanças de direção são registrados automaticamente.","steps":"Passos","estdist":"Distância estimada","turns":"Curvas detectadas","waiting":"Aguardando","learned":"Rotas aprendidas","count":"Amostras","avg":"Distância média","save":"✅ Cheguei e salvar","discard":"Descartar trajeto","export":"⬇ Exportar dados","clear":"Apagar tudo","foot":"A precisão varia por local. Ayagawa usa um grafo de corredores; as demais rotas são protótipos que podem melhorar com aprendizado."},"th":{"name":"ไทย","app":"🧭 ระบบนำทางภายในอาคาร","sub":"50 สถานที่ · 20 ภาษา","official":"แผนที่ / คู่มือทางการ","fix":"📍 ปรับตำแหน่งปัจจุบัน","searchph":"ต้องการไปที่ไหน?","search":"ค้นหา","notfound":"ไม่พบผลลัพธ์","correction":"ปรับตำแหน่ง","current":"ตำแหน่งปัจจุบัน","heading":"ทิศทาง","accuracy":"ความแม่นยำ","compass":"🧭 เข็มทิศ","motion":"👣 จำนวนก้าว","gps":"📡 ความแม่นยำ GPS","demo":"เดิน 5 ม. (สาธิต)","autowalk":"▶ เดินอัตโนมัติ","reroute":"🔄 คำนวณเส้นทางใหม่","stop":"จบการนำทาง","straight":"ตรงไป","left":"เลี้ยวซ้าย","right":"เลี้ยวขวา","up":"ขึ้นชั้นบน","down":"ลงชั้นล่าง","arrived":"ถึงแล้ว","step":"ขั้นตอน {x} / {y}","remaining":"เหลือประมาณ {m} ม.","in5right":"อีก 5 ม. เลี้ยวขวา","in5left":"อีก 5 ม. เลี้ยวซ้าย","next":"คำแนะนำถัดไป","learn":"🧠 โหมดเรียนรู้อัตโนมัติ","consent":"บันทึกการเคลื่อนไหวและทิศทางอัตโนมัติ","learndesc":"เมื่อเลือกจุดหมาย ระบบจะบันทึกจำนวนก้าว ระยะทางโดยประมาณ และการเปลี่ยนทิศทางอัตโนมัติ","steps":"ก้าว","estdist":"ระยะทางประมาณ","turns":"การเลี้ยวที่ตรวจพบ","waiting":"รอ","learned":"เส้นทางที่เรียนรู้","count":"จำนวนครั้ง","avg":"ระยะทางเฉลี่ย","save":"✅ ถึงแล้วและบันทึก","discard":"ทิ้งการเดินทางนี้","export":"⬇ ส่งออกข้อมูล","clear":"ลบทั้งหมด","foot":"ความแม่นยำแตกต่างกันตามสถานที่ Ayagawa ใช้กราฟทางเดิน ส่วนสถานที่อื่นเป็นเส้นทางต้นแบบที่ปรับปรุงได้ด้วยการเรียนรู้"},"vi":{"name":"Tiếng Việt","app":"🧭 Dẫn đường trong nhà","sub":"50 địa điểm · 20 ngôn ngữ","official":"Bản đồ / hướng dẫn chính thức","fix":"📍 Hiệu chỉnh vị trí","searchph":"Bạn muốn đi đâu?","search":"Tìm kiếm","notfound":"Không tìm thấy kết quả.","correction":"Hiệu chỉnh vị trí","current":"Vị trí hiện tại","heading":"Hướng","accuracy":"Độ chính xác","compass":"🧭 La bàn","motion":"👣 Bước chân","gps":"📡 Độ chính xác GPS","demo":"Đi 5 m (demo)","autowalk":"▶ Đi tự động","reroute":"🔄 Tính lại tuyến","stop":"Kết thúc dẫn đường","straight":"Đi thẳng","left":"Rẽ trái","right":"Rẽ phải","up":"Lên tầng trên","down":"Xuống tầng dưới","arrived":"Đã đến","step":"Bước {x} / {y}","remaining":"Còn khoảng {m} m","in5right":"Rẽ phải sau 5 m","in5left":"Rẽ trái sau 5 m","next":"Chỉ dẫn tiếp theo","learn":"🧠 Học tự động","consent":"Tự động ghi chuyển động và hướng","learndesc":"Sau khi chọn điểm đến, hệ thống tự ghi số bước, khoảng cách ước tính và thay đổi hướng.","steps":"Bước","estdist":"Khoảng cách ước tính","turns":"Lượt rẽ đã phát hiện","waiting":"Đang chờ","learned":"Tuyến đã học","count":"Mẫu","avg":"Khoảng cách trung bình","save":"✅ Đã đến & lưu","discard":"Bỏ chuyến này","export":"⬇ Xuất dữ liệu","clear":"Xóa tất cả","foot":"Độ chính xác khác nhau theo địa điểm. Ayagawa dùng đồ thị hành lang; các tuyến khác là nguyên mẫu có thể cải thiện bằng học dữ liệu."},"id":{"name":"Bahasa Indonesia","app":"🧭 Navigasi Dalam Ruangan","sub":"50 fasilitas · 20 bahasa","official":"Peta / panduan resmi","fix":"📍 Koreksi lokasi","searchph":"Mau ke mana?","search":"Cari","notfound":"Tidak ada hasil.","correction":"Koreksi lokasi","current":"Lokasi saat ini","heading":"Arah","accuracy":"Akurasi","compass":"🧭 Kompas","motion":"👣 Langkah","gps":"📡 Akurasi GPS","demo":"Maju 5 m (demo)","autowalk":"▶ Jalan otomatis","reroute":"🔄 Rute ulang","stop":"Akhiri navigasi","straight":"Jalan lurus","left":"Belok kiri","right":"Belok kanan","up":"Naik satu lantai","down":"Turun satu lantai","arrived":"Tiba","step":"Langkah {x} / {y}","remaining":"Sisa sekitar {m} m","in5right":"Belok kanan dalam 5 m","in5left":"Belok kiri dalam 5 m","next":"Petunjuk berikutnya","learn":"🧠 Pembelajaran otomatis","consent":"Rekam gerakan dan arah secara otomatis","learndesc":"Setelah memilih tujuan, langkah, jarak perkiraan, dan perubahan arah direkam otomatis.","steps":"Langkah","estdist":"Jarak perkiraan","turns":"Belokan terdeteksi","waiting":"Menunggu","learned":"Rute dipelajari","count":"Sampel","avg":"Jarak rata-rata","save":"✅ Tiba & simpan","discard":"Buang perjalanan","export":"⬇ Ekspor data","clear":"Hapus semua","foot":"Akurasi berbeda tiap fasilitas. Ayagawa memakai grafik koridor; rute lain masih prototipe yang dapat diperbaiki melalui pembelajaran."},"ms":{"name":"Bahasa Melayu","app":"🧭 Navigasi Dalam Bangunan","sub":"50 kemudahan · 20 bahasa","official":"Peta / panduan rasmi","fix":"📍 Betulkan lokasi","searchph":"Anda mahu pergi ke mana?","search":"Cari","notfound":"Tiada hasil ditemui.","correction":"Pembetulan lokasi","current":"Lokasi semasa","heading":"Arah","accuracy":"Ketepatan","compass":"🧭 Kompas","motion":"👣 Langkah","gps":"📡 Ketepatan GPS","demo":"Bergerak 5 m (demo)","autowalk":"▶ Jalan automatik","reroute":"🔄 Kira semula","stop":"Tamat navigasi","straight":"Teruskan lurus","left":"Belok kiri","right":"Belok kanan","up":"Naik satu tingkat","down":"Turun satu tingkat","arrived":"Tiba","step":"Langkah {x} / {y}","remaining":"Baki kira-kira {m} m","in5right":"Belok kanan dalam 5 m","in5left":"Belok kiri dalam 5 m","next":"Arahan seterusnya","learn":"🧠 Pembelajaran automatik","consent":"Rakam gerakan dan arah secara automatik","learndesc":"Selepas memilih destinasi, langkah, jarak anggaran dan perubahan arah direkod secara automatik.","steps":"Langkah","estdist":"Jarak anggaran","turns":"Belokan dikesan","waiting":"Menunggu","learned":"Laluan dipelajari","count":"Sampel","avg":"Jarak purata","save":"✅ Tiba & simpan","discard":"Buang perjalanan","export":"⬇ Eksport data","clear":"Padam semua","foot":"Ketepatan berbeza mengikut kemudahan. Ayagawa menggunakan graf koridor; laluan lain ialah prototaip yang boleh diperbaiki melalui pembelajaran."},"fil":{"name":"Filipino","app":"🧭 Indoor Navigation","sub":"50 pasilidad · 20 wika","official":"Opisyal na mapa / gabay","fix":"📍 Ayusin ang lokasyon","searchph":"Saan mo gustong pumunta?","search":"Hanapin","notfound":"Walang nahanap.","correction":"Pagwawasto ng lokasyon","current":"Kasalukuyang lokasyon","heading":"Direksyon","accuracy":"Katumpakan","compass":"🧭 Compass","motion":"👣 Hakbang","gps":"📡 GPS accuracy","demo":"Lumakad ng 5 m (demo)","autowalk":"▶ Auto walk","reroute":"🔄 Bagong ruta","stop":"Tapusin ang navigation","straight":"Dumiretso","left":"Kumaliwa","right":"Kumanan","up":"Umakyat ng isang palapag","down":"Bumaba ng isang palapag","arrived":"Nakarating na","step":"Hakbang {x} / {y}","remaining":"Humigit-kumulang {m} m pa","in5right":"Kumanan pagkalipas ng 5 m","in5left":"Kumaliwa pagkalipas ng 5 m","next":"Susunod na tagubilin","learn":"🧠 Auto learning","consent":"Awtomatikong i-record ang galaw at direksyon","learndesc":"Kapag pumili ng destinasyon, awtomatikong itinatala ang hakbang, tinatayang distansya at pagbabago ng direksyon.","steps":"Hakbang","estdist":"Tinatayang distansya","turns":"Natukoy na liko","waiting":"Naghihintay","learned":"Natutunang ruta","count":"Sample","avg":"Average distance","save":"✅ Dumating at i-save","discard":"Itapon ang biyahe","export":"⬇ I-export ang data","clear":"Burahin lahat","foot":"Nag-iiba ang katumpakan bawat pasilidad. Gumagamit ang Ayagawa ng corridor graph; ang iba ay prototype routes na gumagaling sa pagkatuto."},"hi":{"name":"हिन्दी","app":"🧭 इनडोर नेविगेशन","sub":"50 स्थान · 20 भाषाएँ","official":"आधिकारिक नक्शा / गाइड","fix":"📍 वर्तमान स्थान ठीक करें","searchph":"आप कहाँ जाना चाहते हैं?","search":"खोजें","notfound":"कोई परिणाम नहीं मिला।","correction":"स्थान सुधार","current":"वर्तमान स्थान","heading":"दिशा","accuracy":"सटीकता","compass":"🧭 कम्पास","motion":"👣 कदम","gps":"📡 GPS सटीकता","demo":"5 मीटर चलें (डेमो)","autowalk":"▶ ऑटो वॉक","reroute":"🔄 मार्ग फिर से बनाएं","stop":"नेविगेशन समाप्त","straight":"सीधे जाएँ","left":"बाएँ मुड़ें","right":"दाएँ मुड़ें","up":"ऊपरी मंज़िल पर जाएँ","down":"नीचे की मंज़िल पर जाएँ","arrived":"पहुँच गए","step":"चरण {x} / {y}","remaining":"लगभग {m} मीटर बाकी","in5right":"5 मीटर बाद दाएँ मुड़ें","in5left":"5 मीटर बाद बाएँ मुड़ें","next":"अगला निर्देश","learn":"🧠 ऑटो लर्निंग","consent":"चलने और दिशा सेंसर को अपने-आप रिकॉर्ड करें","learndesc":"गंतव्य चुनने के बाद कदम, अनुमानित दूरी और दिशा बदलाव अपने-आप रिकॉर्ड होते हैं।","steps":"कदम","estdist":"अनुमानित दूरी","turns":"पता चले मोड़","waiting":"प्रतीक्षा","learned":"सीखे गए मार्ग","count":"नमूने","avg":"औसत दूरी","save":"✅ पहुँचे और सेव करें","discard":"इस यात्रा को हटाएँ","export":"⬇ डेटा निर्यात","clear":"सब हटाएँ","foot":"हर स्थान की सटीकता अलग है। Ayagawa कॉरिडोर ग्राफ उपयोग करता है; अन्य मार्ग अभी सीखने वाले प्रोटोटाइप हैं।"},"ar":{"name":"العربية","app":"🧭 الملاحة داخل المباني","sub":"50 منشأة · 20 لغة","official":"الخريطة / الدليل الرسمي","fix":"📍 تصحيح الموقع الحالي","searchph":"إلى أين تريد الذهاب؟","search":"بحث","notfound":"لم يتم العثور على نتيجة.","correction":"تصحيح الموقع","current":"الموقع الحالي","heading":"الاتجاه","accuracy":"الدقة","compass":"🧭 البوصلة","motion":"👣 الخطوات","gps":"📡 دقة GPS","demo":"تحرك 5 م (تجريبي)","autowalk":"▶ مشي تلقائي","reroute":"🔄 إعادة المسار","stop":"إنهاء الملاحة","straight":"تابع للأمام","left":"انعطف يسارًا","right":"انعطف يمينًا","up":"اصعد إلى الطابق الأعلى","down":"انزل إلى الطابق الأسفل","arrived":"وصلت","step":"الخطوة {x} / {y}","remaining":"متبقي حوالي {m} م","in5right":"انعطف يمينًا بعد 5 م","in5left":"انعطف يسارًا بعد 5 م","next":"التوجيه التالي","learn":"🧠 التعلم التلقائي","consent":"تسجيل الحركة والاتجاه تلقائيًا","learndesc":"بعد اختيار الوجهة يتم تسجيل الخطوات والمسافة المقدرة وتغيرات الاتجاه تلقائيًا.","steps":"الخطوات","estdist":"المسافة المقدرة","turns":"الانعطافات المكتشفة","waiting":"انتظار","learned":"المسارات المتعلمة","count":"عينات","avg":"متوسط المسافة","save":"✅ وصلت وحفظ","discard":"تجاهل الرحلة","export":"⬇ تصدير البيانات","clear":"حذف الكل","foot":"تختلف دقة المسار حسب المنشأة. يستخدم Ayagawa شبكة ممرات، بينما المسارات الأخرى نماذج أولية تتحسن بالتعلم."},"ru":{"name":"Русский","app":"🧭 Навигация внутри зданий","sub":"50 объектов · 20 языков","official":"Официальная карта / схема","fix":"📍 Уточнить местоположение","searchph":"Куда вы хотите пойти?","search":"Поиск","notfound":"Ничего не найдено.","correction":"Уточнение позиции","current":"Текущее место","heading":"Направление","accuracy":"Точность","compass":"🧭 Компас","motion":"👣 Шаги","gps":"📡 Точность GPS","demo":"Пройти 5 м (демо)","autowalk":"▶ Автоходьба","reroute":"🔄 Перестроить","stop":"Завершить навигацию","straight":"Идите прямо","left":"Поверните налево","right":"Поверните направо","up":"Поднимитесь на этаж выше","down":"Спуститесь на этаж ниже","arrived":"Прибыли","step":"Шаг {x} / {y}","remaining":"Осталось около {m} м","in5right":"Через 5 м поверните направо","in5left":"Через 5 м поверните налево","next":"Следующая инструкция","learn":"🧠 Автообучение","consent":"Автоматически записывать движение и направление","learndesc":"После выбора цели шаги, примерное расстояние и изменения направления записываются автоматически.","steps":"Шаги","estdist":"Примерное расстояние","turns":"Обнаруженные повороты","waiting":"Ожидание","learned":"Изученные маршруты","count":"Образцы","avg":"Среднее расстояние","save":"✅ Прибыл и сохранить","discard":"Отменить поездку","export":"⬇ Экспорт данных","clear":"Удалить всё","foot":"Точность зависит от объекта. Ayagawa использует граф коридоров; остальные маршруты — обучаемые прототипы."},"tr":{"name":"Türkçe","app":"🧭 İç Mekân Navigasyonu","sub":"50 tesis · 20 dil","official":"Resmî harita / rehber","fix":"📍 Konumu düzelt","searchph":"Nereye gitmek istiyorsunuz?","search":"Ara","notfound":"Sonuç bulunamadı.","correction":"Konum düzeltme","current":"Mevcut konum","heading":"Yön","accuracy":"Doğruluk","compass":"🧭 Pusula","motion":"👣 Adım","gps":"📡 GPS doğruluğu","demo":"5 m ilerle (demo)","autowalk":"▶ Otomatik yürüme","reroute":"🔄 Rotayı yenile","stop":"Navigasyonu bitir","straight":"Düz devam et","left":"Sola dön","right":"Sağa dön","up":"Bir üst kata çık","down":"Bir alt kata in","arrived":"Vardınız","step":"Adım {x} / {y}","remaining":"Yaklaşık {m} m kaldı","in5right":"5 m sonra sağa dön","in5left":"5 m sonra sola dön","next":"Sonraki yönlendirme","learn":"🧠 Otomatik öğrenme","consent":"Hareket ve yönü otomatik kaydet","learndesc":"Hedef seçildikten sonra adımlar, tahmini mesafe ve yön değişiklikleri otomatik kaydedilir.","steps":"Adım","estdist":"Tahmini mesafe","turns":"Algılanan dönüşler","waiting":"Bekliyor","learned":"Öğrenilen rotalar","count":"Örnek","avg":"Ortalama mesafe","save":"✅ Vardım ve kaydet","discard":"Bu yolculuğu sil","export":"⬇ Veriyi dışa aktar","clear":"Tümünü sil","foot":"Rota doğruluğu tesise göre değişir. Ayagawa koridor grafiği kullanır; diğer rotalar öğrenmeyle gelişen prototiplerdir."},"nl":{"name":"Nederlands","app":"🧭 Indoor navigatie","sub":"50 locaties · 20 talen","official":"Officiële kaart / gids","fix":"📍 Locatie corrigeren","searchph":"Waar wil je naartoe?","search":"Zoeken","notfound":"Geen resultaat gevonden.","correction":"Locatiecorrectie","current":"Huidige locatie","heading":"Richting","accuracy":"Nauwkeurigheid","compass":"🧭 Kompas","motion":"👣 Stappen","gps":"📡 GPS-nauwkeurigheid","demo":"5 m lopen (demo)","autowalk":"▶ Automatisch lopen","reroute":"🔄 Route opnieuw","stop":"Navigatie stoppen","straight":"Ga rechtdoor","left":"Sla linksaf","right":"Sla rechtsaf","up":"Ga één verdieping omhoog","down":"Ga één verdieping omlaag","arrived":"Aangekomen","step":"Stap {x} / {y}","remaining":"Nog ongeveer {m} m","in5right":"Over 5 m rechtsaf","in5left":"Over 5 m linksaf","next":"Volgende aanwijzing","learn":"🧠 Automatisch leren","consent":"Beweging en richting automatisch opnemen","learndesc":"Na het kiezen van een bestemming worden stappen, geschatte afstand en richtingsveranderingen automatisch opgenomen.","steps":"Stappen","estdist":"Geschatte afstand","turns":"Gedetecteerde bochten","waiting":"Wachten","learned":"Geleerde routes","count":"Metingen","avg":"Gemiddelde afstand","save":"✅ Aangekomen & opslaan","discard":"Deze rit wissen","export":"⬇ Gegevens exporteren","clear":"Alles verwijderen","foot":"De nauwkeurigheid verschilt per locatie. Ayagawa gebruikt een gangennetwerk; andere routes zijn prototypes die door leren kunnen verbeteren."}};
+const I18N={"ja":{"name":"日本語","app":"🧭 館内ナビ","sub":"50施設・20言語対応","official":"公式マップ/案内","fix":"📍 現在地を補正","searchph":"行きたい場所を入力","search":"検索","notfound":"見つかりませんでした。","correction":"現在地の補正","current":"現在地","heading":"向き","accuracy":"位置精度","compass":"🧭 方位","motion":"👣 歩数","gps":"📡 GPS精度","demo":"5m進む（デモ）","autowalk":"▶ 自動歩行","reroute":"🔄 再ルート","stop":"案内終了","straight":"まっすぐ進む","left":"左へ曲がる","right":"右へ曲がる","up":"上の階へ移動","down":"下の階へ移動","arrived":"到着","step":"案内 {x} / {y}","remaining":"残り 約{m}m","in5right":"あと5mで右です","in5left":"あと5mで左です","next":"次の案内へ","learn":"🧠 自動学習モード","consent":"歩行・方位センサーで自動記録する","learndesc":"目的地を選んで案内を開始すると、歩数・推定距離・向きの変化を自動記録します。左右の手入力は不要です。","steps":"歩数","estdist":"推定距離","turns":"自動検出ターン","waiting":"待機中","learned":"学習済みルート","count":"回数","avg":"平均距離","save":"✅ 到着して保存","discard":"今回を破棄","export":"⬇ データを書き出す","clear":"全削除","foot":"施設によってルート精度が異なります。距離は公式マップの概算値と実際の利用データから自動調整されます。"},"en":{"name":"English","app":"🧭 Indoor Navigation","sub":"50 facilities · 20 languages","official":"Official map / guide","fix":"📍 Correct current location","searchph":"Where do you want to go?","search":"Search","notfound":"No result found.","correction":"Location correction","current":"Current location","heading":"Heading","accuracy":"Accuracy","compass":"🧭 Compass","motion":"👣 Steps","gps":"📡 GPS accuracy","demo":"Move 5 m (demo)","autowalk":"▶ Auto walk","reroute":"🔄 Reroute","stop":"End navigation","straight":"Go straight","left":"Turn left","right":"Turn right","up":"Go to the floor above","down":"Go to the floor below","arrived":"Arrived","step":"Step {x} / {y}","remaining":"About {m} m remaining","in5right":"Turn right in 5 m","in5left":"Turn left in 5 m","next":"Next instruction","learn":"🧠 Auto learning","consent":"Automatically record motion and heading sensors","learndesc":"After you choose a destination, steps, estimated distance and direction changes are recorded automatically. No left/right input is needed.","steps":"Steps","estdist":"Estimated distance","turns":"Detected turns","waiting":"Waiting","learned":"Learned routes","count":"Samples","avg":"Average distance","save":"✅ Arrived & save","discard":"Discard this trip","export":"⬇ Export data","clear":"Delete all","foot":"Route accuracy varies by facility. Distances are adjusted automatically using map estimates and real usage data."},"zh-CN":{"name":"简体中文","app":"🧭 室内导航","sub":"50个设施 · 20种语言","official":"官方地图 / 指南","fix":"📍 校正当前位置","searchph":"输入目的地","search":"搜索","notfound":"未找到结果。","correction":"位置校正","current":"当前位置","heading":"方向","accuracy":"定位精度","compass":"🧭 指南针","motion":"👣 步数","gps":"📡 GPS精度","demo":"前进5米（演示）","autowalk":"▶ 自动行走","reroute":"🔄 重新规划","stop":"结束导航","straight":"直行","left":"左转","right":"右转","up":"前往上一层","down":"前往下一层","arrived":"已到达","step":"导航 {x} / {y}","remaining":"剩余约 {m} 米","in5right":"5米后右转","in5left":"5米后左转","next":"下一步","learn":"🧠 自动学习模式","consent":"自动记录步行和方向传感器","learndesc":"选择目的地后，自动记录步数、估算距离和方向变化，无需手动输入左右转。","steps":"步数","estdist":"估算距离","turns":"检测到的转弯","waiting":"等待中","learned":"已学习路线","count":"次数","avg":"平均距离","save":"✅ 到达并保存","discard":"放弃本次","export":"⬇ 导出数据","clear":"全部删除","foot":"不同设施的路线精度不同。绫川使用通道图计算，其他设施目前为可通过学习改进的试验路线。"},"zh-TW":{"name":"繁體中文","app":"🧭 室內導航","sub":"50個設施 · 20種語言","official":"官方地圖 / 指南","fix":"📍 校正目前位置","searchph":"輸入目的地","search":"搜尋","notfound":"找不到結果。","correction":"位置校正","current":"目前位置","heading":"方向","accuracy":"定位精度","compass":"🧭 指南針","motion":"👣 步數","gps":"📡 GPS精度","demo":"前進5公尺（示範）","autowalk":"▶ 自動行走","reroute":"🔄 重新規劃","stop":"結束導航","straight":"直走","left":"向左轉","right":"向右轉","up":"前往上一層","down":"前往下一層","arrived":"已抵達","step":"導航 {x} / {y}","remaining":"剩餘約 {m} 公尺","in5right":"5公尺後右轉","in5left":"5公尺後左轉","next":"下一步","learn":"🧠 自動學習模式","consent":"自動記錄步行與方向感測器","learndesc":"選擇目的地後，自動記錄步數、估算距離與方向變化，不需手動輸入左右轉。","steps":"步數","estdist":"估算距離","turns":"偵測轉彎","waiting":"等待中","learned":"已學習路線","count":"次數","avg":"平均距離","save":"✅ 抵達並儲存","discard":"放棄本次","export":"⬇ 匯出資料","clear":"全部刪除","foot":"各設施的路線精度不同。綾川使用通道圖計算，其他設施目前為可透過學習改善的試作路線。"},"ko":{"name":"한국어","app":"🧭 실내 내비게이션","sub":"50개 시설 · 20개 언어","official":"공식 지도 / 안내","fix":"📍 현재 위치 보정","searchph":"목적지를 입력하세요","search":"검색","notfound":"결과를 찾지 못했습니다.","correction":"위치 보정","current":"현재 위치","heading":"방향","accuracy":"위치 정확도","compass":"🧭 나침반","motion":"👣 걸음 수","gps":"📡 GPS 정확도","demo":"5m 이동(데모)","autowalk":"▶ 자동 이동","reroute":"🔄 경로 재탐색","stop":"안내 종료","straight":"직진","left":"좌회전","right":"우회전","up":"위층으로 이동","down":"아래층으로 이동","arrived":"도착","step":"안내 {x} / {y}","remaining":"약 {m}m 남음","in5right":"5m 후 우회전","in5left":"5m 후 좌회전","next":"다음 안내","learn":"🧠 자동 학습 모드","consent":"걸음 및 방향 센서를 자동 기록","learndesc":"목적지를 선택하면 걸음 수, 추정 거리, 방향 변화를 자동 기록합니다. 좌우 입력은 필요 없습니다.","steps":"걸음 수","estdist":"추정 거리","turns":"감지된 회전","waiting":"대기 중","learned":"학습된 경로","count":"횟수","avg":"평균 거리","save":"✅ 도착 및 저장","discard":"이번 기록 삭제","export":"⬇ 데이터 내보내기","clear":"전체 삭제","foot":"시설마다 경로 정확도가 다릅니다. 아야가와는 통로 그래프를 사용하며 다른 시설은 학습으로 개선되는 시험 경로입니다."},"es":{"name":"Español","app":"🧭 Navegación interior","sub":"50 instalaciones · 20 idiomas","official":"Mapa / guía oficial","fix":"📍 Corregir ubicación","searchph":"¿A dónde quieres ir?","search":"Buscar","notfound":"No se encontraron resultados.","correction":"Corrección de ubicación","current":"Ubicación actual","heading":"Dirección","accuracy":"Precisión","compass":"🧭 Brújula","motion":"👣 Pasos","gps":"📡 Precisión GPS","demo":"Avanzar 5 m (demo)","autowalk":"▶ Caminata automática","reroute":"🔄 Recalcular","stop":"Finalizar navegación","straight":"Sigue recto","left":"Gira a la izquierda","right":"Gira a la derecha","up":"Sube un piso","down":"Baja un piso","arrived":"Has llegado","step":"Paso {x} / {y}","remaining":"Quedan aprox. {m} m","in5right":"Gira a la derecha en 5 m","in5left":"Gira a la izquierda en 5 m","next":"Siguiente indicación","learn":"🧠 Aprendizaje automático","consent":"Registrar automáticamente movimiento y dirección","learndesc":"Al elegir un destino se registran automáticamente pasos, distancia estimada y cambios de dirección.","steps":"Pasos","estdist":"Distancia estimada","turns":"Giros detectados","waiting":"En espera","learned":"Rutas aprendidas","count":"Muestras","avg":"Distancia media","save":"✅ Llegué y guardar","discard":"Descartar recorrido","export":"⬇ Exportar datos","clear":"Borrar todo","foot":"La precisión varía según la instalación. Ayagawa usa un grafo de pasillos; las demás rutas son prototipos que mejoran con aprendizaje."},"fr":{"name":"Français","app":"🧭 Navigation intérieure","sub":"50 sites · 20 langues","official":"Plan / guide officiel","fix":"📍 Corriger la position","searchph":"Où voulez-vous aller ?","search":"Rechercher","notfound":"Aucun résultat.","correction":"Correction de position","current":"Position actuelle","heading":"Direction","accuracy":"Précision","compass":"🧭 Boussole","motion":"👣 Pas","gps":"📡 Précision GPS","demo":"Avancer de 5 m (démo)","autowalk":"▶ Marche auto","reroute":"🔄 Recalculer","stop":"Fin de navigation","straight":"Continuez tout droit","left":"Tournez à gauche","right":"Tournez à droite","up":"Montez à l’étage supérieur","down":"Descendez à l’étage inférieur","arrived":"Arrivé","step":"Étape {x} / {y}","remaining":"Environ {m} m restants","in5right":"Tournez à droite dans 5 m","in5left":"Tournez à gauche dans 5 m","next":"Instruction suivante","learn":"🧠 Apprentissage automatique","consent":"Enregistrer automatiquement mouvement et orientation","learndesc":"Après choix de la destination, les pas, la distance estimée et les changements de direction sont enregistrés automatiquement.","steps":"Pas","estdist":"Distance estimée","turns":"Virages détectés","waiting":"En attente","learned":"Itinéraires appris","count":"Échantillons","avg":"Distance moyenne","save":"✅ Arrivé et enregistrer","discard":"Ignorer ce trajet","export":"⬇ Exporter les données","clear":"Tout supprimer","foot":"La précision varie selon le site. Ayagawa utilise un graphe de couloirs ; les autres itinéraires sont des prototypes améliorables par apprentissage."},"de":{"name":"Deutsch","app":"🧭 Indoor-Navigation","sub":"50 Einrichtungen · 20 Sprachen","official":"Offizieller Plan / Guide","fix":"📍 Standort korrigieren","searchph":"Ziel eingeben","search":"Suchen","notfound":"Kein Ergebnis gefunden.","correction":"Standortkorrektur","current":"Aktueller Standort","heading":"Richtung","accuracy":"Genauigkeit","compass":"🧭 Kompass","motion":"👣 Schritte","gps":"📡 GPS-Genauigkeit","demo":"5 m gehen (Demo)","autowalk":"▶ Automatisch gehen","reroute":"🔄 Neu berechnen","stop":"Navigation beenden","straight":"Geradeaus","left":"Links abbiegen","right":"Rechts abbiegen","up":"Eine Etage nach oben","down":"Eine Etage nach unten","arrived":"Angekommen","step":"Schritt {x} / {y}","remaining":"Noch ca. {m} m","in5right":"In 5 m rechts abbiegen","in5left":"In 5 m links abbiegen","next":"Nächste Anweisung","learn":"🧠 Automatisches Lernen","consent":"Bewegung und Richtung automatisch erfassen","learndesc":"Nach Auswahl des Ziels werden Schritte, geschätzte Distanz und Richtungsänderungen automatisch aufgezeichnet.","steps":"Schritte","estdist":"Geschätzte Distanz","turns":"Erkannte Abbiegungen","waiting":"Warten","learned":"Gelernte Routen","count":"Messungen","avg":"Durchschnittsdistanz","save":"✅ Angekommen & speichern","discard":"Fahrt verwerfen","export":"⬇ Daten exportieren","clear":"Alles löschen","foot":"Die Routengenauigkeit variiert. Ayagawa nutzt ein Korridornetz; andere Routen sind lernfähige Prototypen."},"it":{"name":"Italiano","app":"🧭 Navigazione indoor","sub":"50 strutture · 20 lingue","official":"Mappa / guida ufficiale","fix":"📍 Correggi posizione","searchph":"Dove vuoi andare?","search":"Cerca","notfound":"Nessun risultato.","correction":"Correzione posizione","current":"Posizione attuale","heading":"Direzione","accuracy":"Precisione","compass":"🧭 Bussola","motion":"👣 Passi","gps":"📡 Precisione GPS","demo":"Avanza 5 m (demo)","autowalk":"▶ Cammino automatico","reroute":"🔄 Ricalcola","stop":"Termina navigazione","straight":"Vai dritto","left":"Gira a sinistra","right":"Gira a destra","up":"Sali al piano superiore","down":"Scendi al piano inferiore","arrived":"Arrivato","step":"Passo {x} / {y}","remaining":"Circa {m} m rimanenti","in5right":"Gira a destra tra 5 m","in5left":"Gira a sinistra tra 5 m","next":"Prossima indicazione","learn":"🧠 Apprendimento automatico","consent":"Registra automaticamente movimento e direzione","learndesc":"Dopo aver scelto la destinazione, passi, distanza stimata e cambi di direzione vengono registrati automaticamente.","steps":"Passi","estdist":"Distanza stimata","turns":"Svolte rilevate","waiting":"In attesa","learned":"Percorsi appresi","count":"Campioni","avg":"Distanza media","save":"✅ Arrivato e salva","discard":"Scarta percorso","export":"⬇ Esporta dati","clear":"Elimina tutto","foot":"La precisione varia per struttura. Ayagawa usa una rete di corridoi; le altre rotte sono prototipi migliorabili con l’apprendimento."},"pt":{"name":"Português","app":"🧭 Navegação interna","sub":"50 locais · 20 idiomas","official":"Mapa / guia oficial","fix":"📍 Corrigir localização","searchph":"Para onde você quer ir?","search":"Buscar","notfound":"Nenhum resultado encontrado.","correction":"Correção de localização","current":"Localização atual","heading":"Direção","accuracy":"Precisão","compass":"🧭 Bússola","motion":"👣 Passos","gps":"📡 Precisão GPS","demo":"Avançar 5 m (demo)","autowalk":"▶ Caminhada automática","reroute":"🔄 Recalcular","stop":"Encerrar navegação","straight":"Siga em frente","left":"Vire à esquerda","right":"Vire à direita","up":"Suba um andar","down":"Desça um andar","arrived":"Chegou","step":"Passo {x} / {y}","remaining":"Cerca de {m} m restantes","in5right":"Vire à direita em 5 m","in5left":"Vire à esquerda em 5 m","next":"Próxima instrução","learn":"🧠 Aprendizado automático","consent":"Registrar movimento e direção automaticamente","learndesc":"Ao escolher um destino, passos, distância estimada e mudanças de direção são registrados automaticamente.","steps":"Passos","estdist":"Distância estimada","turns":"Curvas detectadas","waiting":"Aguardando","learned":"Rotas aprendidas","count":"Amostras","avg":"Distância média","save":"✅ Cheguei e salvar","discard":"Descartar trajeto","export":"⬇ Exportar dados","clear":"Apagar tudo","foot":"A precisão varia por local. Ayagawa usa um grafo de corredores; as demais rotas são protótipos que podem melhorar com aprendizado."},"th":{"name":"ไทย","app":"🧭 ระบบนำทางภายในอาคาร","sub":"50 สถานที่ · 20 ภาษา","official":"แผนที่ / คู่มือทางการ","fix":"📍 ปรับตำแหน่งปัจจุบัน","searchph":"ต้องการไปที่ไหน?","search":"ค้นหา","notfound":"ไม่พบผลลัพธ์","correction":"ปรับตำแหน่ง","current":"ตำแหน่งปัจจุบัน","heading":"ทิศทาง","accuracy":"ความแม่นยำ","compass":"🧭 เข็มทิศ","motion":"👣 จำนวนก้าว","gps":"📡 ความแม่นยำ GPS","demo":"เดิน 5 ม. (สาธิต)","autowalk":"▶ เดินอัตโนมัติ","reroute":"🔄 คำนวณเส้นทางใหม่","stop":"จบการนำทาง","straight":"ตรงไป","left":"เลี้ยวซ้าย","right":"เลี้ยวขวา","up":"ขึ้นชั้นบน","down":"ลงชั้นล่าง","arrived":"ถึงแล้ว","step":"ขั้นตอน {x} / {y}","remaining":"เหลือประมาณ {m} ม.","in5right":"อีก 5 ม. เลี้ยวขวา","in5left":"อีก 5 ม. เลี้ยวซ้าย","next":"คำแนะนำถัดไป","learn":"🧠 โหมดเรียนรู้อัตโนมัติ","consent":"บันทึกการเคลื่อนไหวและทิศทางอัตโนมัติ","learndesc":"เมื่อเลือกจุดหมาย ระบบจะบันทึกจำนวนก้าว ระยะทางโดยประมาณ และการเปลี่ยนทิศทางอัตโนมัติ","steps":"ก้าว","estdist":"ระยะทางประมาณ","turns":"การเลี้ยวที่ตรวจพบ","waiting":"รอ","learned":"เส้นทางที่เรียนรู้","count":"จำนวนครั้ง","avg":"ระยะทางเฉลี่ย","save":"✅ ถึงแล้วและบันทึก","discard":"ทิ้งการเดินทางนี้","export":"⬇ ส่งออกข้อมูล","clear":"ลบทั้งหมด","foot":"ความแม่นยำแตกต่างกันตามสถานที่ Ayagawa ใช้กราฟทางเดิน ส่วนสถานที่อื่นเป็นเส้นทางต้นแบบที่ปรับปรุงได้ด้วยการเรียนรู้"},"vi":{"name":"Tiếng Việt","app":"🧭 Dẫn đường trong nhà","sub":"50 địa điểm · 20 ngôn ngữ","official":"Bản đồ / hướng dẫn chính thức","fix":"📍 Hiệu chỉnh vị trí","searchph":"Bạn muốn đi đâu?","search":"Tìm kiếm","notfound":"Không tìm thấy kết quả.","correction":"Hiệu chỉnh vị trí","current":"Vị trí hiện tại","heading":"Hướng","accuracy":"Độ chính xác","compass":"🧭 La bàn","motion":"👣 Bước chân","gps":"📡 Độ chính xác GPS","demo":"Đi 5 m (demo)","autowalk":"▶ Đi tự động","reroute":"🔄 Tính lại tuyến","stop":"Kết thúc dẫn đường","straight":"Đi thẳng","left":"Rẽ trái","right":"Rẽ phải","up":"Lên tầng trên","down":"Xuống tầng dưới","arrived":"Đã đến","step":"Bước {x} / {y}","remaining":"Còn khoảng {m} m","in5right":"Rẽ phải sau 5 m","in5left":"Rẽ trái sau 5 m","next":"Chỉ dẫn tiếp theo","learn":"🧠 Học tự động","consent":"Tự động ghi chuyển động và hướng","learndesc":"Sau khi chọn điểm đến, hệ thống tự ghi số bước, khoảng cách ước tính và thay đổi hướng.","steps":"Bước","estdist":"Khoảng cách ước tính","turns":"Lượt rẽ đã phát hiện","waiting":"Đang chờ","learned":"Tuyến đã học","count":"Mẫu","avg":"Khoảng cách trung bình","save":"✅ Đã đến & lưu","discard":"Bỏ chuyến này","export":"⬇ Xuất dữ liệu","clear":"Xóa tất cả","foot":"Độ chính xác khác nhau theo địa điểm. Ayagawa dùng đồ thị hành lang; các tuyến khác là nguyên mẫu có thể cải thiện bằng học dữ liệu."},"id":{"name":"Bahasa Indonesia","app":"🧭 Navigasi Dalam Ruangan","sub":"50 fasilitas · 20 bahasa","official":"Peta / panduan resmi","fix":"📍 Koreksi lokasi","searchph":"Mau ke mana?","search":"Cari","notfound":"Tidak ada hasil.","correction":"Koreksi lokasi","current":"Lokasi saat ini","heading":"Arah","accuracy":"Akurasi","compass":"🧭 Kompas","motion":"👣 Langkah","gps":"📡 Akurasi GPS","demo":"Maju 5 m (demo)","autowalk":"▶ Jalan otomatis","reroute":"🔄 Rute ulang","stop":"Akhiri navigasi","straight":"Jalan lurus","left":"Belok kiri","right":"Belok kanan","up":"Naik satu lantai","down":"Turun satu lantai","arrived":"Tiba","step":"Langkah {x} / {y}","remaining":"Sisa sekitar {m} m","in5right":"Belok kanan dalam 5 m","in5left":"Belok kiri dalam 5 m","next":"Petunjuk berikutnya","learn":"🧠 Pembelajaran otomatis","consent":"Rekam gerakan dan arah secara otomatis","learndesc":"Setelah memilih tujuan, langkah, jarak perkiraan, dan perubahan arah direkam otomatis.","steps":"Langkah","estdist":"Jarak perkiraan","turns":"Belokan terdeteksi","waiting":"Menunggu","learned":"Rute dipelajari","count":"Sampel","avg":"Jarak rata-rata","save":"✅ Tiba & simpan","discard":"Buang perjalanan","export":"⬇ Ekspor data","clear":"Hapus semua","foot":"Akurasi berbeda tiap fasilitas. Ayagawa memakai grafik koridor; rute lain masih prototipe yang dapat diperbaiki melalui pembelajaran."},"ms":{"name":"Bahasa Melayu","app":"🧭 Navigasi Dalam Bangunan","sub":"50 kemudahan · 20 bahasa","official":"Peta / panduan rasmi","fix":"📍 Betulkan lokasi","searchph":"Anda mahu pergi ke mana?","search":"Cari","notfound":"Tiada hasil ditemui.","correction":"Pembetulan lokasi","current":"Lokasi semasa","heading":"Arah","accuracy":"Ketepatan","compass":"🧭 Kompas","motion":"👣 Langkah","gps":"📡 Ketepatan GPS","demo":"Bergerak 5 m (demo)","autowalk":"▶ Jalan automatik","reroute":"🔄 Kira semula","stop":"Tamat navigasi","straight":"Teruskan lurus","left":"Belok kiri","right":"Belok kanan","up":"Naik satu tingkat","down":"Turun satu tingkat","arrived":"Tiba","step":"Langkah {x} / {y}","remaining":"Baki kira-kira {m} m","in5right":"Belok kanan dalam 5 m","in5left":"Belok kiri dalam 5 m","next":"Arahan seterusnya","learn":"🧠 Pembelajaran automatik","consent":"Rakam gerakan dan arah secara automatik","learndesc":"Selepas memilih destinasi, langkah, jarak anggaran dan perubahan arah direkod secara automatik.","steps":"Langkah","estdist":"Jarak anggaran","turns":"Belokan dikesan","waiting":"Menunggu","learned":"Laluan dipelajari","count":"Sampel","avg":"Jarak purata","save":"✅ Tiba & simpan","discard":"Buang perjalanan","export":"⬇ Eksport data","clear":"Padam semua","foot":"Ketepatan berbeza mengikut kemudahan. Ayagawa menggunakan graf koridor; laluan lain ialah prototaip yang boleh diperbaiki melalui pembelajaran."},"fil":{"name":"Filipino","app":"🧭 Indoor Navigation","sub":"50 pasilidad · 20 wika","official":"Opisyal na mapa / gabay","fix":"📍 Ayusin ang lokasyon","searchph":"Saan mo gustong pumunta?","search":"Hanapin","notfound":"Walang nahanap.","correction":"Pagwawasto ng lokasyon","current":"Kasalukuyang lokasyon","heading":"Direksyon","accuracy":"Katumpakan","compass":"🧭 Compass","motion":"👣 Hakbang","gps":"📡 GPS accuracy","demo":"Lumakad ng 5 m (demo)","autowalk":"▶ Auto walk","reroute":"🔄 Bagong ruta","stop":"Tapusin ang navigation","straight":"Dumiretso","left":"Kumaliwa","right":"Kumanan","up":"Umakyat ng isang palapag","down":"Bumaba ng isang palapag","arrived":"Nakarating na","step":"Hakbang {x} / {y}","remaining":"Humigit-kumulang {m} m pa","in5right":"Kumanan pagkalipas ng 5 m","in5left":"Kumaliwa pagkalipas ng 5 m","next":"Susunod na tagubilin","learn":"🧠 Auto learning","consent":"Awtomatikong i-record ang galaw at direksyon","learndesc":"Kapag pumili ng destinasyon, awtomatikong itinatala ang hakbang, tinatayang distansya at pagbabago ng direksyon.","steps":"Hakbang","estdist":"Tinatayang distansya","turns":"Natukoy na liko","waiting":"Naghihintay","learned":"Natutunang ruta","count":"Sample","avg":"Average distance","save":"✅ Dumating at i-save","discard":"Itapon ang biyahe","export":"⬇ I-export ang data","clear":"Burahin lahat","foot":"Nag-iiba ang katumpakan bawat pasilidad. Gumagamit ang Ayagawa ng corridor graph; ang iba ay prototype routes na gumagaling sa pagkatuto."},"hi":{"name":"हिन्दी","app":"🧭 इनडोर नेविगेशन","sub":"50 स्थान · 20 भाषाएँ","official":"आधिकारिक नक्शा / गाइड","fix":"📍 वर्तमान स्थान ठीक करें","searchph":"आप कहाँ जाना चाहते हैं?","search":"खोजें","notfound":"कोई परिणाम नहीं मिला।","correction":"स्थान सुधार","current":"वर्तमान स्थान","heading":"दिशा","accuracy":"सटीकता","compass":"🧭 कम्पास","motion":"👣 कदम","gps":"📡 GPS सटीकता","demo":"5 मीटर चलें (डेमो)","autowalk":"▶ ऑटो वॉक","reroute":"🔄 मार्ग फिर से बनाएं","stop":"नेविगेशन समाप्त","straight":"सीधे जाएँ","left":"बाएँ मुड़ें","right":"दाएँ मुड़ें","up":"ऊपरी मंज़िल पर जाएँ","down":"नीचे की मंज़िल पर जाएँ","arrived":"पहुँच गए","step":"चरण {x} / {y}","remaining":"लगभग {m} मीटर बाकी","in5right":"5 मीटर बाद दाएँ मुड़ें","in5left":"5 मीटर बाद बाएँ मुड़ें","next":"अगला निर्देश","learn":"🧠 ऑटो लर्निंग","consent":"चलने और दिशा सेंसर को अपने-आप रिकॉर्ड करें","learndesc":"गंतव्य चुनने के बाद कदम, अनुमानित दूरी और दिशा बदलाव अपने-आप रिकॉर्ड होते हैं।","steps":"कदम","estdist":"अनुमानित दूरी","turns":"पता चले मोड़","waiting":"प्रतीक्षा","learned":"सीखे गए मार्ग","count":"नमूने","avg":"औसत दूरी","save":"✅ पहुँचे और सेव करें","discard":"इस यात्रा को हटाएँ","export":"⬇ डेटा निर्यात","clear":"सब हटाएँ","foot":"हर स्थान की सटीकता अलग है। Ayagawa कॉरिडोर ग्राफ उपयोग करता है; अन्य मार्ग अभी सीखने वाले प्रोटोटाइप हैं।"},"ar":{"name":"العربية","app":"🧭 الملاحة داخل المباني","sub":"50 منشأة · 20 لغة","official":"الخريطة / الدليل الرسمي","fix":"📍 تصحيح الموقع الحالي","searchph":"إلى أين تريد الذهاب؟","search":"بحث","notfound":"لم يتم العثور على نتيجة.","correction":"تصحيح الموقع","current":"الموقع الحالي","heading":"الاتجاه","accuracy":"الدقة","compass":"🧭 البوصلة","motion":"👣 الخطوات","gps":"📡 دقة GPS","demo":"تحرك 5 م (تجريبي)","autowalk":"▶ مشي تلقائي","reroute":"🔄 إعادة المسار","stop":"إنهاء الملاحة","straight":"تابع للأمام","left":"انعطف يسارًا","right":"انعطف يمينًا","up":"اصعد إلى الطابق الأعلى","down":"انزل إلى الطابق الأسفل","arrived":"وصلت","step":"الخطوة {x} / {y}","remaining":"متبقي حوالي {m} م","in5right":"انعطف يمينًا بعد 5 م","in5left":"انعطف يسارًا بعد 5 م","next":"التوجيه التالي","learn":"🧠 التعلم التلقائي","consent":"تسجيل الحركة والاتجاه تلقائيًا","learndesc":"بعد اختيار الوجهة يتم تسجيل الخطوات والمسافة المقدرة وتغيرات الاتجاه تلقائيًا.","steps":"الخطوات","estdist":"المسافة المقدرة","turns":"الانعطافات المكتشفة","waiting":"انتظار","learned":"المسارات المتعلمة","count":"عينات","avg":"متوسط المسافة","save":"✅ وصلت وحفظ","discard":"تجاهل الرحلة","export":"⬇ تصدير البيانات","clear":"حذف الكل","foot":"تختلف دقة المسار حسب المنشأة. يستخدم Ayagawa شبكة ممرات، بينما المسارات الأخرى نماذج أولية تتحسن بالتعلم."},"ru":{"name":"Русский","app":"🧭 Навигация внутри зданий","sub":"50 объектов · 20 языков","official":"Официальная карта / схема","fix":"📍 Уточнить местоположение","searchph":"Куда вы хотите пойти?","search":"Поиск","notfound":"Ничего не найдено.","correction":"Уточнение позиции","current":"Текущее место","heading":"Направление","accuracy":"Точность","compass":"🧭 Компас","motion":"👣 Шаги","gps":"📡 Точность GPS","demo":"Пройти 5 м (демо)","autowalk":"▶ Автоходьба","reroute":"🔄 Перестроить","stop":"Завершить навигацию","straight":"Идите прямо","left":"Поверните налево","right":"Поверните направо","up":"Поднимитесь на этаж выше","down":"Спуститесь на этаж ниже","arrived":"Прибыли","step":"Шаг {x} / {y}","remaining":"Осталось около {m} м","in5right":"Через 5 м поверните направо","in5left":"Через 5 м поверните налево","next":"Следующая инструкция","learn":"🧠 Автообучение","consent":"Автоматически записывать движение и направление","learndesc":"После выбора цели шаги, примерное расстояние и изменения направления записываются автоматически.","steps":"Шаги","estdist":"Примерное расстояние","turns":"Обнаруженные повороты","waiting":"Ожидание","learned":"Изученные маршруты","count":"Образцы","avg":"Среднее расстояние","save":"✅ Прибыл и сохранить","discard":"Отменить поездку","export":"⬇ Экспорт данных","clear":"Удалить всё","foot":"Точность зависит от объекта. Ayagawa использует граф коридоров; остальные маршруты — обучаемые прототипы."},"tr":{"name":"Türkçe","app":"🧭 İç Mekân Navigasyonu","sub":"50 tesis · 20 dil","official":"Resmî harita / rehber","fix":"📍 Konumu düzelt","searchph":"Nereye gitmek istiyorsunuz?","search":"Ara","notfound":"Sonuç bulunamadı.","correction":"Konum düzeltme","current":"Mevcut konum","heading":"Yön","accuracy":"Doğruluk","compass":"🧭 Pusula","motion":"👣 Adım","gps":"📡 GPS doğruluğu","demo":"5 m ilerle (demo)","autowalk":"▶ Otomatik yürüme","reroute":"🔄 Rotayı yenile","stop":"Navigasyonu bitir","straight":"Düz devam et","left":"Sola dön","right":"Sağa dön","up":"Bir üst kata çık","down":"Bir alt kata in","arrived":"Vardınız","step":"Adım {x} / {y}","remaining":"Yaklaşık {m} m kaldı","in5right":"5 m sonra sağa dön","in5left":"5 m sonra sola dön","next":"Sonraki yönlendirme","learn":"🧠 Otomatik öğrenme","consent":"Hareket ve yönü otomatik kaydet","learndesc":"Hedef seçildikten sonra adımlar, tahmini mesafe ve yön değişiklikleri otomatik kaydedilir.","steps":"Adım","estdist":"Tahmini mesafe","turns":"Algılanan dönüşler","waiting":"Bekliyor","learned":"Öğrenilen rotalar","count":"Örnek","avg":"Ortalama mesafe","save":"✅ Vardım ve kaydet","discard":"Bu yolculuğu sil","export":"⬇ Veriyi dışa aktar","clear":"Tümünü sil","foot":"Rota doğruluğu tesise göre değişir. Ayagawa koridor grafiği kullanır; diğer rotalar öğrenmeyle gelişen prototiplerdir."},"nl":{"name":"Nederlands","app":"🧭 Indoor navigatie","sub":"50 locaties · 20 talen","official":"Officiële kaart / gids","fix":"📍 Locatie corrigeren","searchph":"Waar wil je naartoe?","search":"Zoeken","notfound":"Geen resultaat gevonden.","correction":"Locatiecorrectie","current":"Huidige locatie","heading":"Richting","accuracy":"Nauwkeurigheid","compass":"🧭 Kompas","motion":"👣 Stappen","gps":"📡 GPS-nauwkeurigheid","demo":"5 m lopen (demo)","autowalk":"▶ Automatisch lopen","reroute":"🔄 Route opnieuw","stop":"Navigatie stoppen","straight":"Ga rechtdoor","left":"Sla linksaf","right":"Sla rechtsaf","up":"Ga één verdieping omhoog","down":"Ga één verdieping omlaag","arrived":"Aangekomen","step":"Stap {x} / {y}","remaining":"Nog ongeveer {m} m","in5right":"Over 5 m rechtsaf","in5left":"Over 5 m linksaf","next":"Volgende aanwijzing","learn":"🧠 Automatisch leren","consent":"Beweging en richting automatisch opnemen","learndesc":"Na het kiezen van een bestemming worden stappen, geschatte afstand en richtingsveranderingen automatisch opgenomen.","steps":"Stappen","estdist":"Geschatte afstand","turns":"Gedetecteerde bochten","waiting":"Wachten","learned":"Geleerde routes","count":"Metingen","avg":"Gemiddelde afstand","save":"✅ Aangekomen & opslaan","discard":"Deze rit wissen","export":"⬇ Gegevens exporteren","clear":"Alles verwijderen","foot":"De nauwkeurigheid verschilt per locatie. Ayagawa gebruikt een gangennetwerk; andere routes zijn prototypes die door leren kunnen verbeteren."}};
 let appLang='ja';
 function T(k,vars={}){let s=(I18N[appLang]&&I18N[appLang][k])||I18N.ja[k]||k;Object.entries(vars).forEach(([a,b])=>s=s.replaceAll(`{${a}}`,b));return s}
 function setLanguage(l){appLang=I18N[l]?l:'ja';localStorage.setItem('indoorNavLangV1',appLang);document.documentElement.lang=appLang;document.documentElement.dir=appLang==='ar'?'rtl':'ltr';applyLanguage();if(selected)renderStep();}
@@ -293,256 +234,323 @@ function localizedInstruction(s){if(s.arrow==='●')return T('arrived');if(s.arr
 initLanguages();
 init();
 
-const LEARN_KEY="indoorNavAutoLearningV2";
-const CONSENT_KEY="indoorNavAutoConsentV1";
-let autoLearn=null, learnAutoTimer=null, lastPeak=0, motionReady=false, orientationReady=false;
-let stableHeading=null, lastTurnAt=0;
-
-function ldb(){try{return JSON.parse(localStorage.getItem(LEARN_KEY)||"{}")}catch(e){return{}}}
-function sdb(x){localStorage.setItem(LEARN_KEY,JSON.stringify(x))}
-function avg(v){return v?.length?v.reduce((a,b)=>a+(+b.meters||0),0)/v.length:0}
-function routeKey(){return `${currentFacility().name}::${currentAnchor||"不明"}::${selected?.name||"未選択"}`}
-
-function saveAutoConsent(){
-  localStorage.setItem(CONSENT_KEY,learnConsent.checked?"1":"0");
-  if(learnConsent.checked) prepareSensors();
-}
-function loadAutoConsent(){
-  learnConsent.checked=localStorage.getItem(CONSENT_KEY)==="1";
-  if(learnConsent.checked) prepareSensors();
-}
-async function prepareSensors(){
-  try{
-    if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
-      const p=await DeviceMotionEvent.requestPermission(); if(p!=="granted") throw 0;
-    }
-    if(!motionReady){
-      window.addEventListener("devicemotion",e=>{
-        if(!autoLearn)return;
-        const a=e.accelerationIncludingGravity;if(!a)return;
-        const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();
-        if(mag>12.2&&now-lastPeak>450){
-          lastPeak=now;autoLearn.steps++;autoLearn.meters=+(autoLearn.steps*0.72).toFixed(1);updateLearnUI();
-        }
-      },true); motionReady=true;
-    }
-  }catch(e){ learnStatus.textContent="歩行センサーを許可すると自動記録できます。"; }
-
-  try{
-    if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
-      const p=await DeviceOrientationEvent.requestPermission(); if(p!=="granted") throw 0;
-    }
-    if(!orientationReady){
-      window.addEventListener("deviceorientation",e=>{
-        if(!autoLearn||e.alpha==null)return;
-        const h=(360-e.alpha)%360;
-        if(stableHeading==null){stableHeading=h;return;}
-        const signed=(((h-stableHeading)+540)%360)-180;
-        const diff=Math.abs(signed),now=Date.now();
-        if(diff>=35&&autoLearn.steps-autoLearn.lastTurnStep>=2&&now-lastTurnAt>2200){
-          autoLearn.turns.push({dir:signed>0?"right":"left",step:autoLearn.steps});
-          autoLearn.lastTurnStep=autoLearn.steps;lastTurnAt=now;stableHeading=h;
-          learnStatus.textContent=`${signed>0?"右":"左"}への曲がりを自動検出`;
-          updateLearnUI();
-        }else if(diff<15){
-          stableHeading=(stableHeading*0.85+h*0.15)%360;
-        }
-      },true); orientationReady=true;
-    }
-  }catch(e){}
-}
-function startAutoLearning(){
-  if(!learnConsent?.checked||!selected)return;
-  if(autoLearn&&autoLearn.destination===selected.name)return;
-  autoLearn={startedAt:Date.now(),facility:currentFacility().name,from:currentAnchor||"不明",destination:selected.name,steps:0,meters:0,turns:[],lastTurnStep:0};
-  stableHeading=null;lastTurnAt=0;prepareSensors();
-  if(learnAutoTimer)clearInterval(learnAutoTimer);learnAutoTimer=setInterval(updateLearnUI,1000);
-  learnStatus.textContent=`${T('learn')}: ${autoLearn.from} → ${autoLearn.destination}`;updateLearnUI();
-}
-function confirmArrivalAndSave(){
-  if(!autoLearn){learnStatus.textContent="現在、学習中ではありません。";return}
-  const sample={at:new Date().toISOString(),facility:autoLearn.facility,from:autoLearn.from,destination:autoLearn.destination,steps:autoLearn.steps,meters:autoLearn.meters,durationSec:Math.round((Date.now()-autoLearn.startedAt)/1000),turns:autoLearn.turns};
-  const db=ldb(),k=routeKey();db[k]=db[k]||[];db[k].push(sample);if(db[k].length>100)db[k]=db[k].slice(-100);sdb(db);
-  learnStatus.textContent=`保存完了：${db[k].length}回分の平均距離 約${avg(db[k]).toFixed(1)}m`;
-  autoLearn=null;if(learnAutoTimer){clearInterval(learnAutoTimer);learnAutoTimer=null}updateLearnUI();renderLearned();
-}
-function resetLearning(){autoLearn=null;if(learnAutoTimer){clearInterval(learnAutoTimer);learnAutoTimer=null}learnStatus.textContent=T('waiting');updateLearnUI()}
-function updateLearnUI(){learnSteps.textContent=autoLearn?autoLearn.steps:0;learnMeters.textContent=autoLearn?autoLearn.meters.toFixed(1)+"m":"0m";learnTurns.textContent=autoLearn?autoLearn.turns.length:0}
-function renderLearned(){const db=ldb(),rows=Object.entries(db).map(([k,v])=>{const a=k.split("::");return `<tr><td>${a[0]}<br><small>${a[1]} → ${a[2]}</small></td><td>${v.length}</td><td>${avg(v).toFixed(1)}m</td></tr>`});learnedRoutes.innerHTML=rows.length?rows.join(""):'<tr><td colspan="3">まだ学習データはありません</td></tr>'}
-function clearAllLearning(){if(confirm("この端末の学習データを全部削除しますか？")){localStorage.removeItem(LEARN_KEY);renderLearned();learnStatus.textContent="削除しました。"}}
-function exportLearningData(){const blob=new Blob([JSON.stringify({schema:"indoor-nav-auto-learning-v2",data:ldb()},null,2)],{type:"application/json"}),u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="indoor-nav-auto-learning.json";a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
-const _startNavByName=startNavByName;
-startNavByName=function(name){_startNavByName(name);setTimeout(()=>{if(selected)startAutoLearning()},0)};
-window.addEventListener("load",()=>{renderLearned();loadAutoConsent();});
 
 
-// ===== Fully automatic route learning =====
-// Cross-device aggregation is enabled when AUTO_LEARN_API is set.
-// Keep blank for private/offline development.
+
+
+
+
+
+// ===== Background route learning (no visible learning UI) =====
+// Set this later to the private aggregation API endpoint to combine many users.
+// Example: "https://YOUR-WORKER.example/route-sample"
 const AUTO_LEARN_API = "";
-const AUTO_DB_KEY = "indoorNavAutoCollectiveV2";
-let autoTrip = null;
-let autoTripTimer = null;
-let autoLastHeading = null;
-let autoLastTurnAt = 0;
-let autoLastStepPeak = 0;
-let autoSensorsReady = false;
+const AUTO_AVG_API = "";
+const BG_DB_KEY = "indoorNavBackgroundLearningV3";
 
-function autoDB(){
-  try{return JSON.parse(localStorage.getItem(AUTO_DB_KEY)||"{}")}catch(e){return{}}
+let bgTrip = null;
+let bgTimer = null;
+let bgLastHeading = null;
+let bgLastTurnAt = 0;
+let bgLastStepPeak = 0;
+let bgSensorsReady = false;
+let bgPermissionAttempted = false;
+
+function bgDB(){
+  try{return JSON.parse(localStorage.getItem(BG_DB_KEY)||"{}")}catch(e){return{}}
 }
-function saveAutoDB(db){localStorage.setItem(AUTO_DB_KEY,JSON.stringify(db))}
-function autoRouteKey(){
-  return `${currentFacility().name}::${currentAnchor||"不明"}::${selected?.name||"未選択"}`;
+function saveBgDB(db){localStorage.setItem(BG_DB_KEY,JSON.stringify(db))}
+function bgRouteKeyFor(facility,from,destination){
+  return `${facility}::${from||"不明"}::${destination}`;
 }
-function autoAverage(samples){
+function bgRouteKey(){
+  return bgRouteKeyFor(currentFacility().name,currentAnchor,selected?.name||"未選択");
+}
+function bgRobustAverage(samples){
   if(!samples?.length)return 0;
   const vals=samples.map(x=>+x.meters||0).filter(x=>x>0).sort((a,b)=>a-b);
   if(!vals.length)return 0;
-  // Robust trimmed mean after enough samples, so one strange walk doesn't ruin the average.
   let use=vals;
   if(vals.length>=5){
     const cut=Math.max(1,Math.floor(vals.length*.1));
-    use=vals.slice(cut, vals.length-cut);
+    if(vals.length-cut*2>=2) use=vals.slice(cut,vals.length-cut);
   }
   return use.reduce((a,b)=>a+b,0)/use.length;
 }
-function renderAutoRouteStats(){
-  if(!selected)return;
-  const db=autoDB(), arr=db[autoRouteKey()]||[];
-  autoSampleCount.textContent=arr.length;
-  const a=autoAverage(arr);
-  autoAvgMeters.textContent=a?`${a.toFixed(1)}m`:"-";
-  autoThisMeters.textContent=autoTrip?`${autoTrip.meters.toFixed(1)}m`:"0m";
-  autoCloudBadge.textContent=AUTO_LEARN_API?"匿名クラウド集約ON":"端末内学習";
+function learnedMetersForPlace(p){
+  if(!p)return 0;
+  const arr=bgDB()[bgRouteKeyFor(currentFacility().name,currentAnchor,p.name)]||[];
+  const avg=bgRobustAverage(arr);
+  return avg>0?avg:0;
 }
-async function ensureAutoSensors(){
-  if(autoSensorsReady)return true;
+
+// Override the current estimate: learned average wins after enough local samples.
+const _baseCurrentEstimateMeters =
+  (typeof currentEstimateMeters==="function") ? currentEstimateMeters : null;
+
+currentEstimateMeters = function(p){
+  const learned = learnedMetersForPlace(p);
+  const arr = p ? (bgDB()[bgRouteKeyFor(currentFacility().name,currentAnchor,p.name)]||[]) : [];
+  if(learned>0 && arr.length>=3) return Math.round(learned);
+  if(_baseCurrentEstimateMeters) return _baseCurrentEstimateMeters(p);
+  return +p?.estimateMeters||0;
+};
+
+async function ensureBgSensors(){
+  if(bgSensorsReady)return true;
+  if(bgPermissionAttempted && !bgSensorsReady)return false;
+  bgPermissionAttempted=true;
   try{
     if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
-      const p=await DeviceMotionEvent.requestPermission(); if(p!=="granted")throw new Error("motion denied");
+      const p=await DeviceMotionEvent.requestPermission();
+      if(p!=="granted")throw new Error("motion denied");
     }
     if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
-      const p=await DeviceOrientationEvent.requestPermission(); if(p!=="granted")throw new Error("orientation denied");
+      const p=await DeviceOrientationEvent.requestPermission();
+      if(p!=="granted")throw new Error("orientation denied");
     }
+
     window.addEventListener("devicemotion",e=>{
-      if(!autoTrip)return;
+      if(!bgTrip)return;
       const a=e.accelerationIncludingGravity;if(!a)return;
-      const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();
-      if(mag>12.2&&now-autoLastStepPeak>450){
-        autoLastStepPeak=now;
-        autoTrip.steps++;
-        autoTrip.meters=+(autoTrip.steps*0.72).toFixed(1);
-        autoTrip.lastMoveAt=now;
-        renderAutoRouteStats();
-      }
-    },true);
-    window.addEventListener("deviceorientation",e=>{
-      if(!autoTrip||e.alpha==null)return;
-      const h=(360-e.alpha)%360;
-      if(autoLastHeading==null){autoLastHeading=h;return}
-      const signed=(((h-autoLastHeading)+540)%360)-180;
+      const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
       const now=Date.now();
-      if(Math.abs(signed)>=35&&now-autoLastTurnAt>2200&&autoTrip.steps-autoTrip.lastTurnStep>=2){
-        autoTrip.turns.push({dir:signed>0?"right":"left",step:autoTrip.steps});
-        autoTrip.lastTurnStep=autoTrip.steps;
-        autoLastTurnAt=now;
-        autoLastHeading=h;
-      }else if(Math.abs(signed)<15){
-        autoLastHeading=(autoLastHeading*.85+h*.15)%360;
+      if(mag>12.2&&now-bgLastStepPeak>450){
+        bgLastStepPeak=now;
+        bgTrip.steps++;
+        // PWA prototype stride estimate. Native app can replace this with CMPedometer distance.
+        bgTrip.meters=+(bgTrip.steps*0.72).toFixed(1);
+        bgTrip.lastMoveAt=now;
       }
     },true);
-    autoSensorsReady=true;
+
+    window.addEventListener("deviceorientation",e=>{
+      if(!bgTrip||e.alpha==null)return;
+      const h=(360-e.alpha)%360;
+      if(bgLastHeading==null){bgLastHeading=h;return}
+      const signed=(((h-bgLastHeading)+540)%360)-180;
+      const now=Date.now();
+      if(Math.abs(signed)>=35 &&
+         now-bgLastTurnAt>2200 &&
+         bgTrip.steps-bgTrip.lastTurnStep>=2){
+        bgTrip.turns.push({dir:signed>0?"right":"left",step:bgTrip.steps});
+        bgTrip.lastTurnStep=bgTrip.steps;
+        bgLastTurnAt=now;
+        bgLastHeading=h;
+      }else if(Math.abs(signed)<15){
+        bgLastHeading=(bgLastHeading*.85+h*.15)%360;
+      }
+    },true);
+
+    bgSensorsReady=true;
     return true;
   }catch(e){
-    autoLearnMsg.textContent="iPhoneのモーション/方位センサーを許可すると自動学習できます。";
+    // No separate learning UI. The navigation can still work with map estimates.
     return false;
   }
 }
-async function beginAutoTrip(){
+
+async function beginBgTrip(){
   if(!selected)return;
-  await ensureAutoSensors();
-  autoTrip={
+  await ensureBgSensors();
+
+  bgTrip={
     startedAt:Date.now(),
     facility:currentFacility().name,
     from:currentAnchor||"不明",
     destination:selected.name,
-    steps:0,meters:0,turns:[],lastTurnStep:0,lastMoveAt:Date.now()
+    steps:0,
+    meters:0,
+    turns:[],
+    lastTurnStep:0,
+    lastMoveAt:Date.now()
   };
-  autoLastHeading=null;autoLastTurnAt=0;
-  autoLearnMsg.textContent=`自動記録中：${autoTrip.from} → ${autoTrip.destination}`;
-  if(autoTripTimer)clearInterval(autoTripTimer);
-  autoTripTimer=setInterval(()=>{
-    renderAutoRouteStats();
-    // If the route engine itself is at the arrival step, save automatically.
-    if(selected && navSteps?.length && stepIndex>=navSteps.length-1){
-      autoFinishTrip("route-arrival");
+  bgLastHeading=null;
+  bgLastTurnAt=0;
+
+  if(bgTimer)clearInterval(bgTimer);
+  bgTimer=setInterval(()=>{
+    // The route engine reaching the last step is the current PWA arrival signal.
+    if(bgTrip && selected && navSteps?.length && stepIndex>=navSteps.length-1){
+      finishBgTrip("route-arrival");
     }
   },1000);
-  renderAutoRouteStats();
 }
-async function autoFinishTrip(reason){
-  if(!autoTrip)return;
+
+async function fetchCloudAverage(facility,from,destination){
+  if(!AUTO_AVG_API)return 0;
+  try{
+    const u=new URL(AUTO_AVG_API);
+    u.searchParams.set("facility",facility);
+    u.searchParams.set("from",from);
+    u.searchParams.set("destination",destination);
+    const r=await fetch(u.toString(),{cache:"no-store"});
+    if(!r.ok)return 0;
+    const j=await r.json();
+    return +j.averageMeters||0;
+  }catch(e){return 0}
+}
+
+async function finishBgTrip(reason){
+  if(!bgTrip)return;
+
   const sample={
     at:new Date().toISOString(),
-    facility:autoTrip.facility,
-    from:autoTrip.from,
-    destination:autoTrip.destination,
-    steps:autoTrip.steps,
-    meters:autoTrip.meters,
-    durationSec:Math.max(1,Math.round((Date.now()-autoTrip.startedAt)/1000)),
-    turns:autoTrip.turns.length,
+    facility:bgTrip.facility,
+    from:bgTrip.from,
+    destination:bgTrip.destination,
+    steps:bgTrip.steps,
+    meters:bgTrip.meters,
+    durationSec:Math.max(1,Math.round((Date.now()-bgTrip.startedAt)/1000)),
+    turns:bgTrip.turns.length,
     completion:reason
   };
-  // Reject obvious false samples.
-  if(sample.steps<4 || sample.meters<2){
-    autoLearnMsg.textContent="移動量が少なすぎるため今回の記録は学習に使いませんでした。";
-    autoTrip=null;
-    if(autoTripTimer){clearInterval(autoTripTimer);autoTripTimer=null}
-    renderAutoRouteStats();
-    return;
+
+  // Reject obviously accidental samples.
+  if(sample.steps>=4 && sample.meters>=2){
+    const db=bgDB();
+    const k=bgRouteKeyFor(sample.facility,sample.from,sample.destination);
+    db[k]=db[k]||[];
+    db[k].push(sample);
+    if(db[k].length>200)db[k]=db[k].slice(-200);
+    saveBgDB(db);
+
+    // If the private multi-user API is connected later, upload silently.
+    if(AUTO_LEARN_API){
+      try{
+        await fetch(AUTO_LEARN_API,{
+          method:"POST",
+          headers:{"Content-Type":"application/json"},
+          body:JSON.stringify(sample),
+          keepalive:true
+        });
+      }catch(e){}
+    }
   }
 
-  const db=autoDB(),k=`${sample.facility}::${sample.from}::${sample.destination}`;
-  db[k]=db[k]||[];
-  db[k].push(sample);
-  if(db[k].length>200)db[k]=db[k].slice(-200);
-  saveAutoDB(db);
+  bgTrip=null;
+  if(bgTimer){clearInterval(bgTimer);bgTimer=null}
+}
 
-  if(AUTO_LEARN_API){
-    try{
-      await fetch(AUTO_LEARN_API,{
-        method:"POST",
-        headers:{"Content-Type":"application/json"},
-        body:JSON.stringify(sample),
-        keepalive:true
-      });
-    }catch(e){}
-  }
-  const avg=autoAverage(db[k]);
-  autoLearnMsg.textContent=`自動保存しました。現在の平均距離：約${avg.toFixed(1)}m`;
-  autoTrip=null;
-  if(autoTripTimer){clearInterval(autoTripTimer);autoTripTimer=null}
-  renderAutoRouteStats();
+function cancelBgTrip(){
+  bgTrip=null;
+  if(bgTimer){clearInterval(bgTimer);bgTimer=null}
 }
-function cancelAutoTrip(){
-  autoTrip=null;
-  if(autoTripTimer){clearInterval(autoTripTimer);autoTripTimer=null}
-  renderAutoRouteStats();
-}
-// Start automatically when destination navigation starts.
-const _autoOrigStartNavByName=startNavByName;
+
+// Start silently when a destination is selected.
+const _bgOrigStartNavByName=startNavByName;
 startNavByName=function(name){
-  _autoOrigStartNavByName(name);
-  setTimeout(()=>{if(selected)beginAutoTrip()},0);
+  _bgOrigStartNavByName(name);
+  // Because this comes directly from the user's tap, iOS can show its one-time
+  // motion/orientation permission prompt here when required.
+  setTimeout(()=>{if(selected)beginBgTrip()},0);
 };
-// If navigation is manually stopped before arrival, discard sample.
-const _autoOrigStopNav=stopNav;
+
+// Save automatically on arrival; discard if navigation is ended early.
+const _bgOrigStopNav=stopNav;
 stopNav=function(){
   const arrived=selected&&navSteps?.length&&stepIndex>=navSteps.length-1;
-  if(arrived)autoFinishTrip("route-arrival"); else cancelAutoTrip();
-  _autoOrigStopNav();
+  if(arrived)finishBgTrip("route-arrival");
+  else cancelBgTrip();
+  _bgOrigStopNav();
 };
-window.addEventListener("load",renderAutoRouteStats);
+
+
+
+// ===== Fully automatic sensors =====
+let autoSensorStarted=false;
+let autoGeoWatchId=null;
+
+async function startAllSensorsAutomatically(){
+  if(autoSensorStarted)return;
+  autoSensorStarted=true;
+
+  let motionOK=false, orientationOK=false, geoOK=false;
+
+  // iOS requires these permission requests to happen from a user action.
+  // startNavByName() is called from the destination tap, so we request them there.
+  try{
+    if(typeof DeviceMotionEvent!=="undefined" &&
+       typeof DeviceMotionEvent.requestPermission==="function"){
+      const p=await DeviceMotionEvent.requestPermission();
+      motionOK=(p==="granted");
+    }else{
+      motionOK=true;
+    }
+  }catch(e){}
+
+  try{
+    if(typeof DeviceOrientationEvent!=="undefined" &&
+       typeof DeviceOrientationEvent.requestPermission==="function"){
+      const p=await DeviceOrientationEvent.requestPermission();
+      orientationOK=(p==="granted");
+    }else{
+      orientationOK=true;
+    }
+  }catch(e){}
+
+  if(orientationOK){
+    window.addEventListener("deviceorientation",e=>{
+      if(e.alpha!=null){
+        const h=(360-e.alpha)%360;
+        if(typeof heading!=="undefined") heading=h;
+        const el=document.getElementById("headingNow");
+        if(el) el.textContent=Math.round(h)+"°";
+      }
+    },true);
+  }
+
+  if(motionOK){
+    let localLastPeak=0;
+    window.addEventListener("devicemotion",e=>{
+      const a=e.accelerationIncludingGravity;
+      if(!a)return;
+      const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2);
+      const now=Date.now();
+      if(mag>12.2 && now-localLastPeak>450){
+        localLastPeak=now;
+        // If navigation is active, advance slightly using the same walking estimate.
+        if(typeof selected!=="undefined" && selected && typeof advanceMeters==="function"){
+          advanceMeters(.72);
+        }
+      }
+    },true);
+  }
+
+  try{
+    if("geolocation" in navigator){
+      autoGeoWatchId=navigator.geolocation.watchPosition(
+        p=>{
+          geoOK=true;
+          const el=document.getElementById("accuracyNow");
+          if(el) el.textContent="±"+Math.round(p.coords.accuracy)+"m";
+        },
+        ()=>{
+          const el=document.getElementById("accuracyNow");
+          if(el && el.textContent==="補正済") el.textContent="位置推定";
+        },
+        {enableHighAccuracy:true,maximumAge:1500,timeout:10000}
+      );
+    }
+  }catch(e){}
+
+  const note=document.getElementById("autoSensorNote");
+  if(note){
+    const labels=[];
+    labels.push(orientationOK?"方位ON":"方位未許可");
+    labels.push(motionOK?"歩行ON":"歩行未許可");
+    labels.push("位置自動");
+    note.textContent="自動センサー：" + labels.join(" / ");
+  }
+}
+
+// Start all sensors automatically when the user chooses a destination.
+// This is the earliest point on iPhone where the permission dialog can be requested
+// without adding separate 方位/歩数/GPS buttons.
+const _sensorOrigStartNavByName = startNavByName;
+startNavByName = function(name){
+  _sensorOrigStartNavByName(name);
+  startAllSensorsAutomatically();
+};
 
 </script></body></html>
