@@ -1,7 +1,6 @@
 <!doctype html>
 <html lang="ja">
 <head>
-<meta name="robots" content="noindex,nofollow,noarchive">
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="館内ナビ">
@@ -24,6 +23,20 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 .badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;margin-top:6px;background:#eaf8f1;color:var(--green)}.badge.proto{background:#fff5e6;color:#a45b00}
 .precision{background:#f3fbf7;border:1px solid #cdebdc;border-radius:12px;padding:10px;margin-top:10px;font-size:12px;line-height:1.5}
 </style>
+
+<style>
+.premiumCard{background:linear-gradient(145deg,#fff8e9,#fff);border:1px solid #f1d9a8;border-radius:22px;padding:16px;margin-bottom:10px}
+.premiumPrice{display:flex;align-items:end;gap:5px;margin-top:7px}
+.premiumPrice strong{font-size:34px;line-height:1}.premiumPrice span{font-size:12px;color:#6f7a84;padding-bottom:3px}
+.premiumBenefits{display:grid;gap:7px;margin-top:12px;font-size:12px}
+.premiumBenefits div{display:flex;gap:8px;align-items:flex-start}
+.payMethods{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:12px}
+.payMethod{background:#fff;border:1px solid #dde3e8;border-radius:12px;padding:10px;text-align:center;font-size:12px;font-weight:800}
+.premiumBuy{width:100%;border:0;border-radius:14px;background:#111827;color:#fff;padding:14px;margin-top:12px;font-size:15px;font-weight:900}
+.premiumBuy[disabled]{opacity:.45}
+.paymentNote{font-size:10px;color:#7a858f;line-height:1.5;margin-top:8px}
+</style>
+
 </head>
 <body>
 <header><h1><span id="headerTitle">🧭 館内ナビ</span> <span style="font-size:10px;background:#222;color:#fff;border-radius:999px;padding:4px 7px">PRIVATE DEV</span></h1><div id="headerSub" class="sub">50施設・20言語対応</div></header>
@@ -65,6 +78,38 @@ const AY_EDGES=[["entrance1", "c1", 15, 15, "walk"], ["westEntrance1", "w1", 8, 
 const AY_ANCHORS={"中央入口": "entrance1", "西EV": "westEV1", "中央コート": "court1", "東EV": "eastEV1", "西側入口": "westEntrance1", "東側入口": "eastEntrance1"};
 
 let key="f0",currentAnchor="",currentNode="",selected=null,navSteps=[],stepIndex=0,stepRemaining=0,heading=0,lastMotion=0,autoTimer=null;
+
+
+const UXI18N={
+ja:{welcome:"はじめての場所でも、迷わず目的地へ",one:"施設を選ぶ",two:"行き先を選ぶ",three:"歩くだけ",facility:"施設を選ぶ",facilitySearch:"施設名を検索",current:"今いる場所",change:"変更",near:"近い場所を選んでください",destination:"行きたい場所を選ぶ",popular:"よく使う場所",live:"案内中",sensor:"位置情報の状態",private:"公開準備版",official:"公式マップを見る"},
+en:{welcome:"Find your way inside, even somewhere new",one:"Choose place",two:"Choose destination",three:"Just walk",facility:"Choose a facility",facilitySearch:"Search facility",current:"You are here",change:"Change",near:"Choose the nearest point",destination:"Where do you want to go?",popular:"Popular places",live:"Navigation active",sensor:"Location status",private:"Release candidate",official:"Official map"},
+"zh-CN":{welcome:"第一次来也能轻松找到目的地",one:"选择设施",two:"选择目的地",three:"跟着走",facility:"选择设施",facilitySearch:"搜索设施",current:"当前位置",change:"更改",near:"请选择最近的位置",destination:"选择目的地",popular:"常用地点",live:"导航中",sensor:"定位状态",private:"发布准备版",official:"官方地图"},
+"zh-TW":{welcome:"第一次來也能輕鬆找到目的地",one:"選擇設施",two:"選擇目的地",three:"跟著走",facility:"選擇設施",facilitySearch:"搜尋設施",current:"目前位置",change:"變更",near:"請選擇最近的位置",destination:"選擇目的地",popular:"常用地點",live:"導航中",sensor:"定位狀態",private:"發布準備版",official:"官方地圖"},
+ko:{welcome:"처음 가는 곳에서도 쉽게 목적지까지",one:"시설 선택",two:"목적지 선택",three:"걷기만",facility:"시설 선택",facilitySearch:"시설 검색",current:"현재 위치",change:"변경",near:"가장 가까운 위치를 선택하세요",destination:"목적지 선택",popular:"자주 찾는 곳",live:"안내 중",sensor:"위치 상태",private:"출시 준비 버전",official:"공식 지도"}
+};
+function UX(k){const x=UXI18N[appLang]||UXI18N.en;return x[k]||UXI18N.en[k]||k}
+function applyEasyLanguage(){
+ const ids={welcomeTitle:"welcome",how1:"one",how2:"two",how3:"three",facilityLabel:"facility",currentPlaceLead:"current",changePlaceBtn:"change",placePickerHint:"near",destinationLabel:"destination",popularLabel:"popular",navLiveLabel:"live",sensorSummary:"sensor",privateFooter:"private"};
+ Object.entries(ids).forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.textContent=UX(k)});
+ const fq=document.getElementById("facilityQ");if(fq)fq.placeholder=UX("facilitySearch");
+ const om=document.getElementById("officialMapText");if(om)om.textContent=UX("official");
+}
+function normEasy(s){return String(s||"").toLowerCase().replace(/[\s　・\-ー()（）]/g,"")}
+function searchFacilitiesEasy(){
+ const box=document.getElementById("facilityMatches"),input=document.getElementById("facilityQ");
+ if(!box||!input)return;
+ const s=normEasy(input.value);
+ if(!s){box.innerHTML="";return}
+ const hits=Object.entries(F).filter(([k,v])=>normEasy(v.name+" "+v.area).includes(s)).slice(0,8);
+ box.innerHTML=hits.map(([k,v])=>`<button type="button" onclick="selectFacilityEasy('${k}')">${v.name}</button>`).join("");
+}
+function selectFacilityEasy(k){
+ facilitySelect.value=k;changeFacility(k);
+ const box=document.getElementById("facilityMatches"),input=document.getElementById("facilityQ");
+ if(box)box.innerHTML="";
+ if(input)input.value=F[k].name;
+}
+function togglePlacePicker(){const x=document.getElementById("placePicker");if(x)x.classList.toggle("hidden")}
 
 function currentFacility(){return F[key]}
 function init(){
@@ -211,9 +256,30 @@ function setLanguage(l){appLang=I18N[l]?l:'ja';localStorage.setItem('indoorNavLa
 function bestLanguage(){const saved=localStorage.getItem('indoorNavLangV1');if(saved&&I18N[saved])return saved;const n=(navigator.language||'ja').toLowerCase();if(n.startsWith('zh-tw')||n.startsWith('zh-hk'))return'zh-TW';if(n.startsWith('zh'))return'zh-CN';for(const k of Object.keys(I18N)){if(n.startsWith(k.toLowerCase()))return k}return'ja'}
 function initLanguages(){langSelect.innerHTML=Object.entries(I18N).map(([k,v])=>`<option value="${k}">${v.name}</option>`).join('');appLang=bestLanguage();langSelect.value=appLang;applyLanguage();}
 function applyLanguage(){
- headerTitle.textContent=T('app');headerSub.textContent=T('sub');officialMapText.textContent=T('official');locationFixBtn.textContent=T('fix');q.placeholder=T('searchph');searchBtn.textContent=T('search');
- demoBtn.textContent=T('demo');autoWalkBtn.textContent=T('autowalk');rerouteBtn.textContent=T('reroute');stopBtn.textContent=T('stop');correctionTitle.textContent=T('correction');currentLocLabel.textContent=T('current');headingLabel.textContent=T('heading');accuracyLabel.textContent=T('accuracy');compassBtn.textContent=T('compass');motionBtn.textContent=T('motion');gpsBtn.textContent=T('gps');
- learnTitle.textContent=T('learn');learnConsentText.textContent=T('consent');learnDesc.textContent=T('learndesc');learnStepsLabel.textContent=T('steps');learnMetersLabel.textContent=T('estdist');learnTurnsLabel.textContent=T('turns');learnStatus.textContent=T('waiting');learnedRouteTh.textContent=T('learned');countTh.textContent=T('count');avgDistanceTh.textContent=T('avg');arrivalSaveBtn.textContent=T('save');discardBtn.textContent=T('discard');exportBtn.textContent=T('export');clearBtn.textContent=T('clear');footNote.textContent=T('foot');
+ const set=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val};
+ const ph=(id,val)=>{const e=document.getElementById(id);if(e)e.placeholder=val};
+
+ set("headerTitle",T("app"));
+ set("headerSub",T("sub"));
+ set("officialMapText",T("official"));
+ set("locationFixBtn",T("fix"));
+ ph("q",T("searchph"));
+ set("searchBtn",T("search"));
+ set("demoBtn",T("demo"));
+ set("autoWalkBtn",T("autowalk"));
+ set("rerouteBtn",T("reroute"));
+ set("stopBtn",T("stop"));
+ set("correctionTitle",T("correction"));
+ set("currentLocLabel",T("current"));
+ set("headingLabel",T("heading"));
+ set("accuracyLabel",T("accuracy"));
+ set("compassBtn",T("compass"));
+ set("motionBtn",T("motion"));
+ set("gpsBtn",T("gps"));
+ set("footNote",T("foot"));
+
+ if(typeof applyEasyLanguage==="function") applyEasyLanguage();
+ if(typeof applyPremiumLanguage==="function") applyPremiumLanguage();
 }
 const SEARCH_ALIAS={
  'トイレ':['toilet','restroom','bathroom','wc','aseo','baño','toilettes','toilette','bagno','banheiro','화장실','厕所','廁所','ห้องน้ำ','nhà vệ sinh','tandas','banyo','शौचालय','مرحاض','туалет','tuvalet'],
@@ -552,5 +618,48 @@ startNavByName = function(name){
   _sensorOrigStartNavByName(name);
   startAllSensorsAutomatically();
 };
+
+
+
+const PAYMENT_CONFIG={
+  // KOMOJUの本番審査後に、ここへホスト型決済ページURLを入れます。
+  checkoutUrl:"",
+  priceYen:300,
+  accessDays:365
+};
+function applyPremiumLanguage(){
+ const ja=appLang==="ja";
+ const texts=ja?{
+   badge:"PREMIUM",title:"プレミアム",per:"/ 365日",
+   b1:"館内ナビを無制限で利用",b2:"20言語対応",b3:"距離・位置データを自動補正",
+   buy:PAYMENT_CONFIG.checkoutUrl?"プレミアムを購入":"決済設定後に購入可能",
+   note:PAYMENT_CONFIG.checkoutUrl?"支払い方法を選んで300円をお支払いください。":"決済アカウントの審査・接続が終わるまで購入ボタンは無効です。"
+ }:{
+   badge:"PREMIUM",title:"Premium",per:"/ 365 days",
+   b1:"Unlimited indoor navigation",b2:"20 languages",b3:"Automatic distance and position refinement",
+   buy:PAYMENT_CONFIG.checkoutUrl?"Buy Premium":"Available after payment setup",
+   note:PAYMENT_CONFIG.checkoutUrl?"Choose a payment method and pay ¥300.":"Purchase is disabled until the payment account is approved and connected."
+ };
+ const map={premiumBadge:"badge",premiumTitle:"title",premiumPerYear:"per",premiumB1:"b1",premiumB2:"b2",premiumB3:"b3",premiumPaymentNote:"note"};
+ Object.entries(map).forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.textContent=texts[k]});
+ const b=document.getElementById("premiumBuyBtn");if(b){b.textContent=texts.buy;b.disabled=!PAYMENT_CONFIG.checkoutUrl}
+}
+function startPremiumCheckout(){
+ if(!PAYMENT_CONFIG.checkoutUrl)return;
+ location.href=PAYMENT_CONFIG.checkoutUrl;
+}
+
+
+
+window.addEventListener("load",()=>{
+  try{
+    const sel=document.getElementById("facilitySelect");
+    if(sel && !sel.options.length){
+      sel.innerHTML=Object.entries(F).map(([k,v])=>`<option value="${k}">${v.name}（${v.area}）</option>`).join("");
+      if(typeof changeFacility==="function")changeFacility(Object.keys(F)[0]);
+    }
+    if(typeof applyPremiumLanguage==="function")applyPremiumLanguage();
+  }catch(e){}
+});
 
 </script></body></html>
