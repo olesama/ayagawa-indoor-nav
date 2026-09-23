@@ -1,0 +1,16 @@
+{
+  "endpoint": "POST /api/route-samples",
+  "fields": [
+    "facility",
+    "from",
+    "destination",
+    "steps",
+    "meters",
+    "durationSec",
+    "leftTurns",
+    "rightTurns",
+    "checkpoints"
+  ],
+  "privacy": "raw GPS coordinates are not sent",
+  "aggregation": "group by facility/from/destination, reject outliers, update only after enough samples"
+}

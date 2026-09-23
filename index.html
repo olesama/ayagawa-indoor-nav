@@ -22,7 +22,16 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 .facilityTitle{font-size:20px;font-weight:900}.facilitySub,.small{font-size:11px;color:var(--muted);line-height:1.55}.hidden{display:none}
 .badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;margin-top:6px;background:#eaf8f1;color:var(--green)}.badge.proto{background:#fff5e6;color:#a45b00}
 .precision{background:#f3fbf7;border:1px solid #cdebdc;border-radius:12px;padding:10px;margin-top:10px;font-size:12px;line-height:1.5}
-</style></head>
+</style>
+<style>
+.learnbox{background:#f8fbff;border:1px solid #cfe1ff;border-radius:14px;padding:12px}
+.learnbox h3{margin:0 0 6px;font-size:15px}.learngrid{display:grid;grid-template-columns:1fr 1fr;gap:7px;margin-top:8px}
+.learngrid button{padding:10px;border:1px solid #cbd2d8;background:#fff;border-radius:10px;font-weight:800}
+.learnstats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}.learnstats div{background:#fff;border:1px solid #e4e9ee;border-radius:10px;padding:8px;text-align:center}
+.learnstats b{display:block;font-size:16px}.learnstats span{font-size:10px;color:#68727c}.learnnote{font-size:11px;color:#68727c;line-height:1.5;margin-top:8px}
+.learntable{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}.learntable td,.learntable th{border-bottom:1px solid #edf0f2;padding:6px 3px;text-align:left}
+</style>
+</head>
 <body>
 <header><h1>🧭 館内ナビ</h1><div class="sub">綾川イオンは通路グラフから経路・距離を自動計算</div></header>
 <main>
@@ -50,6 +59,29 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 <div class="row" style="margin-top:10px"><button onclick="enableCompass()">🧭 方位</button><button onclick="enableMotion()">👣 歩数</button><button onclick="enableGPS()">📡 GPS精度</button></div></section>
 
 <p class="small">綾川イオンでは、固定の案内文ではなく通路ネットワークから最短経路と歩行距離を計算します。距離は公式フロア情報を基準にした図面スケール推定で、センチ単位の実測値ではありません。最終的な実用版では現地実測で各通路長を校正します。</p>
+
+<section class="card">
+<div class="learnbox">
+<h3>🧠 利用者が歩くほど精度が上がる学習モード</h3>
+<label style="font-size:11px;color:#4f5962"><input id="learnConsent" type="checkbox"> 歩行データの記録に同意する（生のGPS座標は保存しません）</label>
+<div class="learngrid">
+<button onclick="startLearning()">▶ 学習開始</button>
+<button onclick="finishLearning()">■ 到着して保存</button>
+<button onclick="markTurn('left')">↩ 左に曲がった</button>
+<button onclick="markTurn('right')">↪ 右に曲がった</button>
+<button onclick="markCheckpoint()">📍 位置補正</button>
+<button onclick="resetLearning()">🗑 今回を破棄</button>
+</div>
+<div class="learnstats">
+<div><b id="learnSteps">0</b><span>歩数</span></div>
+<div><b id="learnMeters">0m</b><span>推定距離</span></div>
+<div><b id="learnTime">0:00</b><span>経過時間</span></div>
+</div>
+<div id="learnStatus" class="learnnote">目的地を選んでから「学習開始」を押してください。</div>
+<table class="learntable"><thead><tr><th>学習済みルート</th><th>回数</th><th>平均距離</th></tr></thead><tbody id="learnedRoutes"></tbody></table>
+<div class="learngrid"><button onclick="exportLearningData()">⬇ データを書き出す</button><button onclick="clearAllLearning()">全削除</button></div>
+</div>
+</section>
 </main>
 
 <script>
@@ -158,4 +190,39 @@ async function enableMotion(){try{if(typeof DeviceMotionEvent!=="undefined"&&typ
 function enableGPS(){if(!navigator.geolocation){accuracyNow.textContent="GPS非対応";return}navigator.geolocation.getCurrentPosition(p=>accuracyNow.textContent="±"+Math.round(p.coords.accuracy)+"m",()=>accuracyNow.textContent="GPS未許可",{enableHighAccuracy:true,timeout:8000})}
 if("serviceWorker"in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}))}
 init();
+
+const LEARN_KEY="indoorNavLearningV1";
+let learnSession=null, learnTimer=null, learnLastPeak=0, learnMotionOn=false;
+function ldb(){try{return JSON.parse(localStorage.getItem(LEARN_KEY)||"{}")}catch(e){return{}}}
+function sdb(x){localStorage.setItem(LEARN_KEY,JSON.stringify(x))}
+function learningKey(){return `${currentFacility().name}::${currentAnchor||"不明"}::${selected?.name||"未選択"}`}
+function avg(samples){if(!samples?.length)return 0;return samples.reduce((a,b)=>a+(+b.meters||0),0)/samples.length}
+async function startLearning(){
+ if(!learnConsent.checked){learnStatus.textContent="同意チェックを入れてください。";return}
+ if(!selected){learnStatus.textContent="先に目的地を選んで案内を開始してください。";return}
+ learnSession={startedAt:Date.now(),facility:currentFacility().name,from:currentAnchor,destination:selected.name,steps:0,meters:0,left:0,right:0,checkpoints:0};
+ learnStatus.textContent=`${learnSession.from} → ${learnSession.destination} を記録中`;
+ if(!learnMotionOn){try{
+   if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){const p=await DeviceMotionEvent.requestPermission();if(p!=="granted")throw 0}
+   window.addEventListener("devicemotion",e=>{if(!learnSession)return;const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();if(m>12.2&&now-learnLastPeak>450){learnLastPeak=now;learnSession.steps++;learnSession.meters=+(learnSession.steps*.72).toFixed(1);updateLearning()}},true);
+   learnMotionOn=true;
+ }catch(e){learnStatus.textContent+="（歩数センサー未許可）"}}
+ learnTimer=setInterval(updateLearning,1000);updateLearning();
+}
+function markTurn(d){if(!learnSession)return;if(d==="left")learnSession.left++;else learnSession.right++;learnStatus.textContent=`左${learnSession.left}回 / 右${learnSession.right}回`}
+function markCheckpoint(){if(!learnSession)return;learnSession.checkpoints++;learnStatus.textContent=`位置補正 ${learnSession.checkpoints}回`}
+function finishLearning(){
+ if(!learnSession){learnStatus.textContent="学習中ではありません。";return}
+ if(!confirm(`${learnSession.destination} に到着しましたか？`))return;
+ const sample={at:new Date().toISOString(),facility:learnSession.facility,from:learnSession.from,destination:learnSession.destination,steps:learnSession.steps,meters:learnSession.meters,durationSec:Math.round((Date.now()-learnSession.startedAt)/1000),leftTurns:learnSession.left,rightTurns:learnSession.right,checkpoints:learnSession.checkpoints};
+ const db=ldb(),k=learningKey();db[k]=db[k]||[];db[k].push(sample);if(db[k].length>100)db[k]=db[k].slice(-100);sdb(db);
+ learnStatus.textContent=`保存しました。${db[k].length}回分の平均距離は約${avg(db[k]).toFixed(1)}m`;
+ learnSession=null;if(learnTimer){clearInterval(learnTimer);learnTimer=null}updateLearning();renderLearned();
+}
+function resetLearning(){learnSession=null;if(learnTimer){clearInterval(learnTimer);learnTimer=null}learnStatus.textContent="今回の記録を破棄しました。";updateLearning()}
+function updateLearning(){if(!learnSession){learnSteps.textContent="0";learnMeters.textContent="0m";learnTime.textContent="0:00";return}learnSteps.textContent=learnSession.steps;learnMeters.textContent=learnSession.meters.toFixed(1)+"m";const s=Math.floor((Date.now()-learnSession.startedAt)/1000);learnTime.textContent=Math.floor(s/60)+":"+String(s%60).padStart(2,"0")}
+function renderLearned(){const db=ldb();const rows=Object.entries(db).map(([k,v])=>{const a=k.split("::");return `<tr><td>${a[0]}<br><small>${a[1]} → ${a[2]}</small></td><td>${v.length}</td><td>${avg(v).toFixed(1)}m</td></tr>`});learnedRoutes.innerHTML=rows.length?rows.join(""):'<tr><td colspan="3">まだ学習データはありません</td></tr>'}
+function clearAllLearning(){if(confirm("この端末の学習データを全部削除しますか？")){localStorage.removeItem(LEARN_KEY);renderLearned();learnStatus.textContent="削除しました。"}}
+function exportLearningData(){const blob=new Blob([JSON.stringify({schema:"indoor-nav-learning-v1",exportedAt:new Date().toISOString(),data:ldb()},null,2)],{type:"application/json"});const u=URL.createObjectURL(blob),a=document.createElement("a");a.href=u;a.download="indoor-nav-learning.json";a.click();setTimeout(()=>URL.revokeObjectURL(u),500)}
+window.addEventListener("load",renderLearned);
 </script></body></html>
