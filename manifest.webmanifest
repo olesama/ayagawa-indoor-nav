@@ -1,0 +1,9 @@
+{
+  "name": "綾川イオン館内ナビ",
+  "short_name": "綾川ナビ",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#f4f6f8",
+  "theme_color": "#ffffff",
+  "lang": "ja"
+}
