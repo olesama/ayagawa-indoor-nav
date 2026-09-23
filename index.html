@@ -4,295 +4,103 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="theme-color" content="#ffffff">
-<title>館内ナビ｜イオンモール綾川</title>
-<style>
-*{box-sizing:border-box}:root{--blue:#1378ff;--ink:#17202a;--muted:#68727c;--bg:#f5f7f9;--line:#dce2e7}
-body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;color:var(--ink)}
-header{background:white;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line);padding:13px}
-h1{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted)}main{max-width:760px;margin:auto;padding:10px}
-.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px}
-.search{display:flex;gap:7px;margin-top:10px}.search input{flex:1;min-width:0;border:1px solid #cbd2d8;border-radius:12px;padding:13px;font-size:15px}.search button{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:800;padding:0 16px}
-.floorrow{display:flex;gap:6px;margin-top:9px}.floorrow button{flex:1;padding:9px;border:1px solid #ccd3d9;border-radius:10px;background:#fff;font-weight:800}.floorrow .on{background:#17202a;color:white}
-.bigstep{background:linear-gradient(180deg,#1477ff,#0d66dc);color:#fff;border-radius:18px;padding:18px;text-align:center}
-.arrow{font-size:68px;line-height:1;margin:6px 0}.distance{font-size:33px;font-weight:900}.instruction{font-size:22px;font-weight:900;margin-top:5px}
-.next{margin-top:10px;padding-top:10px;border-top:1px solid #ffffff40;font-size:13px}.progress{height:9px;border-radius:999px;background:#e7ebef;overflow:hidden;margin-top:9px}.progress span{display:block;height:100%;background:var(--blue);width:0%}
-.meta{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);margin-top:7px}.pills{display:flex;gap:7px;flex-wrap:wrap}.pill{border:1px solid #ccd3d9;background:#fff;border-radius:999px;padding:8px 11px;font-size:12px}
-.result{padding:11px;border:1px solid #e1e6ea;border-radius:11px;margin-top:7px}.result b{font-size:14px}.result span{font-size:11px;color:var(--muted);margin-left:6px}
-.row{display:flex;gap:7px;flex-wrap:wrap}.row button,.row a{flex:1;min-width:130px;text-decoration:none;text-align:center;border:1px solid #cbd2d8;background:#fff;color:var(--ink);border-radius:11px;padding:11px;font-weight:800}
-.primary{background:var(--blue)!important;color:#fff!important;border:0!important}.danger{background:#fff1ef!important;color:#a44235!important}
-.status{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.status div{background:#f7f9fb;border-radius:12px;padding:10px;text-align:center}.status b{display:block;font-size:18px}.status span{font-size:10px;color:var(--muted)}
-.small{font-size:11px;color:var(--muted);line-height:1.5}.hidden{display:none}
-</style>
-
-<link rel="manifest" href="./manifest.webmanifest">
-<link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="館内ナビ">
-
+<link rel="manifest" href="./manifest.webmanifest">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png">
+<title>館内ナビ</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;background:#f5f7f9;font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;color:#17202a}
+header{background:#fff;position:sticky;top:0;z-index:10;border-bottom:1px solid #dce2e7;padding:13px}
+h1{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:#68727c}
+main{max-width:760px;margin:auto;padding:10px}.card{background:#fff;border:1px solid #dce2e7;border-radius:18px;padding:14px;margin-bottom:10px}
+select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #cbd2d8;border-radius:12px;background:#fff;font-weight:800}
+.search{display:flex;gap:7px;margin-top:10px}.search input{flex:1;min-width:0;padding:13px;border:1px solid #cbd2d8;border-radius:12px}.search button{border:0;border-radius:12px;background:#1378ff;color:#fff;font-weight:800;padding:0 16px}
+.row{display:flex;gap:7px;flex-wrap:wrap}.row button,.row a{flex:1;min-width:130px;text-decoration:none;text-align:center;border:1px solid #cbd2d8;background:#fff;color:#17202a;border-radius:11px;padding:11px;font-weight:800}
+.chips{display:flex;gap:7px;flex-wrap:wrap}.chip{border:1px solid #ccd3d9;background:#fff;border-radius:999px;padding:8px 11px;font-size:12px}
+.result{padding:11px;border:1px solid #e1e6ea;border-radius:11px;margin-top:7px}.result span{font-size:11px;color:#68727c;margin-left:6px}
+.bigstep{background:linear-gradient(180deg,#1477ff,#0d66dc);color:#fff;border-radius:18px;padding:18px;text-align:center}.arrow{font-size:68px;line-height:1;margin:6px}.distance{font-size:33px;font-weight:900}.instruction{font-size:22px;font-weight:900}.next{margin-top:10px;padding-top:10px;border-top:1px solid #ffffff40;font-size:13px}
+.progress{height:9px;border-radius:999px;background:#e7ebef;overflow:hidden;margin-top:9px}.progress span{display:block;height:100%;background:#1378ff}.meta{display:flex;justify-content:space-between;font-size:12px;color:#68727c;margin-top:7px}
+.status{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}.status div{background:#f7f9fb;border-radius:12px;padding:10px;text-align:center}.status b{display:block;font-size:14px}.status span{font-size:10px;color:#68727c}
+.facilityTitle{font-size:20px;font-weight:900}.facilitySub,.small{font-size:11px;color:#68727c;line-height:1.55}.hidden{display:none}
+.badge{display:inline-block;background:#eef4ff;color:#1166cc;border-radius:999px;padding:4px 8px;font-size:10px;margin-top:5px}
+</style>
 </head>
 <body>
-<header><h1>🧭 館内ナビ｜イオンモール綾川</h1><div class="sub">地図を見続けなくても「何m直進・右・左」で案内</div></header>
+<header><h1>🧭 館内ナビ</h1><div class="sub">20施設対応・公式マップ＋方向案内</div></header>
 <main>
 <section class="card">
-<div class="search"><input id="q" placeholder="無印に行きたい / 映画館 / トイレ"><button onclick="searchPlace()">検索</button></div>
-<div class="floorrow"><button class="on" onclick="setFloor(1,this)">1F</button><button onclick="setFloor(2,this)">2F</button><button onclick="setFloor(3,this)">3F</button></div>
-<div id="results"></div>
+<select id="facilitySelect" class="facility" onchange="changeFacility(this.value)"></select>
+<div id="facilityInfo" style="margin-top:11px"></div>
+<div class="row" style="margin-top:10px"><a id="officialMap" href="#" target="_blank">🗺 公式マップ/案内</a><button onclick="setAnchor(F[key].anchors[0])">📍 ここを現在地にする</button></div>
 </section>
 
 <section class="card">
-<div class="row">
-<a href="https://www.aeon.jp/sc/ayagawa/shop/floor/ebook/ayagawa/pageindices/" target="_blank">🗺 公式マップを見る</a>
-<button onclick="setAnchor('中央入口')">📍 中央入口にいる</button>
-</div>
+<div class="search"><input id="q" placeholder="行きたい場所を入力"><button onclick="searchPlace()">検索</button></div>
+<div id="quick" class="chips" style="margin-top:9px"></div><div id="results"></div>
 </section>
 
 <section id="navCard" class="card hidden">
-<div class="bigstep">
-<div id="stepNo" style="font-size:12px;opacity:.85">案内 1 / 4</div>
-<div id="arrow" class="arrow">↑</div>
-<div id="distanceBig" class="distance">30m</div>
-<div id="instruction" class="instruction">まっすぐ進む</div>
-<div id="nextText" class="next">次：右へ曲がる</div>
-</div>
-<div class="progress"><span id="progressBar"></span></div>
-<div class="meta"><span id="fromTo">現在地 → 目的地</span><span id="remaining">残り 約85m</span></div>
-<div class="row" style="margin-top:10px">
-<button class="primary" onclick="advance()">1歩進む（デモ）</button>
-<button onclick="reroute()">現在地から再計算</button>
-<button onclick="simulateWalking()">▶ 自動歩行デモ</button><button onclick="markOffRoute()">↩ ルートを外れる</button><button class="danger" onclick="stopNav()">案内終了</button>
-</div>
+<div class="bigstep"><div id="stepNo" style="font-size:12px;opacity:.85"></div><div id="arrow" class="arrow">↑</div><div id="distanceBig" class="distance">30m</div><div id="instruction" class="instruction">まっすぐ進む</div><div id="nextText" class="next"></div></div>
+<div class="progress"><span id="progressBar"></span></div><div class="meta"><span id="fromTo"></span><span id="remaining"></span></div>
+<div class="row" style="margin-top:10px"><button onclick="advanceMeters(5)">5m進む（デモ）</button><button onclick="simulateWalking()">▶ 自動歩行</button><button onclick="reroute()">🔄 再ルート</button><button onclick="stopNav()">案内終了</button></div>
 </section>
 
 <section class="card">
-<b>現在地の補正</b>
-<div class="pills" style="margin-top:9px">
-<button class="pill" onclick="setAnchor('中央入口')">中央入口</button>
-<button class="pill" onclick="setAnchor('中央コート')">中央コート</button>
-<button class="pill" onclick="setAnchor('西EV')">西EV</button>
-<button class="pill" onclick="setAnchor('東EV')">東EV</button>
-</div>
-<div class="status" style="margin-top:10px">
-<div><b id="placeNow">中央入口</b><span>現在地</span></div>
-<div><b id="headingNow">0°</b><span>向き</span></div>
-<div><b id="accuracyNow">補正済</b><span>位置精度</span></div>
-</div>
-<div class="row" style="margin-top:10px">
-<button onclick="enableCompass()">🧭 方位センサー</button>
-<button onclick="enableMotion()">👣 歩数センサー</button>
-<button onclick="enableGPS()">📡 GPS精度を見る</button>
-</div>
+<b>現在地の補正</b><div id="anchors" class="chips" style="margin-top:9px"></div>
+<div class="status" style="margin-top:10px"><div><b id="placeNow">-</b><span>現在地</span></div><div><b id="headingNow">0°</b><span>向き</span></div><div><b id="accuracyNow">補正済</b><span>位置精度</span></div></div>
+<div class="row" style="margin-top:10px"><button onclick="enableCompass()">🧭 方位</button><button onclick="enableMotion()">👣 歩数</button><button onclick="enableGPS()">📡 GPS精度</button></div>
 </section>
 
-<p class="small">このv2では、歩くにつれて「30m → 20m → 5m」と残り距離が減り、曲がり角の手前で「あと5mで右です」と表示します。ルートから外れた時の再計算デモも入れています。GPSだけでは屋内の正確な位置が取りにくいため、実用版では入口/QRチェックポイント、歩数・方位、BLEビーコン・UWB・Wi‑Fi RTTなどを組み合わせる想定です。</p>
+<p class="small">20施設対応版。公式マップ/案内ボタンは各施設の公式サイトへ移動します。館内ナビの距離・曲がり方はまだ動作確認用の試作値です。本番利用には公式構内図・現地測定・屋内測位の実装が必要です。</p>
 </main>
 
 <script>
-const DATA={
-1:[
-{name:"無印良品",floor:1,steps:[
- {arrow:"↑",meters:30,text:"まっすぐ進む",next:"次：右へ曲がる"},
- {arrow:"→",meters:15,text:"右へ進む",next:"次：そのまま直進"},
- {arrow:"↑",meters:20,text:"まっすぐ進む",next:"次：左側に目的地"},
- {arrow:"●",meters:0,text:"到着",next:"無印良品です"}]},
-{name:"カルディ",floor:1,steps:[
- {arrow:"↑",meters:35,text:"まっすぐ進む",next:"次：左へ曲がる"},
- {arrow:"←",meters:20,text:"左へ進む",next:"次：目的地"},
- {arrow:"●",meters:0,text:"到着",next:"カルディです"}]},
-{name:"トイレ",floor:1,steps:[
- {arrow:"↑",meters:20,text:"まっすぐ進む",next:"次：左へ"},
- {arrow:"←",meters:10,text:"左へ進む",next:"次：トイレ"},
- {arrow:"●",meters:0,text:"到着",next:"トイレです"}]}
-],
-2:[
-{name:"ABCマート スポーツ",floor:2,steps:[
- {arrow:"↑",meters:15,text:"EV/ESまで進む",next:"次：2Fへ"},
- {arrow:"↟",meters:0,text:"2Fへ上がる",next:"次：右へ"},
- {arrow:"→",meters:25,text:"右へ進む",next:"次：目的地"},
- {arrow:"●",meters:0,text:"到着",next:"ABCマート スポーツです"}]}
-],
-3:[
-{name:"イオンシネマ綾川",floor:3,steps:[
- {arrow:"↑",meters:15,text:"EV/ESまで進む",next:"次：3Fへ"},
- {arrow:"↟",meters:0,text:"3Fへ上がる",next:"次：まっすぐ"},
- {arrow:"↑",meters:45,text:"まっすぐ進む",next:"次：右側"},
- {arrow:"●",meters:0,text:"到着",next:"イオンシネマ綾川です"}]},
-{name:"フードコート",floor:3,steps:[
- {arrow:"↑",meters:15,text:"EV/ESまで進む",next:"次：3Fへ"},
- {arrow:"↟",meters:0,text:"3Fへ上がる",next:"次：左へ"},
- {arrow:"←",meters:30,text:"左へ進む",next:"次：フードコート"},
- {arrow:"●",meters:0,text:"到着",next:"フードコートです"}]}
-]
-};
+const F={"f0": {"name": "イオンモール綾川", "area": "香川県", "map": "https://www.aeon.jp/sc/ayagawa/shop/floor/ebook/ayagawa/pageindices/", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "無印良品", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "無印良品です"]]}, {"name": "イオンシネマ綾川", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "イオンシネマ綾川です"]]}, {"name": "トイレ", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "トイレです"]]}, {"name": "フードコート", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "フードコートです"]]}]}, "f1": {"name": "東京駅", "area": "東京都", "map": "https://www.jreast.co.jp/estation/stations/1039.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "丸の内中央口", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "丸の内中央口です"]]}, {"name": "八重洲中央口", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "八重洲中央口です"]]}, {"name": "新幹線乗換", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "新幹線乗換です"]]}, {"name": "京葉線", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "京葉線です"]]}]}, "f2": {"name": "新宿駅", "area": "東京都", "map": "https://www.jreast.co.jp/estation/stations/866.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "東口", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "東口です"]]}, {"name": "西口", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "西口です"]]}, {"name": "南口", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "南口です"]]}, {"name": "中央線ホーム", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "中央線ホームです"]]}]}, "f3": {"name": "渋谷駅", "area": "東京都", "map": "https://www.jreast.co.jp/estation/stations/808.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "ハチ公改札", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "ハチ公改札です"]]}, {"name": "南改札", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "南改札です"]]}, {"name": "山手線ホーム", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "山手線ホームです"]]}, {"name": "新南口", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "新南口です"]]}]}, "f4": {"name": "横浜駅", "area": "神奈川県", "map": "https://www.jreast.co.jp/estation/stations/1638.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "中央北改札", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "中央北改札です"]]}, {"name": "中央南改札", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "中央南改札です"]]}, {"name": "西口", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "西口です"]]}, {"name": "東口", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "東口です"]]}]}, "f5": {"name": "上野駅", "area": "東京都", "map": "https://www.jreast.co.jp/e/stations/e204.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "中央改札", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "中央改札です"]]}, {"name": "新幹線乗換", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "新幹線乗換です"]]}, {"name": "公園口", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "公園口です"]]}, {"name": "不忍口", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "不忍口です"]]}]}, "f6": {"name": "大宮駅", "area": "埼玉県", "map": "https://www.jreast.co.jp/e/stations/e350.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "中央改札", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "中央改札です"]]}, {"name": "新幹線乗換", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "新幹線乗換です"]]}, {"name": "東口", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "東口です"]]}, {"name": "西口", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "西口です"]]}]}, "f7": {"name": "新横浜駅", "area": "神奈川県", "map": "https://www.jreast.co.jp/estation/stations/888.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "新幹線改札", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "新幹線改札です"]]}, {"name": "横浜線", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "横浜線です"]]}, {"name": "北口", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "北口です"]]}, {"name": "地下鉄乗換", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "地下鉄乗換です"]]}]}, "f8": {"name": "大阪駅", "area": "大阪府", "map": "https://eki.jr-odekake.net/premises?id=0610130", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "中央口", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "中央口です"]]}, {"name": "御堂筋口", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "御堂筋口です"]]}, {"name": "桜橋口", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "桜橋口です"]]}, {"name": "うめきた地下口", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "うめきた地下口です"]]}]}, "f9": {"name": "新大阪駅", "area": "大阪府", "map": "https://eki.jr-odekake.net/premises?id=0610155", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "新幹線中央口", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "新幹線中央口です"]]}, {"name": "在来線乗換", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "在来線乗換です"]]}, {"name": "東口", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "東口です"]]}, {"name": "御堂筋線乗換", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "御堂筋線乗換です"]]}]}, "f10": {"name": "京都駅", "area": "京都府", "map": "https://eki.jr-odekake.net/premises?id=0610116", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "中央口", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "中央口です"]]}, {"name": "八条口", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "八条口です"]]}, {"name": "新幹線乗換", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "新幹線乗換です"]]}, {"name": "嵯峨野線", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "嵯峨野線です"]]}]}, "f11": {"name": "名古屋駅", "area": "愛知県", "map": "https://railway.jr-central.co.jp/station-guide/shinkansen/nagoya/map.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "新幹線北口", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "新幹線北口です"]]}, {"name": "新幹線南口", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "新幹線南口です"]]}, {"name": "桜通口", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "桜通口です"]]}, {"name": "太閤通口", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "太閤通口です"]]}]}, "f12": {"name": "博多駅", "area": "福岡県", "map": "https://www.jrkyushu.co.jp/railway/station/1191771_1601.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "博多口", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "博多口です"]]}, {"name": "筑紫口", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "筑紫口です"]]}, {"name": "新幹線乗換", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "新幹線乗換です"]]}, {"name": "地下鉄乗換", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "地下鉄乗換です"]]}]}, "f13": {"name": "羽田空港", "area": "東京都", "map": "https://www.tokyo-haneda.com/floor/index.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "第1ターミナル", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "第1ターミナルです"]]}, {"name": "第2ターミナル", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "第2ターミナルです"]]}, {"name": "第3ターミナル", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "第3ターミナルです"]]}, {"name": "展望デッキ", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "展望デッキです"]]}]}, "f14": {"name": "成田空港", "area": "千葉県", "map": "https://www.narita-airport.jp/ja/company/media-center/publications-pamphlets/kannaimap/", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "第1ターミナル", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "第1ターミナルです"]]}, {"name": "第2ターミナル", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "第2ターミナルです"]]}, {"name": "第3ターミナル", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "第3ターミナルです"]]}, {"name": "出国審査", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "出国審査です"]]}]}, "f15": {"name": "関西国際空港", "area": "大阪府", "map": "https://www.kansai-airport.or.jp/map/guidance", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "第1ターミナル", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "第1ターミナルです"]]}, {"name": "第2ターミナル", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "第2ターミナルです"]]}, {"name": "保安検査", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "保安検査です"]]}, {"name": "展望ホール", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "展望ホールです"]]}]}, "f16": {"name": "大阪国際空港（伊丹）", "area": "大阪府", "map": "https://www.osaka-airport.co.jp/map", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "南ターミナル", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "南ターミナルです"]]}, {"name": "北ターミナル", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "北ターミナルです"]]}, {"name": "保安検査", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "保安検査です"]]}, {"name": "展望デッキ", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "展望デッキです"]]}]}, "f17": {"name": "中部国際空港セントレア", "area": "愛知県", "map": "https://www.centrair.jp/map/index.html", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "第1ターミナル", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "第1ターミナルです"]]}, {"name": "第2ターミナル", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "第2ターミナルです"]]}, {"name": "保安検査", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "保安検査です"]]}, {"name": "スカイデッキ", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "スカイデッキです"]]}]}, "f18": {"name": "あべのハルカス", "area": "大阪府", "map": "https://www.abenoharukas-300.jp/floor/", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "ハルカス300", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "ハルカス300です"]]}, {"name": "あべのハルカス美術館", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "あべのハルカス美術館です"]]}, {"name": "ハルカスダイニング", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "ハルカスダイニングです"]]}, {"name": "近鉄百貨店", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "近鉄百貨店です"]]}]}, "f19": {"name": "東京ソラマチ", "area": "東京都", "map": "https://www.tokyo-solamachi.jp/floor/", "anchors": ["メイン入口", "中央付近", "エレベーター", "案内所"], "places": [{"name": "ソラマチ商店街", "level": "施設内", "steps": [["↑", 30, "まっすぐ進む", "次：右へ曲がる"], ["→", 15, "右へ進む", "次：直進"], ["↑", 20, "そのまま進む", "次：目的地"], ["●", 0, "到着", "ソラマチ商店街です"]]}, {"name": "フードマルシェ", "level": "施設内", "steps": [["↑", 25, "まっすぐ進む", "次：左へ曲がる"], ["←", 20, "左へ進む", "次：目的地"], ["●", 0, "到着", "フードマルシェです"]]}, {"name": "レストラン", "level": "施設内", "steps": [["↑", 20, "案内表示に沿って進む", "次：上の階へ"], ["↟", 0, "エレベーター/エスカレーターで移動", "次：直進"], ["↑", 25, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "レストランです"]]}, {"name": "東京スカイツリー入口", "level": "施設内", "steps": [["→", 20, "右方向へ進む", "次：直進"], ["↑", 35, "まっすぐ進む", "次：目的地"], ["●", 0, "到着", "東京スカイツリー入口です"]]}]}};
+let key=Object.keys(F)[0],currentAnchor="",selected=null,stepIndex=0,stepRemaining=0,heading=0,lastMotion=0,autoTimer=null;
 
-let floor=1,currentAnchor="中央入口",selected=null,stepIndex=0,heading=0;
-let stepRemaining=0,totalRemaining=0,lastMotion=0,walking=false,offRouteCount=0;
-let autoTimer=null;
-
-function setFloor(f,b){
- floor=f;
- document.querySelectorAll(".floorrow button").forEach(x=>x.classList.remove("on"));
- (b||document.querySelectorAll(".floorrow button")[f-1]).classList.add("on");
+function init(){
+ facilitySelect.innerHTML=Object.entries(F).map(([k,v])=>`<option value="${k}">${v.name}（${v.area}）</option>`).join("");
+ changeFacility(key);
 }
-function normalize(q){
- q=q.replace(/[？?！!。、\s]/g,"");
- if(q.includes("無印"))return"無印良品";
- if(q.includes("映画")||q.includes("シネマ"))return"イオンシネマ綾川";
- if(q.includes("トイレ")||q.includes("お手洗い"))return"トイレ";
- if(q.includes("フード")||q.includes("ご飯")||q.includes("食事"))return"フードコート";
- return q;
+function changeFacility(k){
+ key=k; const x=F[k];
+ facilityInfo.innerHTML=`<div class="facilityTitle">${x.name}</div><div class="facilitySub">${x.area}</div><span class="badge">公式案内リンク対応</span>`;
+ officialMap.href=x.map;
+ quick.innerHTML=x.places.map(p=>`<button class="chip" onclick='quickSearch(${JSON.stringify(p.name)})'>${p.name}</button>`).join("");
+ anchors.innerHTML=x.anchors.map(v=>`<button class="chip" onclick='setAnchor(${JSON.stringify(v)})'>${v}</button>`).join("");
+ results.innerHTML=""; stopNav(); currentAnchor=x.anchors[0]; placeNow.textContent=currentAnchor;
 }
+function quickSearch(v){q.value=v;searchPlace()}
 function searchPlace(){
- const q=normalize(document.getElementById("q").value.trim());
- if(!q)return;
- let found=[];
- Object.values(DATA).flat().forEach(x=>{if(x.name.includes(q)||q.includes(x.name))found.push(x)});
- results.innerHTML=found.length
-   ? found.map(x=>`<div class="result" onclick='startNav(${JSON.stringify(x)})'><b>${x.name}</b><span>${x.floor}F</span></div>`).join("")
-   : `<div class="result">見つかりませんでした。</div>`;
+ const s=q.value.trim().replace(/[？?！!。、\s]/g,""); if(!s)return;
+ const found=F[key].places.filter(p=>p.name.replace(/\s/g,"").includes(s)||s.includes(p.name.replace(/\s/g,"")));
+ results.innerHTML=found.length?found.map(p=>`<div class="result" onclick='startNav(${JSON.stringify(p)})'><b>${p.name}</b><span>${p.level}</span></div>`).join(""):`<div class="result">見つかりませんでした。</div>`;
 }
-function startNav(x){
- selected=JSON.parse(JSON.stringify(x));
- stepIndex=0;
- setFloor(x.floor);
- navCard.classList.remove("hidden");
- resetStepDistances();
- renderStep();
-}
-function resetStepDistances(){
- if(!selected)return;
- stepRemaining=selected.steps[stepIndex]?.meters||0;
- totalRemaining=selected.steps.slice(stepIndex).reduce((a,b)=>a+b.meters,0);
-}
+function startNav(p){selected=JSON.parse(JSON.stringify(p));stepIndex=0;stepRemaining=selected.steps[0].meters;navCard.classList.remove("hidden");renderStep()}
 function renderStep(){
- if(!selected)return;
- const s=selected.steps[stepIndex];
- arrow.textContent=s.arrow;
- distanceBig.textContent=s.meters>0?Math.max(0,Math.round(stepRemaining))+"m":"";
+ if(!selected)return; const s=selected.steps[stepIndex];
+ arrow.textContent=s.arrow; distanceBig.textContent=s.meters>0?Math.round(stepRemaining)+"m":"";
  instruction.textContent=s.text;
- nextText.textContent=warningText(s);
- stepNo.textContent="案内 "+(stepIndex+1)+" / "+selected.steps.length;
- fromTo.textContent=currentAnchor+" → "+selected.name;
- totalRemaining=selected.steps.slice(stepIndex).reduce((a,b,i)=>a+(i===0?stepRemaining:b.meters),0);
- remaining.textContent=totalRemaining>0?"残り 約"+Math.max(0,Math.round(totalRemaining))+"m":"到着";
+ nextText.textContent=(s.meters>0&&stepRemaining<=5&&s.next.includes("右"))?"⚠️ あと5mで右です":(s.meters>0&&stepRemaining<=5&&s.next.includes("左"))?"⚠️ あと5mで左です":s.next;
+ stepNo.textContent=`案内 ${stepIndex+1} / ${selected.steps.length}`;
+ fromTo.textContent=`${currentAnchor} → ${selected.name}`;
+ const rem=selected.steps.slice(stepIndex).reduce((a,b,i)=>a+(i===0?stepRemaining:b.meters),0);
+ remaining.textContent=rem>0?`残り 約${Math.round(rem)}m`:"到着";
  progressBar.style.width=((stepIndex+1)/selected.steps.length*100)+"%";
 }
-function warningText(s){
- if(s.meters<=0)return s.next;
- if(stepRemaining<=5 && s.next.includes("右")) return "⚠️ あと5mで右です";
- if(stepRemaining<=5 && s.next.includes("左")) return "⚠️ あと5mで左です";
- if(stepRemaining<=3 && s.next.includes("2F")) return "⚠️ まもなく2Fへ上がります";
- if(stepRemaining<=3 && s.next.includes("3F")) return "⚠️ まもなく3Fへ上がります";
- return s.next;
-}
-function advanceMeters(m=5){
- if(!selected)return;
- const s=selected.steps[stepIndex];
- if(s.meters===0){
-   advanceStep();
-   return;
- }
- stepRemaining=Math.max(0,stepRemaining-m);
- if(stepRemaining===0) advanceStep();
- else renderStep();
-}
-function advanceStep(){
- if(!selected)return;
- if(stepIndex<selected.steps.length-1){
-   stepIndex++;
-   stepRemaining=selected.steps[stepIndex].meters;
-   renderStep();
- } else {
-   renderStep();
- }
-}
-function advance(){advanceMeters(5)}
-function reroute(){
- if(!selected)return;
- offRouteCount=0;
- stepIndex=0;
- resetStepDistances();
- instruction.textContent="現在地から再計算しました";
- setTimeout(renderStep,500);
-}
-function stopNav(){
- selected=null;
- if(autoTimer){clearInterval(autoTimer);autoTimer=null}
- navCard.classList.add("hidden");
-}
-function setAnchor(name){
- currentAnchor=name;
- placeNow.textContent=name;
- accuracyNow.textContent="補正済";
- if(selected)reroute();
-}
-
-function simulateWalking(){
- if(autoTimer){clearInterval(autoTimer);autoTimer=null;walking=false;accuracyNow.textContent="停止";return}
- walking=true;
- accuracyNow.textContent="歩行デモ中";
- autoTimer=setInterval(()=>{
-   if(!selected){clearInterval(autoTimer);autoTimer=null;return}
-   advanceMeters(2);
- },900);
-}
-
-function markOffRoute(){
- if(!selected)return;
- offRouteCount++;
- instruction.textContent="ルートから外れました";
- nextText.textContent="🔄 新しいルートを計算中…";
- setTimeout(reroute,700);
-}
-
-async function enableCompass(){
- try{
-  if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
-    const p=await DeviceOrientationEvent.requestPermission();
-    if(p!=="granted")throw 0;
-  }
-  window.addEventListener("deviceorientation",e=>{
-    if(e.alpha!=null){
-      heading=(360-e.alpha)%360;
-      headingNow.textContent=Math.round(heading)+"°";
-    }
-  },true);
-  accuracyNow.textContent="方位ON";
- }catch(e){accuracyNow.textContent="方位未許可"}
-}
-async function enableMotion(){
- try{
-  if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
-    const p=await DeviceMotionEvent.requestPermission();
-    if(p!=="granted")throw 0;
-  }
-  window.addEventListener("devicemotion",e=>{
-    const a=e.accelerationIncludingGravity;
-    if(!a)return;
-    const m=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();
-    if(m>12.2&&now-lastMotion>450){
-      lastMotion=now;
-      if(selected)advanceMeters(0.75);
-    }
-  },true);
-  accuracyNow.textContent="歩数ON";
- }catch(e){accuracyNow.textContent="歩数未許可"}
-}
-function enableGPS(){
- if(!navigator.geolocation){accuracyNow.textContent="GPS非対応";return}
- navigator.geolocation.getCurrentPosition(p=>{
-   accuracyNow.textContent="±"+Math.round(p.coords.accuracy)+"m";
- },()=>{accuracyNow.textContent="GPS未許可"},{enableHighAccuracy:true,timeout:8000});
-}
+function advanceMeters(m){if(!selected)return;const s=selected.steps[stepIndex];if(s.meters===0){advanceStep();return}stepRemaining=Math.max(0,stepRemaining-m);if(stepRemaining===0)advanceStep();else renderStep()}
+function advanceStep(){if(stepIndex<selected.steps.length-1){stepIndex++;stepRemaining=selected.steps[stepIndex].meters;renderStep()}}
+function simulateWalking(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;accuracyNow.textContent="停止";return}accuracyNow.textContent="歩行デモ中";autoTimer=setInterval(()=>{if(selected)advanceMeters(2)},900)}
+function reroute(){if(!selected)return;stepIndex=0;stepRemaining=selected.steps[0].meters;renderStep()}
+function stopNav(){selected=null;if(autoTimer){clearInterval(autoTimer);autoTimer=null}navCard.classList.add("hidden")}
+function setAnchor(v){currentAnchor=v;placeNow.textContent=v;accuracyNow.textContent="補正済";if(selected)reroute()}
+async function enableCompass(){try{if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){const p=await DeviceOrientationEvent.requestPermission();if(p!=="granted")throw 0}window.addEventListener("deviceorientation",e=>{if(e.alpha!=null){heading=(360-e.alpha)%360;headingNow.textContent=Math.round(heading)+"°"}},true);accuracyNow.textContent="方位ON"}catch(e){accuracyNow.textContent="方位未許可"}}
+async function enableMotion(){try{if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){const p=await DeviceMotionEvent.requestPermission();if(p!=="granted")throw 0}window.addEventListener("devicemotion",e=>{const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();if(m>12.2&&now-lastMotion>450){lastMotion=now;if(selected)advanceMeters(.75)}},true);accuracyNow.textContent="歩数ON"}catch(e){accuracyNow.textContent="歩数未許可"}}
+function enableGPS(){if(!navigator.geolocation){accuracyNow.textContent="GPS非対応";return}navigator.geolocation.getCurrentPosition(p=>accuracyNow.textContent="±"+Math.round(p.coords.accuracy)+"m",()=>accuracyNow.textContent="GPS未許可",{enableHighAccuracy:true,timeout:8000})}
+if("serviceWorker"in navigator){window.addEventListener("load",()=>navigator.serviceWorker.register("./service-worker.js").catch(()=>{}))}
+init();
 </script>
-
-<script>
-if ("serviceWorker" in navigator) {
-  window.addEventListener("load", () => {
-    navigator.serviceWorker.register("./service-worker.js").catch(() => {});
-  });
-}
-</script>
-
-</body>
-</html>
+</body></html>

@@ -1,7 +1,6 @@
 {
-  "name": "館内ナビ｜イオンモール綾川",
+  "name": "館内ナビ",
   "short_name": "館内ナビ",
-  "description": "館内で『何m直進・右・左・何階へ』を案内するナビアプリ",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",
