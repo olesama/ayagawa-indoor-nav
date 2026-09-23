@@ -32,6 +32,17 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 .learnstats b{display:block;font-size:16px}.learnstats span{font-size:10px;color:#68727c}.learnnote{font-size:11px;color:#68727c;line-height:1.5;margin-top:8px}
 .learntable{width:100%;border-collapse:collapse;margin-top:8px;font-size:11px}.learntable td,.learntable th{border-bottom:1px solid #edf0f2;padding:6px 3px;text-align:left}
 </style>
+
+<style>
+.autoLearnPanel{background:#f3fbf7;border:1px solid #cfe8da;border-radius:14px;padding:12px;margin-top:10px}
+.autoLearnTitle{font-weight:900;font-size:14px}
+.autoLearnStatus{font-size:11px;color:#56616b;line-height:1.55;margin-top:6px}
+.autoLearnStats{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;margin-top:8px}
+.autoLearnStats div{background:#fff;border:1px solid #e2e8ed;border-radius:10px;padding:8px;text-align:center}
+.autoLearnStats b{display:block;font-size:15px}.autoLearnStats span{font-size:10px;color:#68727c}
+.autoCloud{display:inline-block;margin-top:6px;padding:4px 8px;border-radius:999px;background:#eef4ff;color:#1166cc;font-size:10px;font-weight:800}
+</style>
+
 </head>
 <body>
 <header><h1><span id="headerTitle">🧭 館内ナビ</span> <span style="font-size:10px;background:#222;color:#fff;border-radius:999px;padding:4px 7px">PRIVATE DEV</span></h1><div id="headerSub" class="sub">50施設・20言語対応</div></header>
@@ -84,6 +95,23 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 <button id="exportBtn" onclick="exportLearningData()">⬇ データを書き出す</button>
 <button id="clearBtn" onclick="clearAllLearning()">全削除</button>
 </div>
+</div>
+</section>
+
+
+<section class="card">
+<div class="autoLearnPanel">
+<div class="autoLearnTitle">🤖 完全自動・みんなの平均距離学習</div>
+<div class="autoLearnStatus">
+目的地を選ぶだけで記録開始。歩数と向きから移動距離を推定し、ナビが到着判定したら自動保存します。途中の入力は不要です。
+</div>
+<div class="autoLearnStats">
+<div><b id="autoSampleCount">0</b><span>このルートの記録数</span></div>
+<div><b id="autoAvgMeters">-</b><span>平均距離</span></div>
+<div><b id="autoThisMeters">0m</b><span>今回の距離</span></div>
+</div>
+<div id="autoLearnMsg" class="autoLearnStatus">待機中</div>
+<span id="autoCloudBadge" class="autoCloud">端末内学習</span>
 </div>
 </section>
 
@@ -346,4 +374,175 @@ function exportLearningData(){const blob=new Blob([JSON.stringify({schema:"indoo
 const _startNavByName=startNavByName;
 startNavByName=function(name){_startNavByName(name);setTimeout(()=>{if(selected)startAutoLearning()},0)};
 window.addEventListener("load",()=>{renderLearned();loadAutoConsent();});
+
+
+// ===== Fully automatic route learning =====
+// Cross-device aggregation is enabled when AUTO_LEARN_API is set.
+// Keep blank for private/offline development.
+const AUTO_LEARN_API = "";
+const AUTO_DB_KEY = "indoorNavAutoCollectiveV2";
+let autoTrip = null;
+let autoTripTimer = null;
+let autoLastHeading = null;
+let autoLastTurnAt = 0;
+let autoLastStepPeak = 0;
+let autoSensorsReady = false;
+
+function autoDB(){
+  try{return JSON.parse(localStorage.getItem(AUTO_DB_KEY)||"{}")}catch(e){return{}}
+}
+function saveAutoDB(db){localStorage.setItem(AUTO_DB_KEY,JSON.stringify(db))}
+function autoRouteKey(){
+  return `${currentFacility().name}::${currentAnchor||"不明"}::${selected?.name||"未選択"}`;
+}
+function autoAverage(samples){
+  if(!samples?.length)return 0;
+  const vals=samples.map(x=>+x.meters||0).filter(x=>x>0).sort((a,b)=>a-b);
+  if(!vals.length)return 0;
+  // Robust trimmed mean after enough samples, so one strange walk doesn't ruin the average.
+  let use=vals;
+  if(vals.length>=5){
+    const cut=Math.max(1,Math.floor(vals.length*.1));
+    use=vals.slice(cut, vals.length-cut);
+  }
+  return use.reduce((a,b)=>a+b,0)/use.length;
+}
+function renderAutoRouteStats(){
+  if(!selected)return;
+  const db=autoDB(), arr=db[autoRouteKey()]||[];
+  autoSampleCount.textContent=arr.length;
+  const a=autoAverage(arr);
+  autoAvgMeters.textContent=a?`${a.toFixed(1)}m`:"-";
+  autoThisMeters.textContent=autoTrip?`${autoTrip.meters.toFixed(1)}m`:"0m";
+  autoCloudBadge.textContent=AUTO_LEARN_API?"匿名クラウド集約ON":"端末内学習";
+}
+async function ensureAutoSensors(){
+  if(autoSensorsReady)return true;
+  try{
+    if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){
+      const p=await DeviceMotionEvent.requestPermission(); if(p!=="granted")throw new Error("motion denied");
+    }
+    if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){
+      const p=await DeviceOrientationEvent.requestPermission(); if(p!=="granted")throw new Error("orientation denied");
+    }
+    window.addEventListener("devicemotion",e=>{
+      if(!autoTrip)return;
+      const a=e.accelerationIncludingGravity;if(!a)return;
+      const mag=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();
+      if(mag>12.2&&now-autoLastStepPeak>450){
+        autoLastStepPeak=now;
+        autoTrip.steps++;
+        autoTrip.meters=+(autoTrip.steps*0.72).toFixed(1);
+        autoTrip.lastMoveAt=now;
+        renderAutoRouteStats();
+      }
+    },true);
+    window.addEventListener("deviceorientation",e=>{
+      if(!autoTrip||e.alpha==null)return;
+      const h=(360-e.alpha)%360;
+      if(autoLastHeading==null){autoLastHeading=h;return}
+      const signed=(((h-autoLastHeading)+540)%360)-180;
+      const now=Date.now();
+      if(Math.abs(signed)>=35&&now-autoLastTurnAt>2200&&autoTrip.steps-autoTrip.lastTurnStep>=2){
+        autoTrip.turns.push({dir:signed>0?"right":"left",step:autoTrip.steps});
+        autoTrip.lastTurnStep=autoTrip.steps;
+        autoLastTurnAt=now;
+        autoLastHeading=h;
+      }else if(Math.abs(signed)<15){
+        autoLastHeading=(autoLastHeading*.85+h*.15)%360;
+      }
+    },true);
+    autoSensorsReady=true;
+    return true;
+  }catch(e){
+    autoLearnMsg.textContent="iPhoneのモーション/方位センサーを許可すると自動学習できます。";
+    return false;
+  }
+}
+async function beginAutoTrip(){
+  if(!selected)return;
+  await ensureAutoSensors();
+  autoTrip={
+    startedAt:Date.now(),
+    facility:currentFacility().name,
+    from:currentAnchor||"不明",
+    destination:selected.name,
+    steps:0,meters:0,turns:[],lastTurnStep:0,lastMoveAt:Date.now()
+  };
+  autoLastHeading=null;autoLastTurnAt=0;
+  autoLearnMsg.textContent=`自動記録中：${autoTrip.from} → ${autoTrip.destination}`;
+  if(autoTripTimer)clearInterval(autoTripTimer);
+  autoTripTimer=setInterval(()=>{
+    renderAutoRouteStats();
+    // If the route engine itself is at the arrival step, save automatically.
+    if(selected && navSteps?.length && stepIndex>=navSteps.length-1){
+      autoFinishTrip("route-arrival");
+    }
+  },1000);
+  renderAutoRouteStats();
+}
+async function autoFinishTrip(reason){
+  if(!autoTrip)return;
+  const sample={
+    at:new Date().toISOString(),
+    facility:autoTrip.facility,
+    from:autoTrip.from,
+    destination:autoTrip.destination,
+    steps:autoTrip.steps,
+    meters:autoTrip.meters,
+    durationSec:Math.max(1,Math.round((Date.now()-autoTrip.startedAt)/1000)),
+    turns:autoTrip.turns.length,
+    completion:reason
+  };
+  // Reject obvious false samples.
+  if(sample.steps<4 || sample.meters<2){
+    autoLearnMsg.textContent="移動量が少なすぎるため今回の記録は学習に使いませんでした。";
+    autoTrip=null;
+    if(autoTripTimer){clearInterval(autoTripTimer);autoTripTimer=null}
+    renderAutoRouteStats();
+    return;
+  }
+
+  const db=autoDB(),k=`${sample.facility}::${sample.from}::${sample.destination}`;
+  db[k]=db[k]||[];
+  db[k].push(sample);
+  if(db[k].length>200)db[k]=db[k].slice(-200);
+  saveAutoDB(db);
+
+  if(AUTO_LEARN_API){
+    try{
+      await fetch(AUTO_LEARN_API,{
+        method:"POST",
+        headers:{"Content-Type":"application/json"},
+        body:JSON.stringify(sample),
+        keepalive:true
+      });
+    }catch(e){}
+  }
+  const avg=autoAverage(db[k]);
+  autoLearnMsg.textContent=`自動保存しました。現在の平均距離：約${avg.toFixed(1)}m`;
+  autoTrip=null;
+  if(autoTripTimer){clearInterval(autoTripTimer);autoTripTimer=null}
+  renderAutoRouteStats();
+}
+function cancelAutoTrip(){
+  autoTrip=null;
+  if(autoTripTimer){clearInterval(autoTripTimer);autoTripTimer=null}
+  renderAutoRouteStats();
+}
+// Start automatically when destination navigation starts.
+const _autoOrigStartNavByName=startNavByName;
+startNavByName=function(name){
+  _autoOrigStartNavByName(name);
+  setTimeout(()=>{if(selected)beginAutoTrip()},0);
+};
+// If navigation is manually stopped before arrival, discard sample.
+const _autoOrigStopNav=stopNav;
+stopNav=function(){
+  const arrived=selected&&navSteps?.length&&stepIndex>=navSteps.length-1;
+  if(arrived)autoFinishTrip("route-arrival"); else cancelAutoTrip();
+  _autoOrigStopNav();
+};
+window.addEventListener("load",renderAutoRouteStats);
+
 </script></body></html>
