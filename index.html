@@ -41,7 +41,7 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 
 </head>
 <body>
-<header><h1><span id="headerTitle">🧭 館内ナビ</span> <span style="font-size:10px;background:#222;color:#fff;border-radius:999px;padding:4px 7px">駅設備登録版</span></h1><div id="headerSub" class="sub">都道府県から選択・19駅の公式設備検索・20言語対応</div></header>
+<header><h1><span id="headerTitle">🧭 館内ナビ</span> <span style="font-size:10px;background:#222;color:#fff;border-radius:999px;padding:4px 7px">全国施設版</span></h1><div id="headerSub" class="sub">47都道府県の大型商業施設・19駅・20言語対応</div></header>
 <main>
 <section class="card">
 <select id="langSelect" class="facility" onchange="setLanguage(this.value)" style="margin-bottom:8px"></select>
@@ -92,6 +92,59 @@ const F={"f0":{"name":"イオンモール綾川","area":"香川県","map":"https
 const AY_NODES={"entrance1": {"x": 50, "y": 100, "floor": 1, "label": "中央入口"}, "w1": {"x": 10, "y": 50, "floor": 1, "label": "1F 西端通路"}, "c1": {"x": 50, "y": 50, "floor": 1, "label": "1F 中央通路"}, "ce1": {"x": 72, "y": 50, "floor": 1, "label": "1F 東側通路"}, "e1": {"x": 90, "y": 50, "floor": 1, "label": "1F 東端通路"}, "westEntrance1": {"x": 4, "y": 50, "floor": 1, "label": "西側入口"}, "eastEntrance1": {"x": 96, "y": 50, "floor": 1, "label": "東側入口"}, "westEV1": {"x": 12, "y": 30, "floor": 1, "label": "西EV"}, "eastEV1": {"x": 88, "y": 30, "floor": 1, "label": "東EV"}, "court1": {"x": 50, "y": 44, "floor": 1, "label": "中央コート"}, "muji1": {"x": 26, "y": 38, "floor": 1, "label": "無印良品"}, "kaldi1": {"x": 73, "y": 38, "floor": 1, "label": "カルディ"}, "restaurant1": {"x": 84, "y": 64, "floor": 1, "label": "レストラン街"}, "w2": {"x": 10, "y": 50, "floor": 2, "label": "2F 西端通路"}, "wc2c": {"x": 28, "y": 50, "floor": 2, "label": "2F 西側通路"}, "c2": {"x": 50, "y": 50, "floor": 2, "label": "2F 中央通路"}, "ce2": {"x": 72, "y": 50, "floor": 2, "label": "2F 東側通路"}, "e2": {"x": 90, "y": 50, "floor": 2, "label": "2F 東端通路"}, "westEV2": {"x": 12, "y": 30, "floor": 2, "label": "西EV 2F"}, "eastEV2": {"x": 88, "y": 30, "floor": 2, "label": "東EV 2F"}, "global2": {"x": 27, "y": 38, "floor": 2, "label": "グローバルワーク"}, "daiso2": {"x": 73, "y": 38, "floor": 2, "label": "ダイソー・Standard Products"}, "wc2": {"x": 71, "y": 64, "floor": 2, "label": "2F トイレ"}, "w3": {"x": 10, "y": 50, "floor": 3, "label": "3F 西端通路"}, "wc3c": {"x": 28, "y": 50, "floor": 3, "label": "3F 西側通路"}, "c3": {"x": 50, "y": 50, "floor": 3, "label": "3F 中央通路"}, "ce3": {"x": 72, "y": 50, "floor": 3, "label": "3F 東側通路"}, "e3": {"x": 90, "y": 50, "floor": 3, "label": "3F 東端通路"}, "westEV3": {"x": 12, "y": 30, "floor": 3, "label": "西EV 3F"}, "eastEV3": {"x": 88, "y": 30, "floor": 3, "label": "東EV 3F"}, "food3": {"x": 29, "y": 38, "floor": 3, "label": "フードコート"}, "jins3": {"x": 70, "y": 38, "floor": 3, "label": "JINS"}, "cinema3": {"x": 90, "y": 18, "floor": 3, "label": "イオンシネマ綾川"}, "wc3": {"x": 71, "y": 64, "floor": 3, "label": "3F トイレ"}, "toilet1": {"x": 30, "y": 64, "floor": 1, "label": "1F トイレ"}, "wc1": {"x": 28, "y": 50, "floor": 1, "label": "1F 西側通路"}};
 const AY_EDGES=[["entrance1", "c1", 15, 15, "walk"], ["westEntrance1", "w1", 8, 8, "walk"], ["eastEntrance1", "e1", 8, 8, "walk"], ["w1", "wc1", 22, 22, "walk"], ["wc1", "c1", 28, 28, "walk"], ["c1", "ce1", 28, 28, "walk"], ["ce1", "e1", 22, 22, "walk"], ["w1", "westEV1", 7, 7, "walk"], ["e1", "eastEV1", 7, 7, "walk"], ["c1", "court1", 4, 4, "walk"], ["wc1", "muji1", 8, 8, "walk"], ["ce1", "kaldi1", 7, 7, "walk"], ["e1", "restaurant1", 12, 12, "walk"], ["wc1", "toilet1", 7, 7, "walk"], ["w2", "wc2c", 22, 22, "walk"], ["wc2c", "c2", 28, 28, "walk"], ["c2", "ce2", 28, 28, "walk"], ["ce2", "e2", 22, 22, "walk"], ["w2", "westEV2", 7, 7, "walk"], ["e2", "eastEV2", 7, 7, "walk"], ["wc2c", "global2", 7, 7, "walk"], ["ce2", "daiso2", 8, 8, "walk"], ["ce2", "wc2", 7, 7, "walk"], ["w3", "wc3c", 22, 22, "walk"], ["wc3c", "c3", 28, 28, "walk"], ["c3", "ce3", 28, 28, "walk"], ["ce3", "e3", 22, 22, "walk"], ["w3", "westEV3", 7, 7, "walk"], ["e3", "eastEV3", 7, 7, "walk"], ["wc3c", "food3", 8, 8, "walk"], ["ce3", "jins3", 7, 7, "walk"], ["e3", "cinema3", 18, 18, "walk"], ["ce3", "wc3", 7, 7, "walk"], ["westEV1", "westEV2", 0, 12, "vertical"], ["westEV2", "westEV3", 0, 12, "vertical"], ["eastEV1", "eastEV2", 0, 12, "vertical"], ["eastEV2", "eastEV3", 0, 12, "vertical"]];
 const AY_ANCHORS={"中央入口": "entrance1", "西EV": "westEV1", "中央コート": "court1", "東EV": "eastEV1", "西側入口": "westEntrance1", "東側入口": "eastEntrance1"};
+const MALL_COMMON_PLACES=[
+ {name:"総合案内・インフォメーション",level:"施設内"},{name:"フードコート・レストラン",level:"施設内"},{name:"トイレ",level:"施設内"},{name:"エレベーター",level:"施設内"},{name:"駐車場・駐車サービス",level:"施設内"}
+];
+const NATIONWIDE_MAJOR_MALLS=[
+ {name:"三井アウトレットパーク 札幌北広島",area:"北海道",map:"https://mitsui-shopping-park.com/mop/sapporo/",type:"アウトレット"},
+ {name:"イオンモール下田",area:"青森県",map:"https://www.aeon.jp/sc/shimoda/",type:"ショッピングモール"},
+ {name:"イオンモール盛岡",area:"岩手県",map:"https://www.aeon.jp/sc/morioka/",type:"ショッピングモール"},
+ {name:"イオンモール新利府",area:"宮城県",map:"https://www.aeon.jp/sc/shinrifu/",type:"ショッピングモール"},
+ {name:"イオンモール秋田",area:"秋田県",map:"https://www.aeon.jp/sc/akita/",type:"ショッピングモール"},
+ {name:"イオンモール天童",area:"山形県",map:"https://www.aeon.jp/sc/tendo/",type:"ショッピングモール"},
+ {name:"イオンモールいわき小名浜",area:"福島県",map:"https://www.aeon.jp/sc/iwakionahama/",type:"ショッピングモール"},
+ {name:"イオンモール水戸内原",area:"茨城県",map:"https://www.aeon.jp/sc/mitouchihara/",type:"ショッピングモール"},
+ {name:"佐野プレミアム・アウトレット",area:"栃木県",map:"https://www.premiumoutlets.co.jp/sano/",type:"アウトレット"},
+ {name:"イオンモール太田",area:"群馬県",map:"https://www.aeon.jp/sc/ota/",type:"ショッピングモール"},
+ {name:"イオンレイクタウン",area:"埼玉県",map:"https://www.aeon-laketown.jp/",type:"ショッピングモール"},
+ {name:"三井アウトレットパーク 木更津",area:"千葉県",map:"https://mitsui-shopping-park.com/mop/kisarazu/",type:"アウトレット"},
+ {name:"東京ソラマチ",area:"東京都",map:"https://www.tokyo-solamachi.jp/floor/",type:"ショッピングモール"},
+ {name:"ラゾーナ川崎プラザ",area:"神奈川県",map:"https://mitsui-shopping-park.com/lazona-kawasaki/",type:"ショッピングモール"},
+ {name:"イオンモール新潟亀田インター",area:"新潟県",map:"https://www.aeon.jp/sc/niigatakameda-inter/",type:"ショッピングモール"},
+ {name:"イオンモール高岡",area:"富山県",map:"https://www.aeon.jp/sc/takaoka/",type:"ショッピングモール"},
+ {name:"イオンモール白山",area:"石川県",map:"https://www.aeon.jp/sc/hakusan/",type:"ショッピングモール"},
+ {name:"ラブリーパートナー エルパ",area:"福井県",map:"https://lp-lpa.co.jp/",type:"ショッピングモール"},
+ {name:"イオンモール甲府昭和",area:"山梨県",map:"https://www.aeon.jp/sc/kofushowa/",type:"ショッピングモール"},
+ {name:"イオンモール松本",area:"長野県",map:"https://www.aeon.jp/sc/matsumoto/",type:"ショッピングモール"},
+ {name:"土岐プレミアム・アウトレット",area:"岐阜県",map:"https://www.premiumoutlets.co.jp/toki/",type:"アウトレット"},
+ {name:"御殿場プレミアム・アウトレット",area:"静岡県",map:"https://www.premiumoutlets.co.jp/gotemba/",type:"アウトレット"},
+ {name:"イオンモール常滑",area:"愛知県",map:"https://www.aeon.jp/sc/tokoname/",type:"ショッピングモール"},
+ {name:"イオンモール鈴鹿",area:"三重県",map:"https://www.aeon.jp/sc/suzuka/",type:"ショッピングモール"},
+ {name:"イオンモール草津",area:"滋賀県",map:"https://www.aeon.jp/sc/kusatsu/",type:"ショッピングモール"},
+ {name:"イオンモールKYOTO",area:"京都府",map:"https://www.aeon.jp/sc/kyoto/",type:"ショッピングモール"},
+ {name:"三井アウトレットパーク 大阪門真",area:"大阪府",map:"https://mitsui-shopping-park.com/mop/osakakadoma/",type:"アウトレット"},
+ {name:"神戸三田プレミアム・アウトレット",area:"兵庫県",map:"https://www.premiumoutlets.co.jp/kobesanda/",type:"アウトレット"},
+ {name:"イオンモール橿原",area:"奈良県",map:"https://www.aeon.jp/sc/kashihara/",type:"ショッピングモール"},
+ {name:"イオンモール和歌山",area:"和歌山県",map:"https://www.aeon.jp/sc/wakayama/",type:"ショッピングモール"},
+ {name:"イオンモール鳥取北",area:"鳥取県",map:"https://www.aeon.jp/sc/tottorikita/",type:"ショッピングモール"},
+ {name:"イオンモール出雲",area:"島根県",map:"https://www.aeon.jp/sc/izumo/",type:"ショッピングモール"},
+ {name:"イオンモール岡山",area:"岡山県",map:"https://www.aeon.jp/sc/okayama/",type:"ショッピングモール"},
+ {name:"イオンモール広島府中",area:"広島県",map:"https://www.aeon.jp/sc/hiroshimafuchu/",type:"ショッピングモール"},
+ {name:"おのだサンパーク",area:"山口県",map:"https://sunpark.co.jp/floor/index.html",type:"ショッピングモール"},
+ {name:"イオンモール徳島",area:"徳島県",map:"https://www.aeon.jp/sc/tokushima/",type:"ショッピングモール"},
+ {name:"イオンモール綾川",area:"香川県",map:"https://www.aeon.jp/sc/ayagawa/shop/floor/ebook/ayagawa/pageindices/",type:"ショッピングモール"},
+ {name:"イオンモール今治新都市",area:"愛媛県",map:"https://www.aeon.jp/sc/imabarishintoshi/",type:"ショッピングモール"},
+ {name:"イオンモール高知",area:"高知県",map:"https://www.aeon.jp/sc/kochi/",type:"ショッピングモール"},
+ {name:"イオンモール福岡",area:"福岡県",map:"https://www.aeon.jp/sc/fukuoka/",type:"ショッピングモール"},
+ {name:"鳥栖プレミアム・アウトレット",area:"佐賀県",map:"https://www.premiumoutlets.co.jp/tosu/",type:"アウトレット"},
+ {name:"アミュプラザ長崎",area:"長崎県",map:"https://www.amu-n.co.jp/floor/",type:"ショッピングモール"},
+ {name:"イオンモール熊本",area:"熊本県",map:"https://www.aeon.jp/sc/kumamoto/",type:"ショッピングモール"},
+ {name:"パークプレイス大分",area:"大分県",map:"https://shop.parkplace-oita.com/map/f1",type:"ショッピングモール"},
+ {name:"イオンモール宮崎",area:"宮崎県",map:"https://www.aeon.jp/sc/miyazaki/",type:"ショッピングモール"},
+ {name:"アミュプラザ鹿児島",area:"鹿児島県",map:"https://www.jrkagoshimacity.com/floor/",type:"ショッピングモール"},
+ {name:"イオンモール沖縄ライカム",area:"沖縄県",map:"https://www.aeon.jp/sc/okinawarycom/",type:"ショッピングモール"}
+];
+NATIONWIDE_MAJOR_MALLS.forEach((mall,i)=>{if(!Object.values(F).some(v=>v.name===mall.name)){F[`m${String(i+1).padStart(2,"0")}`]={...mall,anchors:[],places:MALL_COMMON_PLACES.map(p=>({...p})),reviewStatus:"official_catalog"}}});
 // The first-floor toilet was present as a node but missing its corridor connection.
 AY_EDGES.push(["wc1","toilet1",3,3,"walk"]);
 const AY_AMENITIES=[
@@ -192,11 +245,12 @@ function allPlaces(){
  const combined=isStation()?[...stationBasePlaces(key),...stationPlaces(key)]:[...(currentFacility().places||[])];
  return combined.filter((p,i,a)=>a.findIndex(x=>x.name===p.name)===i);
 }
-function prefectureOf(area){const m=String(area||"").match(/^(.+?[都道府県])/);return m?m[1]:String(area||"")}
+function prefectureOf(area){const s=String(area||"");const m=s.match(/^(北海道|東京都|京都府|大阪府|.{2,3}県)/);return m?m[1]:s}
+const PREFECTURE_ORDER=["北海道","青森県","岩手県","宮城県","秋田県","山形県","福島県","茨城県","栃木県","群馬県","埼玉県","千葉県","東京都","神奈川県","新潟県","富山県","石川県","福井県","山梨県","長野県","岐阜県","静岡県","愛知県","三重県","滋賀県","京都府","大阪府","兵庫県","奈良県","和歌山県","鳥取県","島根県","岡山県","広島県","山口県","徳島県","香川県","愛媛県","高知県","福岡県","佐賀県","長崎県","熊本県","大分県","宮崎県","鹿児島県","沖縄県"];
 function facilityEntriesForPref(pref){return Object.entries(F).filter(([,v])=>prefectureOf(v.area)===pref)}
 function fillFacilitySelect(pref,selectedId){
  const entries=facilityEntriesForPref(pref);
- facilitySelect.innerHTML=entries.map(([id,v])=>`<option value="${id}">${escapeHtml(v.name)}【${facilityCoverage(id).label}】</option>`).join("");
+ facilitySelect.innerHTML=entries.map(([id,v])=>`<option value="${id}">${escapeHtml(v.name)}${v.type?`（${escapeHtml(v.type)}）`:""}【${facilityCoverage(id).label}】</option>`).join("");
  const id=entries.some(([x])=>x===selectedId)?selectedId:entries[0]?.[0];
  if(id){facilitySelect.value=id;changeFacility(id)}
 }
@@ -205,8 +259,8 @@ function renderFacilityCatalog(){
  const input=document.getElementById("facilityQ"),box=document.getElementById("facilityCatalog");if(!box)return;
  const search=normEasy(input?.value||"");
  if(!search){box.innerHTML="";return}
- const hits=Object.entries(F).filter(([,v])=>normEasy(v.name+" "+v.area).includes(search));
- box.innerHTML=hits.slice(0,50).map(([id,v])=>`<button type="button" class="${id===key?'active':''}" data-id="${id}">${escapeHtml(v.name)}<small style="display:block;color:#68727c">${escapeHtml(v.area)}・${facilityCoverage(id).label}</small></button>`).join("")||"該当する施設はありません";
+ const hits=Object.entries(F).filter(([,v])=>normEasy(v.name+" "+v.area+" "+(v.type||"")).includes(search));
+ box.innerHTML=hits.slice(0,50).map(([id,v])=>`<button type="button" class="${id===key?'active':''}" data-id="${id}">${escapeHtml(v.name)}<small style="display:block;color:#68727c">${escapeHtml(v.area)}${v.type?`・${escapeHtml(v.type)}`:""}・${facilityCoverage(id).label}</small></button>`).join("")||"該当する施設はありません";
  box.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>selectFacilityById(b.dataset.id)));
 }
 function selectFacilityById(id){
@@ -259,7 +313,7 @@ function searchFacilitiesEasy(){
  if(!box||!input)return;
  const s=normEasy(input.value);
  if(!s){box.innerHTML="";return}
- const hits=Object.entries(F).filter(([k,v])=>normEasy(v.name+" "+v.area).includes(s)).slice(0,8);
+ const hits=Object.entries(F).filter(([k,v])=>normEasy(v.name+" "+v.area+" "+(v.type||"")).includes(s)).slice(0,8);
  box.innerHTML=hits.map(([k,v])=>`<button type="button" onclick="selectFacilityEasy('${k}')">${v.name}</button>`).join("");
 }
 function selectFacilityEasy(k){
@@ -283,13 +337,13 @@ function focusCurrentLocation(){
  setTimeout(()=>card.classList.remove("needsLocation"),1800);
 }
 function init(){
- const prefs=[...new Set(Object.values(F).map(v=>prefectureOf(v.area)))];
+ const available=new Set(Object.values(F).map(v=>prefectureOf(v.area)));const prefs=PREFECTURE_ORDER.filter(p=>available.has(p));
  prefectureSelect.innerHTML=prefs.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
  const firstPref=prefectureOf(F.f0.area);prefectureSelect.value=firstPref;fillFacilitySelect(firstPref,"f0");
 }
 function changeFacility(k){
   if(!F[k])return;key=k; const x=F[k]; stopNav();viewedFloor=1;activePath=[];facilitySelect.value=k;prefectureSelect.value=prefectureOf(x.area);
- facilityInfo.innerHTML=`<div class="facilityTitle">${x.name}</div><div class="facilitySub">${x.area}</div>`+
+ facilityInfo.innerHTML=`<div class="facilityTitle">${x.name}</div><div class="facilitySub">${x.area}${x.type?`・${x.type}`:""}</div>`+
   coverageBadge(k)+(k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:STATION_IDS.has(k)?`<span class="badge">公式構内図ベースの暫定値</span>`:`<span class="badge proto">館内経路は未確認</span>`);
  officialMap.href=x.map;
  const dock=document.getElementById("officialMapDock");dock.href=x.map;dock.classList.toggle("hidden",!STATION_IDS.has(k));
@@ -323,7 +377,7 @@ function searchPlace(){
    results.innerHTML=found.map(p=>`<div class="result" onclick='startNavByName(${JSON.stringify(p.name)})'><b>${escapeHtml(p.name)}${estimateBadge(p)}</b><span>${escapeHtml(p.level||"")}</span></div>`).join("");
    return;
   }
-  const facilities=Object.entries(F).filter(([,v])=>normEasy(v.name+" "+v.area).includes(normEasy(raw)));
+  const facilities=Object.entries(F).filter(([,v])=>normEasy(v.name+" "+v.area+" "+(v.type||"")).includes(normEasy(raw)));
   results.innerHTML=facilities.length?`<div class="small" style="margin-top:9px">施設・県名の検索結果：施設を選んでください</div>`+facilities.map(([id,v])=>`<button type="button" class="result" style="display:block;width:100%;text-align:left;background:white" data-facility="${id}"><b>${escapeHtml(v.name)}</b><span>${escapeHtml(v.area)}・${facilityCoverage(id).label}</span></button>`).join(""):`<div class="result">${T('notfound')}</div>`;
   results.querySelectorAll("[data-facility]").forEach(b=>b.addEventListener("click",()=>{selectFacilityById(b.dataset.facility);q.value=""}));
 }
@@ -426,7 +480,7 @@ function applyLanguage(){
  const ph=(id,val)=>{const e=document.getElementById(id);if(e)e.placeholder=val};
 
  set("headerTitle",T("app"));
- set("headerSub",T("sub"));
+ set("headerSub",appLang==="ja"?`${Object.keys(F).length}施設・47都道府県対応・20言語対応`:`${Object.keys(F).length} facilities · all 47 prefectures · 20 languages`);
  set("officialMapText",T("official"));
  set("locationFixBtn",appLang==="ja"?"📍 現在地を選ぶ":"📍 Choose current location");
   ph("q",appLang==="ja"?"行き先・県名・施設名を入力":T("searchph"));
