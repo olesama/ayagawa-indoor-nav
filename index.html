@@ -40,10 +40,13 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 
 </head>
 <body>
-<header><h1><span id="headerTitle">🧭 館内ナビ</span> <span style="font-size:10px;background:#222;color:#fff;border-radius:999px;padding:4px 7px">試作版</span></h1><div id="headerSub" class="sub">50施設の候補・20言語対応</div></header>
+<header><h1><span id="headerTitle">🧭 館内ナビ</span> <span style="font-size:10px;background:#222;color:#fff;border-radius:999px;padding:4px 7px">駅設備登録版</span></h1><div id="headerSub" class="sub">都道府県から選択・19駅の公式設備検索・20言語対応</div></header>
 <main>
 <section class="card">
 <select id="langSelect" class="facility" onchange="setLanguage(this.value)" style="margin-bottom:8px"></select>
+<label for="prefectureSelect" style="display:block;font-size:12px;font-weight:800;margin:3px 0 6px">① 都道府県を選ぶ</label>
+<select id="prefectureSelect" class="facility" onchange="changePrefecture(this.value)" style="margin-bottom:10px"></select>
+<label for="facilitySelect" style="display:block;font-size:12px;font-weight:800;margin:3px 0 6px">② 施設を選ぶ</label>
 <select id="facilitySelect" class="facility" onchange="changeFacility(this.value)"></select>
 <div style="margin-top:10px"><input id="facilityQ" class="facility" placeholder="施設名・県名で探す" oninput="renderFacilityCatalog()" aria-label="施設名・県名で探す"></div>
 <div id="facilityCatalog" class="catalog"></div>
@@ -61,7 +64,7 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 </section>
 
 <section class="card">
-<div class="search"><input id="q" placeholder="行きたい場所を入力"><button id="searchBtn" onclick="searchPlace()">検索</button></div>
+<div class="search"><input id="q" placeholder="行き先・県名・施設名を入力"><button id="searchBtn" onclick="searchPlace()">検索</button></div>
 <div id="quick" class="chips" style="margin-top:9px"></div><div id="results"></div>
 </section>
 
@@ -77,7 +80,7 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 <div class="status" style="margin-top:10px"><div><b id="placeNow">-</b><span id="currentLocLabel">現在地</span></div><div><b id="headingNow">0°</b><span id="headingLabel">向き</span></div><div><b id="accuracyNow">補正済</b><span id="accuracyLabel">位置精度</span></div></div>
 <div class="row" style="margin-top:10px"><button id="compassBtn" onclick="enableCompass()">🧭 方位</button><button id="motionBtn" onclick="enableMotion()">👣 歩数</button><button id="gpsBtn" onclick="enableGPS()">📡 GPS精度</button></div></section>
 
-<p id="footNote" class="small">綾川は概略図、他の施設は場所の候補一覧です。館内位置や距離は未検証のため、移動前に公式案内をご確認ください。</p>
+<p id="footNote" class="small">駅では公式構内図の設備を検索できます。現在は公式情報への案内までで、設備までの経路線とリアルタイム屋内位置は未作成です。</p>
 
 
 </main>
@@ -103,15 +106,52 @@ const AY_AMENITIES=[
  {name:"西エレベーター 3F",level:"3F",target:"westEV3",icon:"🛗"},
  {name:"東エレベーター 3F",level:"3F",target:"eastEV3",icon:"🛗"}
 ];
+const STATION_IDS=new Set(["f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12","f21","f44","f45","f46","f47","f48","f49"]);
+const STATION_COMMON=[
+ {name:"🚪 改札・出口（公式構内図）",category:"改札",locationText:"公式構内図に掲載されている改札・出口を確認できます。"},
+ {name:"🚻 トイレ（公式構内図）",category:"トイレ",locationText:"公式構内図のトイレ記号から設置場所を確認できます。"},
+ {name:"🎫 きっぷうりば・券売機（公式構内図）",category:"きっぷ",locationText:"公式構内図のきっぷうりば・券売機記号から設置場所を確認できます。"},
+ {name:"🛗 エレベーター（公式構内図）",category:"エレベーター",locationText:"公式構内図のエレベーター記号から設置場所を確認できます。"},
+ {name:"🧳 コインロッカー（公式構内図）",category:"コインロッカー",locationText:"公式構内図のコインロッカー記号から設置場所を確認できます。"}
+];
+const STATION_SPECIFIC={
+ f1:["丸の内南口きっぷうりば","丸の内北口きっぷうりば","八重洲中央口きっぷうりば","八重洲北口きっぷうりば","八重洲南口きっぷうりば","日本橋口きっぷうりば","丸の内地下北口みどりの窓口","丸の内地下中央口きっぷうりば","京葉地下丸の内口きっぷうりば"].map(name=>({name:`🎫 ${name}`,category:"きっぷ",locationText:`${name}付近。公式構内図で改札内・改札外と階を確認してください。`})),
+ f8:["中央口","御堂筋口","連絡橋口","桜橋口","うめきた地下口","西口"].map(x=>({name:`🎫 ${x} みどりの券売機`,category:"きっぷ",locationText:`${x}付近にみどりの券売機があります。営業時間は公式駅情報で確認してください。`})),
+ f12:[{name:"🎫 みどりの窓口",category:"きっぷ",locationText:"博多駅のみどりの窓口。公式駅情報では7:00～22:00（年中無休）と案内されています。"}]
+};
+F.f21.map="https://www.jr-shikoku.co.jp/01_trainbus/kakueki/takamatsu/";
+F.f44.map="https://www.jrhokkaido.co.jp/network/station/station.html";
+function isStation(){return STATION_IDS.has(key)}
+function stationPlaces(id){
+ if(!STATION_IDS.has(id))return[];
+ return [...STATION_COMMON,...(STATION_SPECIFIC[id]||[])].map(p=>({...p,level:"公式構内図",official:true,checked:"2026-09-24"}));
+}
 let viewedFloor=1, activePath=[];
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c])}
-function allPlaces(){return key==="f0"?[...currentFacility().places.filter(p=>p.name!=="1F トイレ"&&p.name!=="2F トイレ"&&p.name!=="3F トイレ"),...AY_AMENITIES]:currentFacility().places}
+function allPlaces(){
+ if(key==="f0")return[...currentFacility().places.filter(p=>p.name!=="1F トイレ"&&p.name!=="2F トイレ"&&p.name!=="3F トイレ"),...AY_AMENITIES];
+ const combined=[...(currentFacility().places||[]),...stationPlaces(key)];
+ return combined.filter((p,i,a)=>a.findIndex(x=>x.name===p.name)===i);
+}
+function prefectureOf(area){const m=String(area||"").match(/^(.+?[都道府県])/);return m?m[1]:String(area||"")}
+function facilityEntriesForPref(pref){return Object.entries(F).filter(([,v])=>prefectureOf(v.area)===pref)}
+function fillFacilitySelect(pref,selectedId){
+ const entries=facilityEntriesForPref(pref);
+ facilitySelect.innerHTML=entries.map(([id,v])=>`<option value="${id}">${escapeHtml(v.name)}</option>`).join("");
+ const id=entries.some(([x])=>x===selectedId)?selectedId:entries[0]?.[0];
+ if(id){facilitySelect.value=id;changeFacility(id)}
+}
+function changePrefecture(pref){fillFacilitySelect(pref)}
 function renderFacilityCatalog(){
  const input=document.getElementById("facilityQ"),box=document.getElementById("facilityCatalog");if(!box)return;
  const search=normEasy(input?.value||"");
+ if(!search){box.innerHTML="";return}
  const hits=Object.entries(F).filter(([,v])=>normEasy(v.name+" "+v.area).includes(search));
  box.innerHTML=hits.slice(0,50).map(([id,v])=>`<button type="button" class="${id===key?'active':''}" data-id="${id}">${escapeHtml(v.name)}<small style="display:block;color:#68727c">${escapeHtml(v.area)}</small></button>`).join("")||"該当する施設はありません";
- box.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>{facilitySelect.value=b.dataset.id;changeFacility(b.dataset.id)}));
+ box.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>selectFacilityById(b.dataset.id)));
+}
+function selectFacilityById(id){
+ const pref=prefectureOf(F[id].area);prefectureSelect.value=pref;fillFacilitySelect(pref,id);
 }
 function showFloor(f){viewedFloor=Number(f);renderFloorPanel()}
 function renderFloorPanel(){
@@ -121,8 +161,8 @@ function renderFloorPanel(){
    const levels=[...new Set(places.map(p=>p.level||"施設内"))];
    floors.innerHTML=levels.map(l=>`<button type="button" class="active">${escapeHtml(l)}</button>`).join("");
    map.classList.add("hidden");
-   list.innerHTML=places.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}"><b>${escapeHtml(p.name)}</b><small>${escapeHtml(p.level||"階の詳細は公式案内で確認")}</small></button>`).join("");
-   legend.textContent="この施設は館内の位置・通路を未確認です。目的地の候補と公式案内を表示しています。";
+   list.innerHTML=places.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}"><b>${escapeHtml(p.name)}</b><small>${escapeHtml(p.official?(p.locationText||"公式構内図で確認"):p.level||"階の詳細は公式案内で確認")}</small></button>`).join("");
+   legend.textContent=isStation()?"改札・トイレ・きっぷうりば・エレベーター等を検索できます。設備位置は公式構内図で確認し、経路線はまだ作成していません。":"この施設は館内の位置・通路を未確認です。目的地の候補と公式案内を表示しています。";
  }else{
    floors.innerHTML=[1,2,3].map(f=>`<button type="button" class="${f===viewedFloor?'active':''}" data-floor="${f}">${f}F</button>`).join("");
    map.classList.remove("hidden");
@@ -151,7 +191,7 @@ function UX(k){const x=UXI18N[appLang]||UXI18N.en;return x[k]||UXI18N.en[k]||k}
 function applyEasyLanguage(){
  const ids={welcomeTitle:"welcome",how1:"one",how2:"two",how3:"three",facilityLabel:"facility",currentPlaceLead:"current",changePlaceBtn:"change",placePickerHint:"near",destinationLabel:"destination",popularLabel:"popular",navLiveLabel:"live",sensorSummary:"sensor",privateFooter:"private"};
  Object.entries(ids).forEach(([id,k])=>{const e=document.getElementById(id);if(e)e.textContent=UX(k)});
- const fq=document.getElementById("facilityQ");if(fq)fq.placeholder=UX("facilitySearch");
+ const fq=document.getElementById("facilityQ");if(fq)fq.placeholder=appLang==="ja"?"施設名・県名で探す":UX("facilitySearch");
  const om=document.getElementById("officialMapText");if(om)om.textContent=UX("official");
 }
 function normEasy(s){return String(s||"").toLowerCase().replace(/[\s　・\-ー()（）]/g,"")}
@@ -164,7 +204,7 @@ function searchFacilitiesEasy(){
  box.innerHTML=hits.map(([k,v])=>`<button type="button" onclick="selectFacilityEasy('${k}')">${v.name}</button>`).join("");
 }
 function selectFacilityEasy(k){
- facilitySelect.value=k;changeFacility(k);
+ selectFacilityById(k);
  const box=document.getElementById("facilityMatches"),input=document.getElementById("facilityQ");
  if(box)box.innerHTML="";
  if(input)input.value=F[k].name;
@@ -173,17 +213,18 @@ function togglePlacePicker(){const x=document.getElementById("placePicker");if(x
 
 function currentFacility(){return F[key]}
 function init(){
- facilitySelect.innerHTML=Object.entries(F).map(([k,v])=>`<option value="${k}">${v.name}（${v.area}）</option>`).join("");
- changeFacility("f0");
+ const prefs=[...new Set(Object.values(F).map(v=>prefectureOf(v.area)))];
+ prefectureSelect.innerHTML=prefs.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
+ const firstPref=prefectureOf(F.f0.area);prefectureSelect.value=firstPref;fillFacilitySelect(firstPref,"f0");
 }
 function changeFacility(k){
-  key=k; const x=F[k]; stopNav();viewedFloor=1;activePath=[];facilitySelect.value=k;
+  if(!F[k])return;key=k; const x=F[k]; stopNav();viewedFloor=1;activePath=[];facilitySelect.value=k;prefectureSelect.value=prefectureOf(x.area);
  facilityInfo.innerHTML=`<div class="facilityTitle">${x.name}</div><div class="facilitySub">${x.area}</div>`+
-  (k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:`<span class="badge proto">館内経路は未確認</span>`);
+  (k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:STATION_IDS.has(k)?`<span class="badge">公式構内図の設備検索を登録済み</span>`:`<span class="badge proto">館内経路は未確認</span>`);
  officialMap.href=x.map;
  precisionNote.classList.toggle("hidden",k!=="f0");
   precisionNote.innerHTML=k==="f0"?"図と距離は試作の概算です。青い現在地は手動で選んだ地点で、GPSから館内の階や位置を確定していません。":"";
- const places=x.places||[];
+ const places=allPlaces();
  quick.innerHTML=places.slice(0,8).map(p=>`<button class="chip" onclick='quickSearch(${JSON.stringify(p.name)})'>${p.name}</button>`).join("");
   const a=k==="f0"?Object.keys(AY_ANCHORS):[];
  anchorsEl.innerHTML=a.map(v=>`<button class="chip" onclick='setAnchor(${JSON.stringify(v)})'>${v}</button>`).join("");
@@ -207,12 +248,23 @@ function quickSearch(v){q.value=v;searchPlace()}
 function searchPlace(){
  const raw=q.value.trim(); if(!raw)return; const s=normText(aliasQuery(raw));
   const found=allPlaces().filter(p=>{const pn=normText(p.name);return pn.includes(s)||s.includes(pn)});
-  results.innerHTML=found.length?found.map(p=>`<div class="result" onclick='startNavByName(${JSON.stringify(p.name)})'><b>${escapeHtml(p.name)}</b><span>${escapeHtml(p.level||"")}</span></div>`).join(""):`<div class="result">${T('notfound')}</div>`;
+  if(found.length){
+   results.innerHTML=found.map(p=>`<div class="result" onclick='startNavByName(${JSON.stringify(p.name)})'><b>${escapeHtml(p.name)}</b><span>${escapeHtml(p.level||"")}</span></div>`).join("");
+   return;
+  }
+  const facilities=Object.entries(F).filter(([,v])=>normEasy(v.name+" "+v.area).includes(normEasy(raw)));
+  results.innerHTML=facilities.length?`<div class="small" style="margin-top:9px">施設・県名の検索結果：施設を選んでください</div>`+facilities.map(([id,v])=>`<button type="button" class="result" style="display:block;width:100%;text-align:left;background:white" data-facility="${id}"><b>${escapeHtml(v.name)}</b><span>${escapeHtml(v.area)}</span></button>`).join(""):`<div class="result">${T('notfound')}</div>`;
+  results.querySelectorAll("[data-facility]").forEach(b=>b.addEventListener("click",()=>{selectFacilityById(b.dataset.facility);q.value=""}));
 }
 function startNavByName(name){
   const p=allPlaces().find(x=>x.name===name); if(!p)return;
   if(key==="f0") {viewedFloor=Number(p.level?.match(/\d/)?.[0]||1);startPrecision(p)}
-  else {stopNav();results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b>（${escapeHtml(p.level||"階未確認")}）<br>館内の位置と経路は未確認です。上の「公式マップ/案内」で場所を確認してください。</div>`;renderFloorPanel()}
+  else {
+   stopNav();
+   const info=p.official?`${escapeHtml(p.locationText||"公式構内図に掲載されています。")}<br><span class="small">公式情報確認日：${escapeHtml(p.checked||"-")}／経路線は未作成</span>`:`館内の位置と経路は未確認です。`;
+   results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b><br>${info}<div style="margin-top:10px"><a href="${escapeHtml(currentFacility().map)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:11px;border-radius:10px;background:#1378ff;color:white;text-decoration:none;font-weight:800">公式構内図で場所を見る</a></div></div>`;
+   renderFloorPanel();
+  }
 }
 function buildGraph(){
  const g={}; Object.keys(AY_NODES).forEach(n=>g[n]=[]);
@@ -296,7 +348,7 @@ function applyLanguage(){
  set("headerSub",T("sub"));
  set("officialMapText",T("official"));
  set("locationFixBtn",T("fix"));
- ph("q",T("searchph"));
+  ph("q",appLang==="ja"?"行き先・県名・施設名を入力":T("searchph"));
  set("searchBtn",T("search"));
  set("demoBtn",T("demo"));
  set("autoWalkBtn",T("autowalk"));
@@ -309,7 +361,7 @@ function applyLanguage(){
  set("compassBtn",T("compass"));
  set("motionBtn",T("motion"));
  set("gpsBtn",T("gps"));
-  set("footNote",appLang==="ja"?"綾川は概略図、他の施設は場所の候補一覧です。館内位置や距離は未検証のため、移動前に公式案内をご確認ください。":"Ayagawa uses a schematic map. Other facilities list possible destinations only. Indoor positions and distances are unverified; check the official guide before traveling.");
+  set("footNote",appLang==="ja"?"駅では公式構内図の設備を検索できます。現在は公式情報への案内までで、設備までの経路線とリアルタイム屋内位置は未作成です。":"Station facilities can be searched from official maps. Indoor route lines and real-time indoor positioning are not available yet.");
 
  if(typeof applyEasyLanguage==="function") applyEasyLanguage();
  if(typeof applyPremiumLanguage==="function") applyPremiumLanguage();
@@ -324,6 +376,8 @@ const SEARCH_ALIAS={
  '到着':['arrival','arrivals','llegadas','arrivées','ankunft','arrivi','chegadas','도착','到达','抵達','ขาเข้า','đến','kedatangan','ketibaan','dating','आगमन','وصول','прибытие','varış'],
  '保安':['security','security check','seguridad','sécurité','sicherheitskontrolle','sicurezza','segurança','보안','安检','安檢','จุดตรวจ','an ninh','keamanan','keselamatan','seguridad check','सुरक्षा','تفتيش','досмотр','güvenlik'],
  '改札':['gate','ticket gate','gates','torniquete','portillon','bahnsteigsperre','tornello','catraca','개찰구','检票口','閘口','ประตูตรวจตั๋ว','cổng soát vé','gerbang tiket','pintu tiket','tarangkahan','टिकट गेट','بوابة التذاكر','турникет','bilet kapısı'],
+ 'きっぷ':['ticket','tickets','チケット','切符','券売機','きっぷうりば','みどりの窓口'],
+ 'コインロッカー':['locker','lockers','coin locker','荷物預かり','手荷物'],
  '乗換':['transfer','connection','cambio','correspondance','umsteigen','coincidenza','conexão','환승','换乘','轉乘','ต่อรถ','chuyển tuyến','transit','pertukaran','lipat','ट्रांसफर','تحويل','пересадка','aktarma']
 };
 function normText(s){return(s||'').toLowerCase().normalize('NFKD').replace(/[\u0300-\u036f]/g,'').replace(/[？?！!。、\s_-]/g,'')}
