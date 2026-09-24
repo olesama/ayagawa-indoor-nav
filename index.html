@@ -2,14 +2,14 @@
 <html lang="ja">
 <head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#ffffff"><meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#086bff"><meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-title" content="館内ナビ">
 <link rel="manifest" href="./manifest.webmanifest"><link rel="apple-touch-icon" href="./apple-touch-icon.png">
 <title>館内ナビ</title>
 <style>
 *{box-sizing:border-box}:root{--blue:#1378ff;--ink:#17202a;--muted:#68727c;--bg:#f5f7f9;--line:#dce2e7;--orange:#ff8a00;--green:#148a54}
 body{margin:0;background:var(--bg);font-family:-apple-system,BlinkMacSystemFont,"Noto Sans JP",sans-serif;color:var(--ink)}
-header{background:#fff;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line);padding:13px}h1{font-size:18px;margin:0 0 4px}.sub{font-size:12px;color:var(--muted)}
+header{background:#fff;position:sticky;top:0;z-index:10;border-bottom:1px solid var(--line);padding:13px}h1{font-size:18px;margin:0 0 4px;display:flex;align-items:center;gap:7px}.appLogo{width:28px;height:28px;border-radius:7px;box-shadow:0 1px 4px #086bff33}.sub{font-size:12px;color:var(--muted)}
 main{max-width:760px;margin:auto;padding:10px}.card{background:#fff;border:1px solid var(--line);border-radius:18px;padding:14px;margin-bottom:10px}
 select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #cbd2d8;border-radius:12px;background:#fff;font-weight:800}
 .search{display:flex;gap:7px;margin-top:10px}.search input{flex:1;min-width:0;padding:13px;border:1px solid #cbd2d8;border-radius:12px}.search button{border:0;border-radius:12px;background:var(--blue);color:#fff;font-weight:800;padding:0 16px}
@@ -41,7 +41,7 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 
 </head>
 <body>
-<header><h1><span id="headerTitle">🧭 館内ナビ</span> <span style="font-size:10px;background:#222;color:#fff;border-radius:999px;padding:4px 7px">全国施設版</span></h1><div id="headerSub" class="sub">47都道府県の大型商業施設・19駅・20言語対応</div></header>
+<header><h1><img class="appLogo" src="./icon-192.png" alt=""><span id="headerTitle">館内ナビ</span> <span style="font-size:10px;background:#222;color:#fff;border-radius:999px;padding:4px 7px">全国施設版</span></h1><div id="headerSub" class="sub">47都道府県の大型商業施設・19駅・20言語対応</div></header>
 <main>
 <section class="card">
 <select id="langSelect" class="facility" onchange="setLanguage(this.value)" style="margin-bottom:8px"></select>
@@ -535,7 +535,7 @@ function applyLanguage(){
  const set=(id,val)=>{const e=document.getElementById(id);if(e)e.textContent=val};
  const ph=(id,val)=>{const e=document.getElementById(id);if(e)e.placeholder=val};
 
- set("headerTitle",T("app"));
+ set("headerTitle",String(T("app")).replace(/^🧭\s*/,""));
  set("headerSub",appLang==="ja"?`${Object.keys(F).length}施設・47都道府県対応・20言語対応`:`${Object.keys(F).length} facilities · all 47 prefectures · 20 languages`);
  set("officialMapText",T("official"));
  set("locationFixBtn",appLang==="ja"?"📍 現在地を選ぶ":"📍 Choose current location");
