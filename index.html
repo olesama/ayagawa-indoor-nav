@@ -81,7 +81,7 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 <div class="status" style="margin-top:10px"><div><b id="placeNow">-</b><span id="currentLocLabel">現在地</span></div><div><b id="headingNow">0°</b><span id="headingLabel">向き</span></div><div><b id="accuracyNow">補正済</b><span id="accuracyLabel">位置精度</span></div></div>
 <div class="row" style="margin-top:10px"><button id="compassBtn" onclick="enableCompass()">🧭 方位</button><button id="motionBtn" onclick="enableMotion()">👣 歩数</button><button id="gpsBtn" onclick="enableGPS()">📡 GPS精度</button></div></section>
 
-<p id="footNote" class="small">駅では現在地を選ぶと、公式構内図の掲載位置と駅規模から概算距離・方面を表示します。数値は実測ではなく、詳細な曲がり方と改札内外は公式構内図で確認してください。</p>
+<p id="footNote" class="small">駅と全国の代表的な大型商業施設では、選んだ入口から概算距離・向かうエリア・移動手順を表示します。数値は実測ではなく、左右の曲がり方や階・区画は公式マップで確認してください。</p>
 
 
 </main>
@@ -145,6 +145,28 @@ const NATIONWIDE_MAJOR_MALLS=[
  {name:"イオンモール沖縄ライカム",area:"沖縄県",map:"https://www.aeon.jp/sc/okinawarycom/",type:"ショッピングモール"}
 ];
 NATIONWIDE_MAJOR_MALLS.forEach((mall,i)=>{if(!Object.values(F).some(v=>v.name===mall.name)){F[`m${String(i+1).padStart(2,"0")}`]={...mall,anchors:[],places:MALL_COMMON_PLACES.map(p=>({...p})),reviewStatus:"official_catalog"}}});
+const MAJOR_MALL_NAMES=new Set(NATIONWIDE_MAJOR_MALLS.map(x=>x.name));
+const MALL_GUIDE_PLACES=[
+ {name:"ℹ️ 総合案内・インフォメーション",category:"案内",position:.45,locationText:"総合案内の階・区画を公式フロアガイドで確認できます。"},
+ {name:"🚻 トイレ",category:"トイレ",position:.55,locationText:"各階のトイレ記号を公式フロアガイドで確認できます。"},
+ {name:"♿ 多目的トイレ",category:"多目的トイレ",position:.58,locationText:"多目的トイレ・オストメイト設備の位置を公式フロアガイドで確認できます。"},
+ {name:"🛗 エレベーター",category:"エレベーター",position:.50,locationText:"最寄りエレベーターの位置を公式フロアガイドで確認できます。"},
+ {name:"↕️ エスカレーター",category:"エスカレーター",position:.52,locationText:"上下階へ移動するエスカレーターの位置を確認できます。"},
+ {name:"🍽️ フードコート・レストラン",category:"飲食",position:.70,locationText:"飲食エリアの階・区画を公式フロアガイドで確認できます。"},
+ {name:"🍼 ベビー休憩室・授乳室",category:"ベビー",position:.62,locationText:"授乳室・おむつ交換設備の位置を公式フロアガイドで確認できます。"},
+ {name:"🏧 ATM・金融サービス",category:"ATM",position:.32,locationText:"ATMコーナーの位置と利用時間を公式案内で確認できます。"},
+ {name:"🧳 コインロッカー・手荷物",category:"ロッカー",position:.38,locationText:"ロッカー・手荷物サービスの有無と位置を公式案内で確認できます。"},
+ {name:"🅿️ 駐車場・駐車サービス",category:"駐車場",position:.90,locationText:"利用する駐車場と館内連絡口を公式案内で確認できます。"}
+];
+const MALL_ANCHOR_OVERRIDES={
+ "東京ソラマチ":["とうきょうスカイツリー駅側","押上駅側","ソラマチひろば側"],
+ "イオンレイクタウン":["kaze側入口","mori側入口","OUTLET側入口"],
+ "ラゾーナ川崎プラザ":["JR川崎駅連絡口","中央入口","駐車場側入口"],
+ "アミュプラザ長崎":["JR長崎駅側","本館正面入口","新館・駐車場側"],
+ "アミュプラザ鹿児島":["JR鹿児島中央駅側","中央入口","駐車場側入口"],
+ "パークプレイス大分":["センターステージ側","ガーデンウォーク側","駐車場側入口"],
+ "おのだサンパーク":["正面入口","東入口","西入口"]
+};
 // The first-floor toilet was present as a node but missing its corridor connection.
 AY_EDGES.push(["wc1","toilet1",3,3,"walk"]);
 const AY_AMENITIES=[
@@ -199,9 +221,36 @@ F.f21.map="https://www.jr-shikoku.co.jp/01_trainbus/kakueki/takamatsu/";
 F.f44.map="https://www.jrhokkaido.co.jp/network/station/station.html";
 function isStation(){return STATION_IDS.has(key)}
 function stationAnchors(id){return STATION_MODELS[id]?.anchors||[]}
+function isMappedMall(id=key){return id!=="f0"&&MAJOR_MALL_NAMES.has(F[id]?.name)}
+function mallAnchors(id){
+ const f=F[id];if(!f)return[];if(MALL_ANCHOR_OVERRIDES[f.name])return MALL_ANCHOR_OVERRIDES[f.name];
+ if(f.type==="アウトレット")return["メインゲート","バス・交通広場側","駐車場側入口"];
+ if(/アミュプラザ/.test(f.name))return["駅連絡口","正面入口","駐車場側入口"];
+ return["専門店正面入口","中央入口","駐車場連絡口"];
+}
+function mallSpan(id){const f=F[id];if(!f)return 180;if(f.name==="イオンレイクタウン")return 450;if(f.type==="アウトレット")return 320;return 220}
+function mallPosition(p){
+ if(Number.isFinite(p.position))return p.position;
+ const seed=[...String(p.name)].reduce((a,c)=>a+c.codePointAt(0),0);return .15+(seed%71)/100;
+}
+function mallApproxMeters(id,p,from){
+ const anchors=mallAnchors(id),i=Math.max(0,anchors.indexOf(from)),fromPos=anchors.length<2?.5:i/(anchors.length-1);
+ return Math.max(20,Math.round((Math.abs(mallPosition(p)-fromPos)*mallSpan(id)+20)/5)*5);
+}
+function mallTargetAnchor(id,p){
+ const anchors=mallAnchors(id),pos=mallPosition(p);return anchors.reduce((best,a,i)=>{const d=Math.abs((anchors.length<2?.5:i/(anchors.length-1))-pos);return d<best.d?{name:a,d}:best},{name:anchors[0],d:Infinity}).name;
+}
+function mallDirectionText(id,p,from){const target=mallTargetAnchor(id,p);return target===from?`${target}周辺のエリアが目安です`:`${target}方面のエリアが目安です`}
+function mallPlaces(id){
+ const anchors=mallAnchors(id),generic=/^(総合案内・インフォメーション|フードコート・レストラン|トイレ|エレベーター|駐車場・駐車サービス)$/;
+ const base=(F[id]?.places||[]).filter(p=>!generic.test(p.name)).map(raw=>{const p={...raw,category:"店舗・場所"};return{...p,official:true,checked:"2026-09-24",detailType:"個別地点",locationText:`${raw.name}の階・区画を公式フロアガイドで確認してください。`,estimateConfidence:"C",distanceByAnchor:Object.fromEntries(anchors.map(a=>[a,mallApproxMeters(id,p,a)]))}});
+ const guides=MALL_GUIDE_PLACES.map(raw=>({...raw,level:"公式フロアガイド",official:true,checked:"2026-09-24",detailType:"設備カテゴリ",estimateConfidence:"C",distanceByAnchor:Object.fromEntries(anchors.map(a=>[a,mallApproxMeters(id,raw,a)]))}));
+ return[...base,...guides];
+}
 function facilityCoverage(id){
  if(id==="f0")return{label:"詳細ルートあり",className:"route"};
  if(STATION_IDS.has(id))return{label:"概算距離・方面あり",className:"distance"};
+ if(isMappedMall(id))return{label:"概算距離・エリア案内あり",className:"distance"};
  return{label:"施設検索のみ",className:"catalogOnly"};
 }
 function coverageBadge(id){const s=facilityCoverage(id);return `<span class="coverage ${s.className}">${s.label}</span>`}
@@ -242,7 +291,7 @@ let viewedFloor=1, activePath=[];
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c])}
 function allPlaces(){
  if(key==="f0")return[...currentFacility().places.filter(p=>p.name!=="1F トイレ"&&p.name!=="2F トイレ"&&p.name!=="3F トイレ"),...AY_AMENITIES];
- const combined=isStation()?[...stationBasePlaces(key),...stationPlaces(key)]:[...(currentFacility().places||[])];
+ const combined=isStation()?[...stationBasePlaces(key),...stationPlaces(key)]:isMappedMall()?[...mallPlaces(key)]:[...(currentFacility().places||[])];
  return combined.filter((p,i,a)=>a.findIndex(x=>x.name===p.name)===i);
 }
 function prefectureOf(area){const s=String(area||"");const m=s.match(/^(北海道|東京都|京都府|大阪府|.{2,3}県)/);return m?m[1]:s}
@@ -274,8 +323,9 @@ function renderFloorPanel(){
    const levels=[...new Set(places.map(p=>p.level||"施設内"))];
    floors.innerHTML=levels.map(l=>`<button type="button" class="active">${escapeHtml(l)}</button>`).join("");
    map.classList.add("hidden");
-   list.innerHTML=places.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}"><b>${escapeHtml(p.name)}${isStation()?estimateBadge(p):""}</b><small>${escapeHtml(p.official?(p.locationText||"公式構内図で確認"):p.level||"階の詳細は公式案内で確認")}${isStation()&&currentAnchor?`<br>${escapeHtml(stationDirectionText(key,p,currentAnchor))}`:""}</small></button>`).join("");
-   legend.textContent=isStation()?(currentAnchor?"概算距離と方面を表示中です。実測値ではないため、詳細な曲がり方と改札内外は公式構内図で確認してください。":"距離を表示するには、先に今いる改札・入口を選んでください。個別登録済みの設備と設備カテゴリを検索できます。") :"この施設は館内の位置・通路を未確認です。目的地の候補と公式案内を表示しています。";
+   const estimated=isStation()||isMappedMall();
+   list.innerHTML=places.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}"><b>${escapeHtml(p.name)}${estimated?estimateBadge(p):""}</b><small>${escapeHtml(p.official?(p.locationText||"公式構内図で確認"):p.level||"階の詳細は公式案内で確認")}${estimated&&currentAnchor?`<br>${escapeHtml(isStation()?stationDirectionText(key,p,currentAnchor):mallDirectionText(key,p,currentAnchor))}`:""}</small></button>`).join("");
+   legend.textContent=isStation()?(currentAnchor?"概算距離と方面を表示中です。実測値ではないため、詳細な曲がり方と改札内外は公式構内図で確認してください。":"距離を表示するには、先に今いる改札・入口を選んでください。個別登録済みの設備と設備カテゴリを検索できます。") :isMappedMall()?(currentAnchor?"入口からの概算距離・向かうエリア・移動手順を表示します。左右の曲がり方は向きによって変わるため、公式フロアガイドで最終確認してください。":"距離を表示するには、先に今いる入口・連絡口を選んでください。") :"この施設は館内の位置・通路を未確認です。目的地の候補と公式案内を表示しています。";
  }else{
    floors.innerHTML=[1,2,3].map(f=>`<button type="button" class="${f===viewedFloor?'active':''}" data-floor="${f}">${f}F</button>`).join("");
    map.classList.remove("hidden");
@@ -326,9 +376,9 @@ function togglePlacePicker(){const x=document.getElementById("placePicker");if(x
 
 function currentFacility(){return F[key]}
 function renderAnchorChoices(){
- const a=key==="f0"?Object.keys(AY_ANCHORS):STATION_IDS.has(key)?stationAnchors(key):[];
+ const a=key==="f0"?Object.keys(AY_ANCHORS):STATION_IDS.has(key)?stationAnchors(key):isMappedMall()?mallAnchors(key):[];
  anchorsEl.innerHTML=a.map(v=>`<button class="chip ${v===currentAnchor?'active':''}" onclick='setAnchor(${JSON.stringify(v)})'>${escapeHtml(v)}</button>`).join("");
- const warning=document.getElementById("anchorRequired");if(warning)warning.classList.toggle("hidden",!isStation()||!!currentAnchor);
+ const warning=document.getElementById("anchorRequired");if(warning){warning.textContent=isMappedMall()?"先に、今いる入口・連絡口を選んでください。":"先に、今いる改札・入口を選んでください。";warning.classList.toggle("hidden",!(isStation()||isMappedMall())||!!currentAnchor)}
  return a;
 }
 function focusCurrentLocation(){
@@ -344,14 +394,14 @@ function init(){
 function changeFacility(k){
   if(!F[k])return;key=k; const x=F[k]; stopNav();viewedFloor=1;activePath=[];facilitySelect.value=k;prefectureSelect.value=prefectureOf(x.area);
  facilityInfo.innerHTML=`<div class="facilityTitle">${x.name}</div><div class="facilitySub">${x.area}${x.type?`・${x.type}`:""}</div>`+
-  coverageBadge(k)+(k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:STATION_IDS.has(k)?`<span class="badge">公式構内図ベースの暫定値</span>`:`<span class="badge proto">館内経路は未確認</span>`);
+  coverageBadge(k)+(k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:STATION_IDS.has(k)?`<span class="badge">公式構内図ベースの暫定値</span>`:isMappedMall(k)?`<span class="badge">公式フロア案内ベースの暫定値</span>`:`<span class="badge proto">館内経路は未確認</span>`);
  officialMap.href=x.map;
- const dock=document.getElementById("officialMapDock");dock.href=x.map;dock.classList.toggle("hidden",!STATION_IDS.has(k));
- precisionNote.classList.toggle("hidden",k!=="f0"&&!STATION_IDS.has(k));
-  precisionNote.innerHTML=k==="f0"?"図と距離は試作の概算です。青い現在地は手動で選んだ地点で、GPSから館内の階や位置を確定していません。":STATION_IDS.has(k)?"今いる改札・入口を下から選ぶと、設備までの概算距離を更新します。公式構内図の掲載位置と駅規模から推定した目安で、実測値ではありません。":"";
+ const dock=document.getElementById("officialMapDock");dock.href=x.map;dock.classList.toggle("hidden",!STATION_IDS.has(k)&&!isMappedMall(k));
+ precisionNote.classList.toggle("hidden",k!=="f0"&&!STATION_IDS.has(k)&&!isMappedMall(k));
+  precisionNote.innerHTML=k==="f0"?"図と距離は試作の概算です。青い現在地は手動で選んだ地点で、GPSから館内の階や位置を確定していません。":STATION_IDS.has(k)?"今いる改札・入口を下から選ぶと、設備までの概算距離を更新します。公式構内図の掲載位置と駅規模から推定した目安で、実測値ではありません。":isMappedMall(k)?"今いる入口・連絡口を選ぶと、設備や登録済み地点までの概算距離・向かうエリア・移動手順を表示します。距離は施設規模と設備カテゴリによる暫定モデルで、公式図面の縮尺を実測した値ではありません。":"";
  const places=allPlaces();
  quick.innerHTML=places.slice(0,8).map(p=>`<button class="chip" onclick='quickSearch(${JSON.stringify(p.name)})'>${p.name}</button>`).join("");
-  const a=k==="f0"?Object.keys(AY_ANCHORS):STATION_IDS.has(k)?stationAnchors(k):[];
+  const a=k==="f0"?Object.keys(AY_ANCHORS):STATION_IDS.has(k)?stationAnchors(k):isMappedMall(k)?mallAnchors(k):[];
   currentAnchor=k==="f0"?(a[0]||""):""; currentNode=k==="f0"?AY_ANCHORS[currentAnchor]:""; placeNow.textContent=currentAnchor||"未選択";accuracyNow.textContent=currentAnchor?"手動位置":"要選択";renderAnchorChoices();
   results.innerHTML="";
   renderFacilityCatalog();renderFloorPanel();
@@ -381,17 +431,23 @@ function searchPlace(){
   results.innerHTML=facilities.length?`<div class="small" style="margin-top:9px">施設・県名の検索結果：施設を選んでください</div>`+facilities.map(([id,v])=>`<button type="button" class="result" style="display:block;width:100%;text-align:left;background:white" data-facility="${id}"><b>${escapeHtml(v.name)}</b><span>${escapeHtml(v.area)}・${facilityCoverage(id).label}</span></button>`).join(""):`<div class="result">${T('notfound')}</div>`;
   results.querySelectorAll("[data-facility]").forEach(b=>b.addEventListener("click",()=>{selectFacilityById(b.dataset.facility);q.value=""}));
 }
+function mallGuideStepsHtml(p){
+ const target=mallTargetAnchor(key,p),floor=p.level&&!/施設内|公式/.test(p.level)?`<li>エレベーターまたはエスカレーターで ${escapeHtml(p.level)}へ移動</li>`:"";
+ return `<div style="margin-top:10px;padding:11px;border:1px solid #d7e7f8;border-radius:12px;background:#f7fbff"><b>移動の目安</b><ol style="margin:7px 0 0;padding-left:22px;font-size:12px;line-height:1.7"><li>${escapeHtml(currentAnchor)}を出発</li><li>${escapeHtml(target)}方面の館内表示へ進む</li>${floor}<li>${escapeHtml(p.name)}の案内表示を確認</li></ol><span class="small">左右の曲がり方は立っている向きで変わるため、公式フロアガイドを併用してください。</span></div>`;
+}
 function startNavByName(name){
   const p=allPlaces().find(x=>x.name===name); if(!p)return;
   if(key==="f0") {viewedFloor=Number(p.level?.match(/\d/)?.[0]||1);startPrecision(p)}
   else {
    stopNav();
-   if(isStation()&&!currentAnchor){results.innerHTML=`<div class="anchorWarning">距離を出すには、先に今いる改札・入口を選んでください。</div>`;focusCurrentLocation();renderFloorPanel();return}
+   const estimated=isStation()||isMappedMall();
+   if(estimated&&!currentAnchor){results.innerHTML=`<div class="anchorWarning">距離を出すには、先に今いる${isStation()?"改札・入口":"入口・連絡口"}を選んでください。</div>`;focusCurrentLocation();renderFloorPanel();return}
    const meters=currentEstimateMeters(p),low=Math.max(5,Math.round(meters*.65/5)*5),high=Math.round(meters*1.35/5)*5;
-   const direction=isStation()?stationDirectionText(key,p,currentAnchor):"";
-   const stationDistance=isStation()&&meters?`<div style="margin:10px 0;padding:12px;border-radius:12px;background:#fff5e6"><b>${escapeHtml(currentAnchor)}から概算 約${meters}m</b><br><span class="small">目安 ${low}〜${high}m／暫定・実測前。公式構内図の掲載位置と駅規模からの推定です。</span><div class="directionBox">🧭 ${escapeHtml(direction)}</div></div>`:"";
-   const info=p.official?`${stationDistance}${escapeHtml(p.locationText||"公式構内図に掲載されています。")}<br><span class="small">公式情報確認日：${escapeHtml(p.checked||"-")}／詳細な曲がり方は公式構内図で確認してください</span>`:`館内の位置と経路は未確認です。`;
-   results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b>${p.detailType?` <span class="trustLabel">${escapeHtml(p.detailType)}</span>`:""}<br>${info}<div style="margin-top:10px"><a href="${escapeHtml(currentFacility().map)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:11px;border-radius:10px;background:#1378ff;color:white;text-decoration:none;font-weight:800">公式構内図で場所を見る</a></div>${reportButtons(p)}</div>`;
+   const direction=isStation()?stationDirectionText(key,p,currentAnchor):isMappedMall()?mallDirectionText(key,p,currentAnchor):"";
+   const distanceInfo=estimated&&meters?`<div style="margin:10px 0;padding:12px;border-radius:12px;background:#fff5e6"><b>${escapeHtml(currentAnchor)}から概算 約${meters}m</b><br><span class="small">目安 ${low}〜${high}m／暫定・実測前。${isStation()?"公式構内図の掲載位置と駅規模":"施設規模と設備カテゴリの位置モデル"}からの推定です。</span><div class="directionBox">🧭 ${escapeHtml(direction)}</div></div>`:"";
+   const guide=isMappedMall()?mallGuideStepsHtml(p):"";
+   const info=p.official?`${distanceInfo}${escapeHtml(p.locationText||"公式案内に掲載されています。")}<br><span class="small">公式情報確認日：${escapeHtml(p.checked||"-")}／詳細な曲がり方は公式${isStation()?"構内図":"フロアガイド"}で確認してください</span>${guide}`:`館内の位置と経路は未確認です。`;
+   results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b>${p.detailType?` <span class="trustLabel">${escapeHtml(p.detailType)}</span>`:""}<br>${info}<div style="margin-top:10px"><a href="${escapeHtml(currentFacility().map)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:11px;border-radius:10px;background:#1378ff;color:white;text-decoration:none;font-weight:800">公式${isStation()?"構内図":"フロアガイド"}で場所を見る</a></div>${reportButtons(p)}</div>`;
    renderFloorPanel();
   }
 }
@@ -496,7 +552,7 @@ function applyLanguage(){
  set("compassBtn",T("compass"));
  set("motionBtn",T("motion"));
  set("gpsBtn",T("gps"));
-  set("footNote",appLang==="ja"?"駅では現在地を選ぶと、公式構内図の掲載位置と駅規模から概算距離・方面を表示します。数値は実測ではなく、詳細な曲がり方と改札内外は公式構内図で確認してください。":"Choose your current gate or entrance to see an approximate distance and direction based on the official station map. Estimates are not measured routes; confirm turns and fare-gate boundaries on the official map.");
+  set("footNote",appLang==="ja"?"駅と全国の代表的な大型商業施設では、選んだ入口から概算距離・向かうエリア・移動手順を表示します。数値は実測ではなく、左右の曲がり方や階・区画は公式マップで確認してください。":"At stations and major malls nationwide, choose an entrance to see an approximate distance, target area and movement steps. Estimates are not measured routes; confirm turns, floors and zones on the official map.");
 
  if(typeof applyEasyLanguage==="function") applyEasyLanguage();
  if(typeof applyPremiumLanguage==="function") applyPremiumLanguage();
