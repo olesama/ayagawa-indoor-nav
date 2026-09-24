@@ -51,7 +51,7 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 <div style="margin-top:10px"><input id="facilityQ" class="facility" placeholder="施設名・県名で探す" oninput="renderFacilityCatalog()" aria-label="施設名・県名で探す"></div>
 <div id="facilityCatalog" class="catalog"></div>
 <div id="facilityInfo" style="margin-top:11px"></div>
-<div class="row" style="margin-top:10px"><a id="officialMap" href="#" target="_blank">🗺 <span id="officialMapText">公式マップ/案内</span></a><button id="locationFixBtn" onclick="setAnchor(currentFacility().anchors[0])">📍 現在地を補正</button></div>
+<div class="row" style="margin-top:10px"><a id="officialMap" href="#" target="_blank">🗺 <span id="officialMapText">公式マップ/案内</span></a><button id="locationFixBtn" onclick="setAnchor((key==='f0'?Object.keys(AY_ANCHORS):stationAnchors(key))[0]||'未設定')">📍 現在地を補正</button></div>
 <div id="precisionNote" class="precision hidden"></div>
 </section>
 
@@ -107,6 +107,27 @@ const AY_AMENITIES=[
  {name:"東エレベーター 3F",level:"3F",target:"eastEV3",icon:"🛗"}
 ];
 const STATION_IDS=new Set(["f1","f2","f3","f4","f5","f6","f7","f8","f9","f10","f11","f12","f21","f44","f45","f46","f47","f48","f49"]);
+const STATION_MODELS={
+ f1:{span:210,anchors:["丸の内中央口","八重洲中央口","丸の内地下中央口","日本橋口"]},
+ f2:{span:190,anchors:["東改札","西改札","南改札","新南改札"]},
+ f3:{span:170,anchors:["ハチ公改札","中央改札","南改札","新南改札"]},
+ f4:{span:150,anchors:["中央北改札","中央南改札","北改札","南改札"]},
+ f5:{span:145,anchors:["中央改札","公園改札","入谷改札","不忍改札"]},
+ f6:{span:150,anchors:["中央改札（北）","中央改札（南）","北改札","南改札"]},
+ f7:{span:120,anchors:["新幹線東口","新幹線西口","JR横浜線北口"]},
+ f8:{span:190,anchors:["中央口","御堂筋口","連絡橋口","桜橋口","うめきた地下口"]},
+ f9:{span:155,anchors:["新幹線中央口","新幹線南口","新幹線乗換口","東改札口"]},
+ f10:{span:165,anchors:["中央口","西口","八条東口","地下東口"]},
+ f11:{span:155,anchors:["中央口","桜通口","太閤通口","広小路口"]},
+ f12:{span:145,anchors:["博多口","筑紫口","中央改札口","北改札口"]},
+ f21:{span:75,anchors:["中央改札","駅正面入口","バスターミナル側入口"]},
+ f44:{span:140,anchors:["西改札","東改札","南口","北口"]},
+ f45:{span:135,anchors:["中央口改札","南口改札","東口改札","地下南口"]},
+ f46:{span:105,anchors:["改札口","兼六園口","金沢港口"]},
+ f47:{span:135,anchors:["中央口","南口","北口"]},
+ f48:{span:120,anchors:["中央改札口","地下改札口","東口","西口"]},
+ f49:{span:95,anchors:["中央口","東口","西口"]}
+};
 const STATION_COMMON=[
  {name:"🚪 改札・出口（公式構内図）",category:"改札",locationText:"公式構内図に掲載されている改札・出口を確認できます。"},
  {name:"🚻 トイレ（公式構内図）",category:"トイレ",locationText:"公式構内図のトイレ記号から設置場所を確認できます。"},
@@ -122,9 +143,22 @@ const STATION_SPECIFIC={
 F.f21.map="https://www.jr-shikoku.co.jp/01_trainbus/kakueki/takamatsu/";
 F.f44.map="https://www.jrhokkaido.co.jp/network/station/station.html";
 function isStation(){return STATION_IDS.has(key)}
+function stationAnchors(id){return STATION_MODELS[id]?.anchors||[]}
+function stationApproxMeters(id,p,from){
+ const model=STATION_MODELS[id];if(!model)return 0;
+ const anchors=model.anchors,fromIndex=Math.max(0,anchors.indexOf(from));
+ const fromPos=anchors.length<2?.5:fromIndex/(anchors.length-1);
+ const plain=s=>String(s).replace(/[（）()]/g,"");
+ const matching=anchors.findIndex(a=>plain(p.name).includes(plain(a))||plain(a).includes(plain(p.name)));
+ const categoryPos={"改札":fromPos,"トイレ":.52,"きっぷ":.34,"エレベーター":.58,"コインロッカー":.68};
+ const destinationPos=matching>=0?(anchors.length<2?.5:matching/(anchors.length-1)):(categoryPos[p.category]??.5);
+ const categoryExtra={"改札":10,"トイレ":18,"きっぷ":14,"エレベーター":18,"コインロッカー":16}[p.category]||15;
+ return Math.max(10,Math.round((Math.abs(destinationPos-fromPos)*model.span+categoryExtra)/5)*5);
+}
 function stationPlaces(id){
  if(!STATION_IDS.has(id))return[];
- return [...STATION_COMMON,...(STATION_SPECIFIC[id]||[])].map(p=>({...p,level:"公式構内図",official:true,checked:"2026-09-24"}));
+ const anchors=stationAnchors(id);
+ return [...STATION_COMMON,...(STATION_SPECIFIC[id]||[])].map(p=>({...p,level:"公式構内図",official:true,checked:"2026-09-24",estimateConfidence:"C",estimateBasis:"公式構内図の掲載位置と駅規模から推定",distanceByAnchor:Object.fromEntries(anchors.map(a=>[a,stationApproxMeters(id,p,a)]))}));
 }
 let viewedFloor=1, activePath=[];
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c])}
@@ -161,8 +195,8 @@ function renderFloorPanel(){
    const levels=[...new Set(places.map(p=>p.level||"施設内"))];
    floors.innerHTML=levels.map(l=>`<button type="button" class="active">${escapeHtml(l)}</button>`).join("");
    map.classList.add("hidden");
-   list.innerHTML=places.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}"><b>${escapeHtml(p.name)}</b><small>${escapeHtml(p.official?(p.locationText||"公式構内図で確認"):p.level||"階の詳細は公式案内で確認")}</small></button>`).join("");
-   legend.textContent=isStation()?"改札・トイレ・きっぷうりば・エレベーター等を検索できます。設備位置は公式構内図で確認し、経路線はまだ作成していません。":"この施設は館内の位置・通路を未確認です。目的地の候補と公式案内を表示しています。";
+   list.innerHTML=places.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}"><b>${escapeHtml(p.name)}${isStation()?estimateBadge(p):""}</b><small>${escapeHtml(p.official?(p.locationText||"公式構内図で確認"):p.level||"階の詳細は公式案内で確認")}</small></button>`).join("");
+   legend.textContent=isStation()?"選んだ改札・入口から、公式構内図の掲載位置と駅規模を基に概算距離を表示します。実測値ではないため余裕をもってご利用ください。":"この施設は館内の位置・通路を未確認です。目的地の候補と公式案内を表示しています。";
  }else{
    floors.innerHTML=[1,2,3].map(f=>`<button type="button" class="${f===viewedFloor?'active':''}" data-floor="${f}">${f}F</button>`).join("");
    map.classList.remove("hidden");
@@ -220,13 +254,13 @@ function init(){
 function changeFacility(k){
   if(!F[k])return;key=k; const x=F[k]; stopNav();viewedFloor=1;activePath=[];facilitySelect.value=k;prefectureSelect.value=prefectureOf(x.area);
  facilityInfo.innerHTML=`<div class="facilityTitle">${x.name}</div><div class="facilitySub">${x.area}</div>`+
-  (k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:STATION_IDS.has(k)?`<span class="badge">公式構内図の設備検索を登録済み</span>`:`<span class="badge proto">館内経路は未確認</span>`);
+  (k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:STATION_IDS.has(k)?`<span class="badge">公式構内図ベースの概算距離</span>`:`<span class="badge proto">館内経路は未確認</span>`);
  officialMap.href=x.map;
- precisionNote.classList.toggle("hidden",k!=="f0");
-  precisionNote.innerHTML=k==="f0"?"図と距離は試作の概算です。青い現在地は手動で選んだ地点で、GPSから館内の階や位置を確定していません。":"";
+ precisionNote.classList.toggle("hidden",k!=="f0"&&!STATION_IDS.has(k));
+  precisionNote.innerHTML=k==="f0"?"図と距離は試作の概算です。青い現在地は手動で選んだ地点で、GPSから館内の階や位置を確定していません。":STATION_IDS.has(k)?"今いる改札・入口を下から選ぶと、設備までの概算距離を更新します。公式構内図の掲載位置と駅規模から推定した目安で、実測値ではありません。":"";
  const places=allPlaces();
  quick.innerHTML=places.slice(0,8).map(p=>`<button class="chip" onclick='quickSearch(${JSON.stringify(p.name)})'>${p.name}</button>`).join("");
-  const a=k==="f0"?Object.keys(AY_ANCHORS):[];
+  const a=k==="f0"?Object.keys(AY_ANCHORS):STATION_IDS.has(k)?stationAnchors(k):[];
  anchorsEl.innerHTML=a.map(v=>`<button class="chip" onclick='setAnchor(${JSON.stringify(v)})'>${v}</button>`).join("");
   currentAnchor=a[0]||"未設定"; currentNode=k==="f0"?AY_ANCHORS[currentAnchor]:""; placeNow.textContent=currentAnchor;
   results.innerHTML="";
@@ -241,7 +275,7 @@ function currentEstimateMeters(p){
 function estimateBadge(p){
  const d=currentEstimateMeters(p); if(!d)return "";
  const mark=(p.estimateConfidence||"C");
- return `<span style="display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;background:${mark==="B"?"#eaf8f1":"#fff5e6"};color:${mark==="B"?"#147548":"#995600"};font-size:10px;font-weight:800">概算 ${d}m / 精度${mark}</span>`;
+ return `<span style="display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;background:${mark==="B"?"#eaf8f1":"#fff5e6"};color:${mark==="B"?"#147548":"#995600"};font-size:10px;font-weight:800">概算 約${d}m / 精度${mark}</span>`;
 }
 
 function quickSearch(v){q.value=v;searchPlace()}
@@ -249,7 +283,7 @@ function searchPlace(){
  const raw=q.value.trim(); if(!raw)return; const s=normText(aliasQuery(raw));
   const found=allPlaces().filter(p=>{const pn=normText(p.name);return pn.includes(s)||s.includes(pn)});
   if(found.length){
-   results.innerHTML=found.map(p=>`<div class="result" onclick='startNavByName(${JSON.stringify(p.name)})'><b>${escapeHtml(p.name)}</b><span>${escapeHtml(p.level||"")}</span></div>`).join("");
+   results.innerHTML=found.map(p=>`<div class="result" onclick='startNavByName(${JSON.stringify(p.name)})'><b>${escapeHtml(p.name)}${estimateBadge(p)}</b><span>${escapeHtml(p.level||"")}</span></div>`).join("");
    return;
   }
   const facilities=Object.entries(F).filter(([,v])=>normEasy(v.name+" "+v.area).includes(normEasy(raw)));
@@ -261,7 +295,9 @@ function startNavByName(name){
   if(key==="f0") {viewedFloor=Number(p.level?.match(/\d/)?.[0]||1);startPrecision(p)}
   else {
    stopNav();
-   const info=p.official?`${escapeHtml(p.locationText||"公式構内図に掲載されています。")}<br><span class="small">公式情報確認日：${escapeHtml(p.checked||"-")}／経路線は未作成</span>`:`館内の位置と経路は未確認です。`;
+   const meters=currentEstimateMeters(p),low=Math.max(5,Math.round(meters*.65/5)*5),high=Math.round(meters*1.35/5)*5;
+   const stationDistance=isStation()&&meters?`<div style="margin:10px 0;padding:12px;border-radius:12px;background:#fff5e6"><b>${escapeHtml(currentAnchor)}から概算 約${meters}m</b><br><span class="small">目安 ${low}〜${high}m／精度C。公式構内図の掲載位置と駅規模からの推定で、実測値ではありません。</span></div>`:"";
+   const info=p.official?`${stationDistance}${escapeHtml(p.locationText||"公式構内図に掲載されています。")}<br><span class="small">公式情報確認日：${escapeHtml(p.checked||"-")}／詳細な曲がり方は公式構内図で確認してください</span>`:`館内の位置と経路は未確認です。`;
    results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b><br>${info}<div style="margin-top:10px"><a href="${escapeHtml(currentFacility().map)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:11px;border-radius:10px;background:#1378ff;color:white;text-decoration:none;font-weight:800">公式構内図で場所を見る</a></div></div>`;
    renderFloorPanel();
   }
