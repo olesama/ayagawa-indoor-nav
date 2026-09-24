@@ -22,6 +22,7 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 .facilityTitle{font-size:20px;font-weight:900}.facilitySub,.small{font-size:11px;color:var(--muted);line-height:1.55}.hidden{display:none}
 .badge{display:inline-block;border-radius:999px;padding:5px 9px;font-size:10px;font-weight:800;margin-top:6px;background:#eaf8f1;color:var(--green)}.badge.proto{background:#fff5e6;color:#a45b00}
 .precision{background:#f3fbf7;border:1px solid #cdebdc;border-radius:12px;padding:10px;margin-top:10px;font-size:12px;line-height:1.5}
+.needsLocation{border:2px solid var(--orange)!important;box-shadow:0 0 0 4px #ff8a0022}.anchorWarning{background:#fff5e6;border:1px solid #ffd39d;border-radius:12px;padding:11px;margin-top:8px;font-size:12px;font-weight:800;color:#8a4b00}.chip.active{background:var(--blue);border-color:var(--blue);color:#fff}.coverage{display:inline-block;border-radius:999px;padding:4px 8px;font-size:10px;font-weight:800;margin:5px 4px 0 0}.coverage.route{background:#eaf8f1;color:#147548}.coverage.distance{background:#eaf3ff;color:#1765bd}.coverage.catalogOnly{background:#f1f3f5;color:#5e6872}.trustLabel{display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;background:#fff5e6;color:#995600;font-size:10px;font-weight:800}.reportRow{display:flex;gap:6px;flex-wrap:wrap;margin-top:10px}.reportRow button{flex:1;min-width:92px;border:1px solid #d6dde3;background:#fff;border-radius:9px;padding:8px;font-size:11px}.officialDock{position:fixed;right:14px;bottom:calc(14px + env(safe-area-inset-bottom));z-index:30;background:var(--blue);color:#fff;text-decoration:none;border-radius:999px;padding:12px 16px;font-size:13px;font-weight:900;box-shadow:0 5px 18px #0d66dc55}.directionBox{margin-top:8px;padding:10px;border-radius:10px;background:#eef6ff;color:#175c9f;font-size:12px;font-weight:800}
 .catalog{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px;margin-top:9px}.catalog button,.mapPlace{border:1px solid #cbd7e4;background:white;border-radius:11px;padding:9px;font-size:12px;text-align:left}.catalog button.active{border-color:var(--blue);background:#eaf3ff}.floorBtns{display:flex;gap:6px;margin:10px 0}.floorBtns button{flex:1;border:1px solid #cbd7e4;border-radius:10px;padding:10px;background:white;font-weight:800}.floorBtns button.active{background:var(--blue);color:white}.mapBox{position:relative;background:#f2f8ff;border:1px solid #cbd7e4;border-radius:16px;height:250px;overflow:hidden}.mapBox svg{position:absolute;inset:0;width:100%;height:100%}.mapPlace{position:absolute;transform:translate(-50%,-50%);padding:5px 7px;font-weight:700;white-space:nowrap;background:#fffdf4;z-index:1;box-shadow:0 1px 5px #0002}.mapPlace.shop{background:white}.mapPlace.amenity{background:#e6f3ff;border-color:#8dbbe9}.mapHere{position:absolute;transform:translate(-50%,-50%);z-index:2;width:19px;height:19px;border:3px solid white;border-radius:50%;background:#1477ff;box-shadow:0 0 0 2px #1477ff}.mapLegend{font-size:11px;color:var(--muted);line-height:1.5;margin-top:8px}.placeList{display:grid;gap:7px;margin-top:8px}.placeList button{padding:10px;text-align:left;border:1px solid var(--line);border-radius:10px;background:white}.placeList small{display:block;color:var(--muted);margin-top:3px}
 </style>
 
@@ -51,7 +52,7 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 <div style="margin-top:10px"><input id="facilityQ" class="facility" placeholder="施設名・県名で探す" oninput="renderFacilityCatalog()" aria-label="施設名・県名で探す"></div>
 <div id="facilityCatalog" class="catalog"></div>
 <div id="facilityInfo" style="margin-top:11px"></div>
-<div class="row" style="margin-top:10px"><a id="officialMap" href="#" target="_blank">🗺 <span id="officialMapText">公式マップ/案内</span></a><button id="locationFixBtn" onclick="setAnchor((key==='f0'?Object.keys(AY_ANCHORS):stationAnchors(key))[0]||'未設定')">📍 現在地を補正</button></div>
+<div class="row" style="margin-top:10px"><a id="officialMap" href="#" target="_blank">🗺 <span id="officialMapText">公式マップ/案内</span></a><button id="locationFixBtn" onclick="focusCurrentLocation()">📍 現在地を選ぶ</button></div>
 <div id="precisionNote" class="precision hidden"></div>
 </section>
 
@@ -75,15 +76,16 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 <div class="row" style="margin-top:10px"><button id="demoBtn" onclick="advanceMeters(5)">5m進む（デモ）</button><button id="autoWalkBtn" onclick="simulateWalking()">▶ 自動歩行</button><button id="rerouteBtn" onclick="reroute()">🔄 再ルート</button><button id="stopBtn" onclick="stopNav()">案内終了</button></div>
 </section>
 
-<section class="card"><b id="correctionTitle">現在地の補正</b><div id="anchorsEl" class="chips" style="margin-top:9px"></div>
+<section class="card" id="correctionCard"><b id="correctionTitle">現在地の補正</b><div id="anchorRequired" class="anchorWarning hidden">先に、今いる改札・入口を選んでください。</div><div id="anchorsEl" class="chips" style="margin-top:9px"></div>
 <div id="autoSensorNote" class="small" style="margin-top:8px">センサーは案内開始時に自動で起動します。</div>
 <div class="status" style="margin-top:10px"><div><b id="placeNow">-</b><span id="currentLocLabel">現在地</span></div><div><b id="headingNow">0°</b><span id="headingLabel">向き</span></div><div><b id="accuracyNow">補正済</b><span id="accuracyLabel">位置精度</span></div></div>
 <div class="row" style="margin-top:10px"><button id="compassBtn" onclick="enableCompass()">🧭 方位</button><button id="motionBtn" onclick="enableMotion()">👣 歩数</button><button id="gpsBtn" onclick="enableGPS()">📡 GPS精度</button></div></section>
 
-<p id="footNote" class="small">駅では公式構内図の設備を検索できます。現在は公式情報への案内までで、設備までの経路線とリアルタイム屋内位置は未作成です。</p>
+<p id="footNote" class="small">駅では現在地を選ぶと、公式構内図の掲載位置と駅規模から概算距離・方面を表示します。数値は実測ではなく、詳細な曲がり方と改札内外は公式構内図で確認してください。</p>
 
 
 </main>
+<a id="officialMapDock" class="officialDock hidden" href="#" target="_blank" rel="noopener">🗺 公式構内図</a>
 
 <script>
 const F={"f0":{"name":"イオンモール綾川","area":"香川県","map":"https://www.aeon.jp/sc/ayagawa/shop/floor/ebook/ayagawa/pageindices/","anchors":["中央入口","西EV","中央コート","東EV","西側入口","東側入口"],"places":[{"name":"無印良品","level":"1F","target":"muji1","estimateSource":"graph","estimateConfidence":"B"},{"name":"カルディコーヒーファーム","level":"1F","target":"kaldi1","estimateSource":"graph","estimateConfidence":"B"},{"name":"レストラン街","level":"1F","target":"restaurant1","estimateSource":"graph","estimateConfidence":"B"},{"name":"1F トイレ","level":"1F","target":"wc1","estimateSource":"graph","estimateConfidence":"B"},{"name":"グローバルワーク","level":"2F","target":"global2","estimateSource":"graph","estimateConfidence":"B"},{"name":"ダイソー・Standard Products","level":"2F","target":"daiso2","estimateSource":"graph","estimateConfidence":"B"},{"name":"2F トイレ","level":"2F","target":"wc2","estimateSource":"graph","estimateConfidence":"B"},{"name":"イオンシネマ綾川","level":"3F","target":"cinema3","estimateSource":"graph","estimateConfidence":"B"},{"name":"フードコート","level":"3F","target":"food3","estimateSource":"graph","estimateConfidence":"B"},{"name":"JINS","level":"3F","target":"jins3","estimateSource":"graph","estimateConfidence":"B"},{"name":"3F トイレ","level":"3F","target":"wc3","estimateSource":"graph","estimateConfidence":"B"}],"reviewStatus":"manual_official_review"},"f1":{"name":"東京駅","area":"東京都","map":"https://www.jreast.co.jp/estation/stations/1039.html?vm=r","anchors":[],"places":[{"name":"丸の内中央口","level":"施設内"},{"name":"八重洲中央口","level":"施設内"},{"name":"新幹線乗換","level":"施設内"},{"name":"京葉線","level":"施設内"}],"reviewStatus":"catalog_only"},"f2":{"name":"新宿駅","area":"東京都","map":"https://www.jreast.co.jp/estation/stations/866.html?vm=r","anchors":[],"places":[{"name":"東口","level":"施設内"},{"name":"西口","level":"施設内"},{"name":"南口","level":"施設内"},{"name":"中央線ホーム","level":"施設内"}],"reviewStatus":"catalog_only"},"f3":{"name":"渋谷駅","area":"東京都","map":"https://www.jreast.co.jp/estation/stations/808.html?vm=r","anchors":[],"places":[{"name":"ハチ公改札","level":"施設内"},{"name":"南改札","level":"施設内"},{"name":"山手線ホーム","level":"施設内"},{"name":"新南口","level":"施設内"}],"reviewStatus":"catalog_only"},"f4":{"name":"横浜駅","area":"神奈川県","map":"https://www.jreast.co.jp/estation/stations/1638.html?vm=r","anchors":[],"places":[{"name":"中央北改札","level":"施設内"},{"name":"中央南改札","level":"施設内"},{"name":"西口","level":"施設内"},{"name":"東口","level":"施設内"}],"reviewStatus":"catalog_only"},"f5":{"name":"上野駅","area":"東京都","map":"https://www.jreast.co.jp/e/stations/e204.html","anchors":[],"places":[{"name":"中央改札","level":"施設内"},{"name":"新幹線乗換","level":"施設内"},{"name":"公園口","level":"施設内"},{"name":"不忍口","level":"施設内"}],"reviewStatus":"catalog_only"},"f6":{"name":"大宮駅","area":"埼玉県","map":"https://www.jreast.co.jp/e/stations/e350.html","anchors":[],"places":[{"name":"中央改札","level":"施設内"},{"name":"新幹線乗換","level":"施設内"},{"name":"東口","level":"施設内"},{"name":"西口","level":"施設内"}],"reviewStatus":"catalog_only"},"f7":{"name":"新横浜駅","area":"神奈川県","map":"https://www.jreast.co.jp/estation/stations/888.html?vm=r","anchors":[],"places":[{"name":"新幹線改札","level":"施設内"},{"name":"横浜線","level":"施設内"},{"name":"北口","level":"施設内"},{"name":"地下鉄乗換","level":"施設内"}],"reviewStatus":"catalog_only"},"f8":{"name":"大阪駅","area":"大阪府","map":"https://eki.jr-odekake.net/premises?id=0610130","anchors":[],"places":[{"name":"中央口","level":"施設内"},{"name":"御堂筋口","level":"施設内"},{"name":"桜橋口","level":"施設内"},{"name":"うめきた地下口","level":"施設内"}],"reviewStatus":"catalog_only"},"f9":{"name":"新大阪駅","area":"大阪府","map":"https://eki.jr-odekake.net/premises?id=0610155","anchors":[],"places":[{"name":"新幹線中央口","level":"施設内"},{"name":"在来線乗換","level":"施設内"},{"name":"東口","level":"施設内"},{"name":"御堂筋線乗換","level":"施設内"}],"reviewStatus":"catalog_only"},"f10":{"name":"京都駅","area":"京都府","map":"https://eki.jr-odekake.net/premises?id=0610116","anchors":[],"places":[{"name":"中央口","level":"施設内"},{"name":"八条口","level":"施設内"},{"name":"新幹線乗換","level":"施設内"},{"name":"嵯峨野線","level":"施設内"}],"reviewStatus":"catalog_only"},"f11":{"name":"名古屋駅","area":"愛知県","map":"https://railway.jr-central.co.jp/station-guide/shinkansen/nagoya/map.html","anchors":[],"places":[{"name":"新幹線北口","level":"施設内"},{"name":"新幹線南口","level":"施設内"},{"name":"桜通口","level":"施設内"},{"name":"太閤通口","level":"施設内"}],"reviewStatus":"catalog_only"},"f12":{"name":"博多駅","area":"福岡県","map":"https://www.jrkyushu.co.jp/railway/station/1191771_1601.html","anchors":[],"places":[{"name":"博多口","level":"施設内"},{"name":"筑紫口","level":"施設内"},{"name":"新幹線乗換","level":"施設内"},{"name":"地下鉄乗換","level":"施設内"}],"reviewStatus":"catalog_only"},"f13":{"name":"羽田空港","area":"東京都","map":"https://www.tokyo-haneda.com/floor/index.html","anchors":[],"places":[{"name":"第1ターミナル","level":"施設内"},{"name":"第2ターミナル","level":"施設内"},{"name":"第3ターミナル","level":"施設内"},{"name":"展望デッキ","level":"施設内"}],"reviewStatus":"catalog_only"},"f14":{"name":"成田空港","area":"千葉県","map":"https://www.narita-airport.jp/ja/company/media-center/publications-pamphlets/kannaimap/","anchors":[],"places":[{"name":"第1ターミナル","level":"施設内"},{"name":"第2ターミナル","level":"施設内"},{"name":"第3ターミナル","level":"施設内"},{"name":"出国審査","level":"施設内"}],"reviewStatus":"catalog_only"},"f15":{"name":"関西国際空港","area":"大阪府","map":"https://www.kansai-airport.or.jp/map/guidance","anchors":[],"places":[{"name":"第1ターミナル","level":"施設内"},{"name":"第2ターミナル","level":"施設内"},{"name":"保安検査","level":"施設内"},{"name":"展望ホール","level":"施設内"}],"reviewStatus":"catalog_only"},"f16":{"name":"大阪国際空港（伊丹）","area":"大阪府","map":"https://www.osaka-airport.co.jp/map","anchors":[],"places":[{"name":"南ターミナル","level":"施設内"},{"name":"北ターミナル","level":"施設内"},{"name":"保安検査","level":"施設内"},{"name":"展望デッキ","level":"施設内"}],"reviewStatus":"catalog_only"},"f17":{"name":"中部国際空港セントレア","area":"愛知県","map":"https://www.centrair.jp/map/index.html","anchors":[],"places":[{"name":"第1ターミナル","level":"施設内"},{"name":"第2ターミナル","level":"施設内"},{"name":"保安検査","level":"施設内"},{"name":"スカイデッキ","level":"施設内"}],"reviewStatus":"catalog_only"},"f18":{"name":"あべのハルカス","area":"大阪府","map":"https://www.abenoharukas-300.jp/floor/","anchors":[],"places":[{"name":"ハルカス300","level":"施設内"},{"name":"あべのハルカス美術館","level":"施設内"},{"name":"ハルカスダイニング","level":"施設内"},{"name":"近鉄百貨店","level":"施設内"}],"reviewStatus":"catalog_only"},"f19":{"name":"東京ソラマチ","area":"東京都","map":"https://www.tokyo-solamachi.jp/floor/","anchors":[],"places":[{"name":"ソラマチ商店街","level":"施設内"},{"name":"フードマルシェ","level":"施設内"},{"name":"レストラン","level":"施設内"},{"name":"東京スカイツリー入口","level":"施設内"}],"reviewStatus":"catalog_only"},"f20":{"name":"ゆめタウン高松","area":"香川県高松市","map":"https://www.izumi.jp/tenpo/takamatsu/floor","anchors":[],"places":[{"name":"無印良品","level":"1F","shopVerified":true},{"name":"GLOBAL WORK","level":"1F","shopVerified":true},{"name":"スターバックスコーヒー","level":"1F","shopVerified":true},{"name":"ABCマート/ABC-MART SPORTS","level":"2F","shopVerified":true},{"name":"ダイソー","level":"2F","shopVerified":true},{"name":"3COINS＋Plus","level":"2F","shopVerified":true},{"name":"ユニクロ","level":"3F","shopVerified":true},{"name":"GU","level":"3F","shopVerified":true},{"name":"スターバックスコーヒー 東館3階","level":"3F","shopVerified":true}],"reviewStatus":"catalog_only"},"f21":{"name":"高松駅","area":"香川県高松市","map":"https://www.jr-shikoku.co.jp/renraku-bus/bus-sta-map/takamatsu.html","anchors":[],"places":[{"name":"中央改札","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"},{"name":"乗換案内","level":"施設内"}],"reviewStatus":"catalog_only"},"f22":{"name":"高松空港","area":"香川県","map":"https://www.takamatsu-airport.com/guide/map.php","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f23":{"name":"イオンモール高松","area":"香川県高松市","map":"https://www.aeon.jp/sc/takamatsu/shop/floor/ebook/takamatsu/pageindices/","anchors":[],"places":[{"name":"総合案内","level":"1F","shopVerified":true},{"name":"スターバックス","level":"1F","shopVerified":true},{"name":"グローバルワーク","level":"1F","shopVerified":true},{"name":"ユニクロ","level":"1F","shopVerified":true},{"name":"ダイソー/Standard Products/THREEPPY","level":"1F","shopVerified":true},{"name":"ABCマート","level":"2F","shopVerified":true},{"name":"Zoff","level":"2F","shopVerified":true},{"name":"JINS","level":"3F","shopVerified":true},{"name":"フードコート","level":"3F","shopVerified":true},{"name":"トイレ","level":"施設内","shopVerified":true},{"name":"エレベーター","level":"施設内","shopVerified":true}],"reviewStatus":"catalog_only"},"f24":{"name":"ゆめタウン丸亀","area":"香川県丸亀市","map":"https://www.izumi.jp/tenpo/marugame/floor","anchors":[],"places":[{"name":"総合案内","level":"1F","shopVerified":true},{"name":"Green Parks topic","level":"1F","shopVerified":true},{"name":"ライトオン","level":"1F","shopVerified":true},{"name":"SM2 keittio","level":"1F","shopVerified":true},{"name":"Zoff ゆめタウン丸亀店","level":"1F","shopVerified":true},{"name":"ヒマラヤスポーツ","level":"2F","shopVerified":true},{"name":"紀伊國屋書店","level":"2F","shopVerified":true},{"name":"Standard Products","level":"2F","shopVerified":true},{"name":"ダイソー","level":"2F","shopVerified":true},{"name":"3COINS＋plus","level":"3F","shopVerified":true},{"name":"フードコート","level":"施設内","shopVerified":true},{"name":"トイレ","level":"施設内","shopVerified":true},{"name":"エレベーター","level":"施設内","shopVerified":true}],"reviewStatus":"catalog_only"},"f25":{"name":"イオンモール徳島","area":"徳島県徳島市","map":"https://www.aeon.jp/sc/tokushima/shop/floor/ebook/tokushima/pageindices/","anchors":[],"places":[{"name":"総合案内","level":"施設内"},{"name":"フードコート","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"}],"reviewStatus":"catalog_only"},"f26":{"name":"イオンモール岡山","area":"岡山県岡山市","map":"https://www.aeon.jp/sc/okayama/shop/floor/ebook/okayama/pageindices/","anchors":[],"places":[{"name":"総合案内","level":"施設内"},{"name":"フードコート","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"}],"reviewStatus":"catalog_only"},"f27":{"name":"イオンモール倉敷","area":"岡山県倉敷市","map":"https://www.aeon.jp/sc/kurashiki/shop/floor/ebook/kurashiki/pageindices/","anchors":[],"places":[{"name":"総合案内","level":"施設内"},{"name":"フードコート","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"}],"reviewStatus":"catalog_only"},"f28":{"name":"イオンモール広島府中","area":"広島県","map":"https://www.aeon.jp/sc/hiroshimafuchu/shop/floor/ebook/hiroshimafuchu/pageindices/","anchors":[],"places":[{"name":"総合案内","level":"施設内"},{"name":"フードコート","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"}],"reviewStatus":"catalog_only"},"f29":{"name":"ゆめタウン広島","area":"広島県広島市","map":"https://www.izumi.jp/tenpo/hiroshima/floor","anchors":[],"places":[{"name":"総合案内","level":"施設内"},{"name":"フードコート","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"}],"reviewStatus":"catalog_only"},"f30":{"name":"イオンモール福岡","area":"福岡県","map":"https://www.aeon.jp/sc/fukuoka/shop/floor/ebook/fukuoka/pageindices/","anchors":[],"places":[{"name":"総合案内","level":"施設内"},{"name":"フードコート","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"}],"reviewStatus":"catalog_only"},"f31":{"name":"キャナルシティ博多","area":"福岡県福岡市","map":"https://canalcity.co.jp/shopsearch/floor/101","anchors":[],"places":[{"name":"無印良品","level":"施設内"},{"name":"ユナイテッド・シネマ","level":"施設内"},{"name":"ラーメンスタジアム","level":"施設内"},{"name":"総合案内","level":"施設内"}],"reviewStatus":"catalog_only"},"f32":{"name":"イオンモール熊本","area":"熊本県","map":"https://www.aeon.jp/sc/kumamoto/shop/floor/ebook/kumamoto/pageindices/","anchors":[],"places":[{"name":"総合案内","level":"施設内"},{"name":"フードコート","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"}],"reviewStatus":"catalog_only"},"f33":{"name":"アミュプラザ鹿児島","area":"鹿児島県鹿児島市","map":"https://www.jrkagoshimacity.com/floor/","anchors":[],"places":[{"name":"無印良品","level":"施設内"},{"name":"AMU DINING","level":"施設内"},{"name":"鹿児島ミッテ10","level":"施設内"},{"name":"総合案内","level":"施設内"}],"reviewStatus":"catalog_only"},"f34":{"name":"那覇空港","area":"沖縄県","map":"https://www.naha-airport.co.jp/","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f35":{"name":"福岡空港","area":"福岡県","map":"https://www.fukuoka-airport.jp/map/","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f36":{"name":"新千歳空港","area":"北海道","map":"https://www.hokkaido-airports.com/ja/new-chitose/floormap/","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f37":{"name":"仙台空港","area":"宮城県","map":"https://www.sendai-airport.co.jp/service/floormap/","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f38":{"name":"神戸空港","area":"兵庫県神戸市","map":"https://www.kairport.co.jp/floor/","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f39":{"name":"広島空港","area":"広島県","map":"https://www.hij.airport.jp/terminal/index_1f.html","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f40":{"name":"松山空港","area":"愛媛県","map":"https://www.matsuyama-airport.co.jp/floormap/","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f41":{"name":"徳島阿波おどり空港","area":"徳島県","map":"https://www.tokushima-airport.co.jp/floor/","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f42":{"name":"高知龍馬空港","area":"高知県","map":"https://www.kochiap.co.jp/floor/","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f43":{"name":"岡山桃太郎空港","area":"岡山県","map":"https://www.okayama-airport.org/facility/","anchors":[],"places":[{"name":"出発ロビー","level":"施設内"},{"name":"到着ロビー","level":"施設内"},{"name":"保安検査場","level":"施設内"},{"name":"総合案内所","level":"施設内"}],"reviewStatus":"catalog_only"},"f44":{"name":"札幌駅","area":"北海道","map":"https://www.jrhokkaido.co.jp/construction/","anchors":[],"places":[{"name":"中央改札","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"},{"name":"乗換案内","level":"施設内"}],"reviewStatus":"catalog_only"},"f45":{"name":"仙台駅","area":"宮城県","map":"https://www.jreast.co.jp/estation/stations/913.html?vm=r","anchors":[],"places":[{"name":"中央改札","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"},{"name":"乗換案内","level":"施設内"}],"reviewStatus":"catalog_only"},"f46":{"name":"金沢駅","area":"石川県","map":"https://eki.jr-odekake.net/premises?id=0541449","anchors":[],"places":[{"name":"中央改札","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"},{"name":"乗換案内","level":"施設内"}],"reviewStatus":"catalog_only"},"f47":{"name":"広島駅","area":"広島県","map":"https://eki.jr-odekake.net/premises?id=0800613","anchors":[],"places":[{"name":"中央改札","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"},{"name":"乗換案内","level":"施設内"}],"reviewStatus":"catalog_only"},"f48":{"name":"岡山駅","area":"岡山県","map":"https://eki.jr-odekake.net/premises?id=0650608","anchors":[],"places":[{"name":"中央改札","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"},{"name":"乗換案内","level":"施設内"}],"reviewStatus":"catalog_only"},"f49":{"name":"三ノ宮駅","area":"兵庫県神戸市","map":"https://eki.jr-odekake.net/premises?id=0610143","anchors":[],"places":[{"name":"中央改札","level":"施設内"},{"name":"トイレ","level":"施設内"},{"name":"エレベーター","level":"施設内"},{"name":"乗換案内","level":"施設内"}],"reviewStatus":"catalog_only"}};
@@ -144,34 +146,57 @@ F.f21.map="https://www.jr-shikoku.co.jp/01_trainbus/kakueki/takamatsu/";
 F.f44.map="https://www.jrhokkaido.co.jp/network/station/station.html";
 function isStation(){return STATION_IDS.has(key)}
 function stationAnchors(id){return STATION_MODELS[id]?.anchors||[]}
+function facilityCoverage(id){
+ if(id==="f0")return{label:"詳細ルートあり",className:"route"};
+ if(STATION_IDS.has(id))return{label:"概算距離・方面あり",className:"distance"};
+ return{label:"施設検索のみ",className:"catalogOnly"};
+}
+function coverageBadge(id){const s=facilityCoverage(id);return `<span class="coverage ${s.className}">${s.label}</span>`}
+function stationCategoryPosition(category,fromPos){return({"改札":fromPos,"トイレ":.52,"きっぷ":.34,"エレベーター":.58,"コインロッカー":.68})[category]??.5}
+function stationTargetAnchor(id,p,from){
+ const model=STATION_MODELS[id];if(!model)return"公式構内図の掲載位置";
+ const plain=s=>String(s).replace(/[🚪🚻🎫🛗🧳（）()]/g,"").trim();
+ const direct=model.anchors.find(a=>plain(p.name).includes(plain(a))||plain(a).includes(plain(p.name)));
+ if(direct)return direct;
+ const fromIndex=Math.max(0,model.anchors.indexOf(from)),fromPos=model.anchors.length<2?.5:fromIndex/(model.anchors.length-1);
+ const targetPos=stationCategoryPosition(p.category,fromPos);
+ return model.anchors.reduce((best,a,i)=>Math.abs((model.anchors.length<2?.5:i/(model.anchors.length-1))-targetPos)<best.diff?{name:a,diff:Math.abs((model.anchors.length<2?.5:i/(model.anchors.length-1))-targetPos)}:best,{name:model.anchors[0],diff:Infinity}).name;
+}
+function stationDirectionText(id,p,from){
+ const target=stationTargetAnchor(id,p,from);
+ return target===from?`${target}周辺が目安です`:`${target}方面へ進む目安です`;
+}
 function stationApproxMeters(id,p,from){
  const model=STATION_MODELS[id];if(!model)return 0;
  const anchors=model.anchors,fromIndex=Math.max(0,anchors.indexOf(from));
  const fromPos=anchors.length<2?.5:fromIndex/(anchors.length-1);
  const plain=s=>String(s).replace(/[（）()]/g,"");
  const matching=anchors.findIndex(a=>plain(p.name).includes(plain(a))||plain(a).includes(plain(p.name)));
- const categoryPos={"改札":fromPos,"トイレ":.52,"きっぷ":.34,"エレベーター":.58,"コインロッカー":.68};
- const destinationPos=matching>=0?(anchors.length<2?.5:matching/(anchors.length-1)):(categoryPos[p.category]??.5);
+ const destinationPos=matching>=0?(anchors.length<2?.5:matching/(anchors.length-1)):stationCategoryPosition(p.category,fromPos);
  const categoryExtra={"改札":10,"トイレ":18,"きっぷ":14,"エレベーター":18,"コインロッカー":16}[p.category]||15;
  return Math.max(10,Math.round((Math.abs(destinationPos-fromPos)*model.span+categoryExtra)/5)*5);
 }
 function stationPlaces(id){
  if(!STATION_IDS.has(id))return[];
  const anchors=stationAnchors(id);
- return [...STATION_COMMON,...(STATION_SPECIFIC[id]||[])].map(p=>({...p,level:"公式構内図",official:true,checked:"2026-09-24",estimateConfidence:"C",estimateBasis:"公式構内図の掲載位置と駅規模から推定",distanceByAnchor:Object.fromEntries(anchors.map(a=>[a,stationApproxMeters(id,p,a)]))}));
+ return [...STATION_COMMON,...(STATION_SPECIFIC[id]||[])].map(p=>({...p,level:"公式構内図",official:true,checked:"2026-09-24",detailType:(STATION_SPECIFIC[id]||[]).includes(p)?"個別設備":"設備カテゴリ",estimateConfidence:"C",estimateBasis:"公式構内図の掲載位置と駅規模から推定",distanceByAnchor:Object.fromEntries(anchors.map(a=>[a,stationApproxMeters(id,p,a)]))}));
+}
+function stationBasePlaces(id){
+ const anchors=stationAnchors(id);
+ return (F[id]?.places||[]).map(raw=>{const category=/トイレ/.test(raw.name)?"トイレ":/エレベーター/.test(raw.name)?"エレベーター":/券|きっぷ|窓口/.test(raw.name)?"きっぷ":/改札|口|入口/.test(raw.name)?"改札":"乗換";const p={...raw,category};return{...p,level:"公式構内図",official:true,checked:"2026-09-24",detailType:"個別地点",locationText:`${raw.name}の位置を公式構内図で確認できます。`,estimateConfidence:"C",distanceByAnchor:Object.fromEntries(anchors.map(a=>[a,stationApproxMeters(id,p,a)]))}});
 }
 let viewedFloor=1, activePath=[];
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c])}
 function allPlaces(){
  if(key==="f0")return[...currentFacility().places.filter(p=>p.name!=="1F トイレ"&&p.name!=="2F トイレ"&&p.name!=="3F トイレ"),...AY_AMENITIES];
- const combined=[...(currentFacility().places||[]),...stationPlaces(key)];
+ const combined=isStation()?[...stationBasePlaces(key),...stationPlaces(key)]:[...(currentFacility().places||[])];
  return combined.filter((p,i,a)=>a.findIndex(x=>x.name===p.name)===i);
 }
 function prefectureOf(area){const m=String(area||"").match(/^(.+?[都道府県])/);return m?m[1]:String(area||"")}
 function facilityEntriesForPref(pref){return Object.entries(F).filter(([,v])=>prefectureOf(v.area)===pref)}
 function fillFacilitySelect(pref,selectedId){
  const entries=facilityEntriesForPref(pref);
- facilitySelect.innerHTML=entries.map(([id,v])=>`<option value="${id}">${escapeHtml(v.name)}</option>`).join("");
+ facilitySelect.innerHTML=entries.map(([id,v])=>`<option value="${id}">${escapeHtml(v.name)}【${facilityCoverage(id).label}】</option>`).join("");
  const id=entries.some(([x])=>x===selectedId)?selectedId:entries[0]?.[0];
  if(id){facilitySelect.value=id;changeFacility(id)}
 }
@@ -181,7 +206,7 @@ function renderFacilityCatalog(){
  const search=normEasy(input?.value||"");
  if(!search){box.innerHTML="";return}
  const hits=Object.entries(F).filter(([,v])=>normEasy(v.name+" "+v.area).includes(search));
- box.innerHTML=hits.slice(0,50).map(([id,v])=>`<button type="button" class="${id===key?'active':''}" data-id="${id}">${escapeHtml(v.name)}<small style="display:block;color:#68727c">${escapeHtml(v.area)}</small></button>`).join("")||"該当する施設はありません";
+ box.innerHTML=hits.slice(0,50).map(([id,v])=>`<button type="button" class="${id===key?'active':''}" data-id="${id}">${escapeHtml(v.name)}<small style="display:block;color:#68727c">${escapeHtml(v.area)}・${facilityCoverage(id).label}</small></button>`).join("")||"該当する施設はありません";
  box.querySelectorAll("button").forEach(b=>b.addEventListener("click",()=>selectFacilityById(b.dataset.id)));
 }
 function selectFacilityById(id){
@@ -195,8 +220,8 @@ function renderFloorPanel(){
    const levels=[...new Set(places.map(p=>p.level||"施設内"))];
    floors.innerHTML=levels.map(l=>`<button type="button" class="active">${escapeHtml(l)}</button>`).join("");
    map.classList.add("hidden");
-   list.innerHTML=places.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}"><b>${escapeHtml(p.name)}${isStation()?estimateBadge(p):""}</b><small>${escapeHtml(p.official?(p.locationText||"公式構内図で確認"):p.level||"階の詳細は公式案内で確認")}</small></button>`).join("");
-   legend.textContent=isStation()?"選んだ改札・入口から、公式構内図の掲載位置と駅規模を基に概算距離を表示します。実測値ではないため余裕をもってご利用ください。":"この施設は館内の位置・通路を未確認です。目的地の候補と公式案内を表示しています。";
+   list.innerHTML=places.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}"><b>${escapeHtml(p.name)}${isStation()?estimateBadge(p):""}</b><small>${escapeHtml(p.official?(p.locationText||"公式構内図で確認"):p.level||"階の詳細は公式案内で確認")}${isStation()&&currentAnchor?`<br>${escapeHtml(stationDirectionText(key,p,currentAnchor))}`:""}</small></button>`).join("");
+   legend.textContent=isStation()?(currentAnchor?"概算距離と方面を表示中です。実測値ではないため、詳細な曲がり方と改札内外は公式構内図で確認してください。":"距離を表示するには、先に今いる改札・入口を選んでください。個別登録済みの設備と設備カテゴリを検索できます。") :"この施設は館内の位置・通路を未確認です。目的地の候補と公式案内を表示しています。";
  }else{
    floors.innerHTML=[1,2,3].map(f=>`<button type="button" class="${f===viewedFloor?'active':''}" data-floor="${f}">${f}F</button>`).join("");
    map.classList.remove("hidden");
@@ -246,6 +271,17 @@ function selectFacilityEasy(k){
 function togglePlacePicker(){const x=document.getElementById("placePicker");if(x)x.classList.toggle("hidden")}
 
 function currentFacility(){return F[key]}
+function renderAnchorChoices(){
+ const a=key==="f0"?Object.keys(AY_ANCHORS):STATION_IDS.has(key)?stationAnchors(key):[];
+ anchorsEl.innerHTML=a.map(v=>`<button class="chip ${v===currentAnchor?'active':''}" onclick='setAnchor(${JSON.stringify(v)})'>${escapeHtml(v)}</button>`).join("");
+ const warning=document.getElementById("anchorRequired");if(warning)warning.classList.toggle("hidden",!isStation()||!!currentAnchor);
+ return a;
+}
+function focusCurrentLocation(){
+ const card=document.getElementById("correctionCard");if(!card)return;
+ card.classList.add("needsLocation");card.scrollIntoView?.({behavior:"smooth",block:"center"});
+ setTimeout(()=>card.classList.remove("needsLocation"),1800);
+}
 function init(){
  const prefs=[...new Set(Object.values(F).map(v=>prefectureOf(v.area)))];
  prefectureSelect.innerHTML=prefs.map(p=>`<option value="${escapeHtml(p)}">${escapeHtml(p)}</option>`).join("");
@@ -254,15 +290,15 @@ function init(){
 function changeFacility(k){
   if(!F[k])return;key=k; const x=F[k]; stopNav();viewedFloor=1;activePath=[];facilitySelect.value=k;prefectureSelect.value=prefectureOf(x.area);
  facilityInfo.innerHTML=`<div class="facilityTitle">${x.name}</div><div class="facilitySub">${x.area}</div>`+
-  (k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:STATION_IDS.has(k)?`<span class="badge">公式構内図ベースの概算距離</span>`:`<span class="badge proto">館内経路は未確認</span>`);
+  coverageBadge(k)+(k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:STATION_IDS.has(k)?`<span class="badge">公式構内図ベースの暫定値</span>`:`<span class="badge proto">館内経路は未確認</span>`);
  officialMap.href=x.map;
+ const dock=document.getElementById("officialMapDock");dock.href=x.map;dock.classList.toggle("hidden",!STATION_IDS.has(k));
  precisionNote.classList.toggle("hidden",k!=="f0"&&!STATION_IDS.has(k));
   precisionNote.innerHTML=k==="f0"?"図と距離は試作の概算です。青い現在地は手動で選んだ地点で、GPSから館内の階や位置を確定していません。":STATION_IDS.has(k)?"今いる改札・入口を下から選ぶと、設備までの概算距離を更新します。公式構内図の掲載位置と駅規模から推定した目安で、実測値ではありません。":"";
  const places=allPlaces();
  quick.innerHTML=places.slice(0,8).map(p=>`<button class="chip" onclick='quickSearch(${JSON.stringify(p.name)})'>${p.name}</button>`).join("");
   const a=k==="f0"?Object.keys(AY_ANCHORS):STATION_IDS.has(k)?stationAnchors(k):[];
- anchorsEl.innerHTML=a.map(v=>`<button class="chip" onclick='setAnchor(${JSON.stringify(v)})'>${v}</button>`).join("");
-  currentAnchor=a[0]||"未設定"; currentNode=k==="f0"?AY_ANCHORS[currentAnchor]:""; placeNow.textContent=currentAnchor;
+  currentAnchor=k==="f0"?(a[0]||""):""; currentNode=k==="f0"?AY_ANCHORS[currentAnchor]:""; placeNow.textContent=currentAnchor||"未選択";accuracyNow.textContent=currentAnchor?"手動位置":"要選択";renderAnchorChoices();
   results.innerHTML="";
   renderFacilityCatalog();renderFloorPanel();
 }
@@ -275,7 +311,8 @@ function currentEstimateMeters(p){
 function estimateBadge(p){
  const d=currentEstimateMeters(p); if(!d)return "";
  const mark=(p.estimateConfidence||"C");
- return `<span style="display:inline-block;margin-left:6px;padding:3px 7px;border-radius:999px;background:${mark==="B"?"#eaf8f1":"#fff5e6"};color:${mark==="B"?"#147548":"#995600"};font-size:10px;font-weight:800">概算 約${d}m / 精度${mark}</span>`;
+ const label=mark==="B"?"概略図で計算":"暫定・実測前";
+ return `<span class="trustLabel">概算 約${d}m・${label}</span>`;
 }
 
 function quickSearch(v){q.value=v;searchPlace()}
@@ -287,7 +324,7 @@ function searchPlace(){
    return;
   }
   const facilities=Object.entries(F).filter(([,v])=>normEasy(v.name+" "+v.area).includes(normEasy(raw)));
-  results.innerHTML=facilities.length?`<div class="small" style="margin-top:9px">施設・県名の検索結果：施設を選んでください</div>`+facilities.map(([id,v])=>`<button type="button" class="result" style="display:block;width:100%;text-align:left;background:white" data-facility="${id}"><b>${escapeHtml(v.name)}</b><span>${escapeHtml(v.area)}</span></button>`).join(""):`<div class="result">${T('notfound')}</div>`;
+  results.innerHTML=facilities.length?`<div class="small" style="margin-top:9px">施設・県名の検索結果：施設を選んでください</div>`+facilities.map(([id,v])=>`<button type="button" class="result" style="display:block;width:100%;text-align:left;background:white" data-facility="${id}"><b>${escapeHtml(v.name)}</b><span>${escapeHtml(v.area)}・${facilityCoverage(id).label}</span></button>`).join(""):`<div class="result">${T('notfound')}</div>`;
   results.querySelectorAll("[data-facility]").forEach(b=>b.addEventListener("click",()=>{selectFacilityById(b.dataset.facility);q.value=""}));
 }
 function startNavByName(name){
@@ -295,12 +332,20 @@ function startNavByName(name){
   if(key==="f0") {viewedFloor=Number(p.level?.match(/\d/)?.[0]||1);startPrecision(p)}
   else {
    stopNav();
+   if(isStation()&&!currentAnchor){results.innerHTML=`<div class="anchorWarning">距離を出すには、先に今いる改札・入口を選んでください。</div>`;focusCurrentLocation();renderFloorPanel();return}
    const meters=currentEstimateMeters(p),low=Math.max(5,Math.round(meters*.65/5)*5),high=Math.round(meters*1.35/5)*5;
-   const stationDistance=isStation()&&meters?`<div style="margin:10px 0;padding:12px;border-radius:12px;background:#fff5e6"><b>${escapeHtml(currentAnchor)}から概算 約${meters}m</b><br><span class="small">目安 ${low}〜${high}m／精度C。公式構内図の掲載位置と駅規模からの推定で、実測値ではありません。</span></div>`:"";
+   const direction=isStation()?stationDirectionText(key,p,currentAnchor):"";
+   const stationDistance=isStation()&&meters?`<div style="margin:10px 0;padding:12px;border-radius:12px;background:#fff5e6"><b>${escapeHtml(currentAnchor)}から概算 約${meters}m</b><br><span class="small">目安 ${low}〜${high}m／暫定・実測前。公式構内図の掲載位置と駅規模からの推定です。</span><div class="directionBox">🧭 ${escapeHtml(direction)}</div></div>`:"";
    const info=p.official?`${stationDistance}${escapeHtml(p.locationText||"公式構内図に掲載されています。")}<br><span class="small">公式情報確認日：${escapeHtml(p.checked||"-")}／詳細な曲がり方は公式構内図で確認してください</span>`:`館内の位置と経路は未確認です。`;
-   results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b><br>${info}<div style="margin-top:10px"><a href="${escapeHtml(currentFacility().map)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:11px;border-radius:10px;background:#1378ff;color:white;text-decoration:none;font-weight:800">公式構内図で場所を見る</a></div></div>`;
+   results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b>${p.detailType?` <span class="trustLabel">${escapeHtml(p.detailType)}</span>`:""}<br>${info}<div style="margin-top:10px"><a href="${escapeHtml(currentFacility().map)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:11px;border-radius:10px;background:#1378ff;color:white;text-decoration:none;font-weight:800">公式構内図で場所を見る</a></div>${reportButtons(p)}</div>`;
    renderFloorPanel();
   }
+}
+function reportButtons(p){return `<div class="reportRow"><button onclick='openCorrectionReport("場所が違う",${JSON.stringify(p.name)})'>場所が違う</button><button onclick='openCorrectionReport("距離が違う",${JSON.stringify(p.name)})'>距離が違う</button><button onclick='openCorrectionReport("設備がない",${JSON.stringify(p.name)})'>設備がない</button></div>`}
+function openCorrectionReport(type,destination){
+ const title=encodeURIComponent(`[館内情報修正] ${currentFacility().name}・${type}`);
+ const body=encodeURIComponent(`施設：${currentFacility().name}\n現在地：${currentAnchor||"未選択"}\n目的地：${destination}\n報告：${type}\n補足：`);
+ window.open(`https://github.com/olesama/ayagawa-indoor-nav/issues/new?title=${title}&body=${body}`,"_blank","noopener");
 }
 function buildGraph(){
  const g={}; Object.keys(AY_NODES).forEach(n=>g[n]=[]);
@@ -364,7 +409,7 @@ function advanceStep(){if(stepIndex<navSteps.length-1){stepIndex++;stepRemaining
 function simulateWalking(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;accuracyNow.textContent="停止";return}accuracyNow.textContent="歩行デモ中";autoTimer=setInterval(()=>{if(selected)advanceMeters(2)},900)}
 function reroute(){if(!selected)return;if(key==="f0")startPrecision(selected)}
 function stopNav(){selected=null;navSteps=[];activePath=[];if(autoTimer){clearInterval(autoTimer);autoTimer=null}navCard.classList.add("hidden");renderFloorPanel()}
-function setAnchor(v){currentAnchor=v;placeNow.textContent=v;accuracyNow.textContent="手動位置";if(key==="f0"){currentNode=AY_ANCHORS[v];viewedFloor=AY_NODES[currentNode].floor}if(q.value.trim())searchPlace();if(selected)reroute();else renderFloorPanel()}
+function setAnchor(v){currentAnchor=v;placeNow.textContent=v||"未選択";accuracyNow.textContent=v?"手動位置":"要選択";if(key==="f0"){currentNode=AY_ANCHORS[v];viewedFloor=AY_NODES[currentNode].floor}renderAnchorChoices();if(q.value.trim())searchPlace();if(selected)reroute();else renderFloorPanel()}
 async function enableCompass(){try{if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){const p=await DeviceOrientationEvent.requestPermission();if(p!=="granted")throw 0}window.addEventListener("deviceorientation",e=>{if(e.alpha!=null){heading=(360-e.alpha)%360;headingNow.textContent=Math.round(heading)+"°"}},true);accuracyNow.textContent="方位ON"}catch(e){accuracyNow.textContent="方位未許可"}}
 async function enableMotion(){try{if(typeof DeviceMotionEvent!=="undefined"&&typeof DeviceMotionEvent.requestPermission==="function"){const p=await DeviceMotionEvent.requestPermission();if(p!=="granted")throw 0}window.addEventListener("devicemotion",e=>{const a=e.accelerationIncludingGravity;if(!a)return;const m=Math.sqrt((a.x||0)**2+(a.y||0)**2+(a.z||0)**2),now=Date.now();if(m>12.2&&now-lastMotion>450){lastMotion=now;if(selected)advanceMeters(.75)}},true);accuracyNow.textContent="歩行ON"}catch(e){accuracyNow.textContent="歩数未許可"}}
 function enableGPS(){if(!navigator.geolocation){accuracyNow.textContent="GPS非対応";return}navigator.geolocation.getCurrentPosition(p=>accuracyNow.textContent="±"+Math.round(p.coords.accuracy)+"m",()=>accuracyNow.textContent="GPS未許可",{enableHighAccuracy:true,timeout:8000})}
@@ -383,7 +428,7 @@ function applyLanguage(){
  set("headerTitle",T("app"));
  set("headerSub",T("sub"));
  set("officialMapText",T("official"));
- set("locationFixBtn",T("fix"));
+ set("locationFixBtn",appLang==="ja"?"📍 現在地を選ぶ":"📍 Choose current location");
   ph("q",appLang==="ja"?"行き先・県名・施設名を入力":T("searchph"));
  set("searchBtn",T("search"));
  set("demoBtn",T("demo"));
@@ -397,7 +442,7 @@ function applyLanguage(){
  set("compassBtn",T("compass"));
  set("motionBtn",T("motion"));
  set("gpsBtn",T("gps"));
-  set("footNote",appLang==="ja"?"駅では公式構内図の設備を検索できます。現在は公式情報への案内までで、設備までの経路線とリアルタイム屋内位置は未作成です。":"Station facilities can be searched from official maps. Indoor route lines and real-time indoor positioning are not available yet.");
+  set("footNote",appLang==="ja"?"駅では現在地を選ぶと、公式構内図の掲載位置と駅規模から概算距離・方面を表示します。数値は実測ではなく、詳細な曲がり方と改札内外は公式構内図で確認してください。":"Choose your current gate or entrance to see an approximate distance and direction based on the official station map. Estimates are not measured routes; confirm turns and fare-gate boundaries on the official map.");
 
  if(typeof applyEasyLanguage==="function") applyEasyLanguage();
  if(typeof applyPremiumLanguage==="function") applyPremiumLanguage();
