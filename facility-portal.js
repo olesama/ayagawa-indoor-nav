@@ -2,7 +2,7 @@
 "use strict";
 
 // Supabaseの Project URL と Publishable key を設定後、本番チャットが有効になります。
-const CONFIG={url:"",publishableKey:""};
+const CONFIG={url:"https://odlybanyfxymkegeyjhp.supabase.co",publishableKey:"sb_publishable_sbr_VADLwB-cNKnnDggf8A_cAOcCLCh"};
 let db=null,user=null,profile=null,currentConversation=null,channel=null;
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
