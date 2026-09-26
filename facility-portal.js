@@ -40,12 +40,58 @@ async function loadProfile(){
 }
 function renderHome(){
   const facility=profile.facilities?.name||"全施設";
-  $("facilityPortal").innerHTML=`<div class="portalStatus"><b>${esc(profile.display_name||profile.email)}</b><br>${esc(facility)} ／ ${profile.role==="admin"?"管理者":"施設担当者"}</div><div class="portalTabs"><button id="tabChats" class="active" onclick="portalTab('chats')">チャット <span id="portalUnread"></span></button><button id="tabRequest" onclick="portalTab('request')">修正依頼</button><button onclick="enablePortalNotifications()">通知をON</button><button onclick="portalLogout()">ログアウト</button></div><div id="portalView"></div>`;
+  const adminTab=profile.role==="admin"?'<button id="tabAdmin" onclick="portalTab(\'admin\')">施設管理</button>':"";
+  $("facilityPortal").innerHTML=`<div class="portalStatus"><b>${esc(profile.display_name||profile.email)}</b><br>${esc(facility)} ／ ${profile.role==="admin"?"管理者":"施設担当者"}</div><div class="portalTabs"><button id="tabChats" class="active" onclick="portalTab('chats')">チャット <span id="portalUnread"></span></button><button id="tabRequest" onclick="portalTab('request')">修正依頼</button>${adminTab}<button onclick="enablePortalNotifications()">通知をON</button><button onclick="portalLogout()">ログアウト</button></div><div id="portalView"></div>`;
 }
 window.portalTab=function(tab){
-  ["tabChats","tabRequest"].forEach(id=>$(id)?.classList.remove("active"));
+  ["tabChats","tabRequest","tabAdmin"].forEach(id=>$(id)?.classList.remove("active"));
+  if(tab==="admin"&&profile.role==="admin"){$("tabAdmin").classList.add("active");renderAdminPanel();return}
   if(tab==="request"){$("tabRequest").classList.add("active");renderRequestForm();}
   else{$("tabChats").classList.add("active");loadConversations();}
+};
+
+async function renderAdminPanel(){
+  const view=$("portalView");if(!view||profile.role!=="admin")return;
+  view.innerHTML='<p class="small">施設と承認待ちアカウントを読み込み中…</p>';
+  const [facilitiesResult,pendingResult]=await Promise.all([
+    db.from("facilities").select("id,name,status,created_at").order("created_at",{ascending:false}),
+    db.from("profiles").select("id,email,display_name,role,created_at").eq("role","pending").order("created_at",{ascending:true})
+  ]);
+  if(facilitiesResult.error||pendingResult.error){view.innerHTML=`<div class="portalStatus">読み込めませんでした：${esc(facilitiesResult.error?.message||pendingResult.error?.message)}</div>`;return}
+  const facilities=facilitiesResult.data||[],pending=pendingResult.data||[];
+  const options=facilities.map(f=>`<option value="${f.id}">${esc(f.name)}（${esc(f.status)}）</option>`).join("");
+  view.innerHTML=`
+    <section class="portalAdminSection"><h3>施設を追加</h3>
+      <form onsubmit="createPortalFacility(event)">
+        <div class="portalField"><label>施設名</label><input id="newFacilityName" required maxlength="100" placeholder="例：イオンモール○○"></div>
+        <div class="portalField"><label>契約状態</label><select id="newFacilityStatus"><option value="trial">試験運用</option><option value="active">本導入</option><option value="paused">停止中</option></select></div>
+        <button class="primaryAction" type="submit">この施設を追加</button>
+      </form><div id="facilityCreateResult"></div>
+    </section>
+    <section class="portalAdminSection"><h3>承認待ち担当者 <span class="adminCount">${pending.length}件</span></h3>
+      ${pending.length?pending.map(p=>`<div class="adminAccountCard"><b>${esc(p.display_name||p.email)}</b><small>${esc(p.email)}</small><div class="portalField"><label>所属施設</label><select id="facilityFor-${p.id}"><option value="">選択してください</option>${options}</select></div><div class="portalField"><label>表示名</label><input id="nameFor-${p.id}" value="${esc(p.display_name||"")}" maxlength="100"></div><button class="primaryAction" onclick="approvePortalMember('${p.id}')">担当者として承認</button></div>`).join(""):'<div class="portalStatus">現在、承認待ちの担当者はいません。</div>'}
+    </section>
+    <section class="portalAdminSection"><h3>登録施設 <span class="adminCount">${facilities.length}件</span></h3>
+      <div class="facilityAdminList">${facilities.map(f=>`<div class="requestCard"><b>${esc(f.name)}</b><span class="facilityState">${f.status==="active"?"本導入":f.status==="paused"?"停止中":"試験運用"}</span></div>`).join("")||'<p class="small">施設はまだありません。</p>'}</div>
+    </section>`;
+}
+window.createPortalFacility=async function(e){
+  e.preventDefault();if(profile.role!=="admin")return;
+  const name=$("newFacilityName").value.trim(),status=$("newFacilityStatus").value,button=e.submitter;if(!name)return;
+  button.disabled=true;
+  const existing=await db.from("facilities").select("id").ilike("name",name).limit(1);
+  if(existing.data?.length){$("facilityCreateResult").innerHTML='<div class="portalStatus">同じ名前の施設がすでに登録されています。</div>';button.disabled=false;return}
+  const {error}=await db.from("facilities").insert({name,status});
+  if(error){$("facilityCreateResult").innerHTML=`<div class="portalStatus">追加できませんでした：${esc(error.message)}</div>`;button.disabled=false;return}
+  await renderAdminPanel();
+};
+window.approvePortalMember=async function(memberId){
+  if(profile.role!=="admin")return;
+  const facilityId=$(`facilityFor-${memberId}`).value,displayName=$(`nameFor-${memberId}`).value.trim();
+  if(!facilityId)return alert("所属施設を選んでください。");
+  const {error}=await db.from("profiles").update({role:"facility",facility_id:facilityId,display_name:displayName||null}).eq("id",memberId).eq("role","pending");
+  if(error)return alert("承認できませんでした："+error.message);
+  alert("施設担当者として承認しました。");await renderAdminPanel();
 };
 async function loadConversations(){
   currentConversation=null;const view=$("portalView");if(!view)return;view.innerHTML='<p class="small">読み込み中…</p>';
