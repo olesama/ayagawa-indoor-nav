@@ -1,0 +1,536 @@
+[
+  {
+    "id": "f0",
+    "name": "イオンモール綾川",
+    "area": "香川県",
+    "mapURL": "https://www.aeon.jp/sc/ayagawa/shop/floor/ebook/ayagawa/pageindices/"
+  },
+  {
+    "id": "f1",
+    "name": "東京駅",
+    "area": "東京都",
+    "mapURL": "https://www.jreast.co.jp/estation/stations/1039.html?vm=r"
+  },
+  {
+    "id": "f2",
+    "name": "新宿駅",
+    "area": "東京都",
+    "mapURL": "https://www.jreast.co.jp/estation/stations/866.html?vm=r"
+  },
+  {
+    "id": "f3",
+    "name": "渋谷駅",
+    "area": "東京都",
+    "mapURL": "https://www.jreast.co.jp/estation/stations/808.html?vm=r"
+  },
+  {
+    "id": "f4",
+    "name": "横浜駅",
+    "area": "神奈川県",
+    "mapURL": "https://www.jreast.co.jp/estation/stations/1638.html?vm=r"
+  },
+  {
+    "id": "f5",
+    "name": "上野駅",
+    "area": "東京都",
+    "mapURL": "https://www.jreast.co.jp/e/stations/e204.html"
+  },
+  {
+    "id": "f6",
+    "name": "大宮駅",
+    "area": "埼玉県",
+    "mapURL": "https://www.jreast.co.jp/e/stations/e350.html"
+  },
+  {
+    "id": "f7",
+    "name": "新横浜駅",
+    "area": "神奈川県",
+    "mapURL": "https://www.jreast.co.jp/estation/stations/888.html?vm=r"
+  },
+  {
+    "id": "f8",
+    "name": "大阪駅",
+    "area": "大阪府",
+    "mapURL": "https://eki.jr-odekake.net/premises?id=0610130"
+  },
+  {
+    "id": "f9",
+    "name": "新大阪駅",
+    "area": "大阪府",
+    "mapURL": "https://eki.jr-odekake.net/premises?id=0610155"
+  },
+  {
+    "id": "f10",
+    "name": "京都駅",
+    "area": "京都府",
+    "mapURL": "https://eki.jr-odekake.net/premises?id=0610116"
+  },
+  {
+    "id": "f11",
+    "name": "名古屋駅",
+    "area": "愛知県",
+    "mapURL": "https://railway.jr-central.co.jp/station-guide/shinkansen/nagoya/map.html"
+  },
+  {
+    "id": "f12",
+    "name": "博多駅",
+    "area": "福岡県",
+    "mapURL": "https://www.jrkyushu.co.jp/railway/station/1191771_1601.html"
+  },
+  {
+    "id": "f13",
+    "name": "羽田空港",
+    "area": "東京都",
+    "mapURL": "https://www.tokyo-haneda.com/floor/index.html"
+  },
+  {
+    "id": "f14",
+    "name": "成田空港",
+    "area": "千葉県",
+    "mapURL": "https://www.narita-airport.jp/ja/company/media-center/publications-pamphlets/kannaimap/"
+  },
+  {
+    "id": "f15",
+    "name": "関西国際空港",
+    "area": "大阪府",
+    "mapURL": "https://www.kansai-airport.or.jp/map/guidance"
+  },
+  {
+    "id": "f16",
+    "name": "大阪国際空港（伊丹）",
+    "area": "大阪府",
+    "mapURL": "https://www.osaka-airport.co.jp/map"
+  },
+  {
+    "id": "f17",
+    "name": "中部国際空港セントレア",
+    "area": "愛知県",
+    "mapURL": "https://www.centrair.jp/map/index.html"
+  },
+  {
+    "id": "f18",
+    "name": "あべのハルカス",
+    "area": "大阪府",
+    "mapURL": "https://www.abenoharukas-300.jp/floor/"
+  },
+  {
+    "id": "f19",
+    "name": "東京ソラマチ",
+    "area": "東京都",
+    "mapURL": "https://www.tokyo-solamachi.jp/floor/"
+  },
+  {
+    "id": "f20",
+    "name": "ゆめタウン高松",
+    "area": "香川県高松市",
+    "mapURL": "https://www.izumi.jp/tenpo/takamatsu/floor"
+  },
+  {
+    "id": "f21",
+    "name": "高松駅",
+    "area": "香川県高松市",
+    "mapURL": "https://www.jr-shikoku.co.jp/renraku-bus/bus-sta-map/takamatsu.html"
+  },
+  {
+    "id": "f22",
+    "name": "高松空港",
+    "area": "香川県",
+    "mapURL": "https://www.takamatsu-airport.com/guide/map.php"
+  },
+  {
+    "id": "f23",
+    "name": "イオンモール高松",
+    "area": "香川県高松市",
+    "mapURL": "https://www.aeon.jp/sc/takamatsu/shop/floor/ebook/takamatsu/pageindices/"
+  },
+  {
+    "id": "f24",
+    "name": "ゆめタウン丸亀",
+    "area": "香川県丸亀市",
+    "mapURL": "https://www.izumi.jp/tenpo/marugame/floor"
+  },
+  {
+    "id": "f25",
+    "name": "イオンモール徳島",
+    "area": "徳島県徳島市",
+    "mapURL": "https://www.aeon.jp/sc/tokushima/shop/floor/ebook/tokushima/pageindices/"
+  },
+  {
+    "id": "f26",
+    "name": "イオンモール岡山",
+    "area": "岡山県岡山市",
+    "mapURL": "https://www.aeon.jp/sc/okayama/shop/floor/ebook/okayama/pageindices/"
+  },
+  {
+    "id": "f27",
+    "name": "イオンモール倉敷",
+    "area": "岡山県倉敷市",
+    "mapURL": "https://www.aeon.jp/sc/kurashiki/shop/floor/ebook/kurashiki/pageindices/"
+  },
+  {
+    "id": "f28",
+    "name": "イオンモール広島府中",
+    "area": "広島県",
+    "mapURL": "https://www.aeon.jp/sc/hiroshimafuchu/shop/floor/ebook/hiroshimafuchu/pageindices/"
+  },
+  {
+    "id": "f29",
+    "name": "ゆめタウン広島",
+    "area": "広島県広島市",
+    "mapURL": "https://www.izumi.jp/tenpo/hiroshima/floor"
+  },
+  {
+    "id": "f30",
+    "name": "イオンモール福岡",
+    "area": "福岡県",
+    "mapURL": "https://www.aeon.jp/sc/fukuoka/shop/floor/ebook/fukuoka/pageindices/"
+  },
+  {
+    "id": "f31",
+    "name": "キャナルシティ博多",
+    "area": "福岡県福岡市",
+    "mapURL": "https://canalcity.co.jp/shopsearch/floor/101"
+  },
+  {
+    "id": "f32",
+    "name": "イオンモール熊本",
+    "area": "熊本県",
+    "mapURL": "https://www.aeon.jp/sc/kumamoto/shop/floor/ebook/kumamoto/pageindices/"
+  },
+  {
+    "id": "f33",
+    "name": "アミュプラザ鹿児島",
+    "area": "鹿児島県鹿児島市",
+    "mapURL": "https://www.jrkagoshimacity.com/floor/"
+  },
+  {
+    "id": "f34",
+    "name": "那覇空港",
+    "area": "沖縄県",
+    "mapURL": "https://www.naha-airport.co.jp/"
+  },
+  {
+    "id": "f35",
+    "name": "福岡空港",
+    "area": "福岡県",
+    "mapURL": "https://www.fukuoka-airport.jp/map/"
+  },
+  {
+    "id": "f36",
+    "name": "新千歳空港",
+    "area": "北海道",
+    "mapURL": "https://www.hokkaido-airports.com/ja/new-chitose/floormap/"
+  },
+  {
+    "id": "f37",
+    "name": "仙台空港",
+    "area": "宮城県",
+    "mapURL": "https://www.sendai-airport.co.jp/service/floormap/"
+  },
+  {
+    "id": "f38",
+    "name": "神戸空港",
+    "area": "兵庫県神戸市",
+    "mapURL": "https://www.kairport.co.jp/floor/"
+  },
+  {
+    "id": "f39",
+    "name": "広島空港",
+    "area": "広島県",
+    "mapURL": "https://www.hij.airport.jp/terminal/index_1f.html"
+  },
+  {
+    "id": "f40",
+    "name": "松山空港",
+    "area": "愛媛県",
+    "mapURL": "https://www.matsuyama-airport.co.jp/floormap/"
+  },
+  {
+    "id": "f41",
+    "name": "徳島阿波おどり空港",
+    "area": "徳島県",
+    "mapURL": "https://www.tokushima-airport.co.jp/floor/"
+  },
+  {
+    "id": "f42",
+    "name": "高知龍馬空港",
+    "area": "高知県",
+    "mapURL": "https://www.kochiap.co.jp/floor/"
+  },
+  {
+    "id": "f43",
+    "name": "岡山桃太郎空港",
+    "area": "岡山県",
+    "mapURL": "https://www.okayama-airport.org/facility/"
+  },
+  {
+    "id": "f44",
+    "name": "札幌駅",
+    "area": "北海道",
+    "mapURL": "https://www.jrhokkaido.co.jp/construction/"
+  },
+  {
+    "id": "f45",
+    "name": "仙台駅",
+    "area": "宮城県",
+    "mapURL": "https://www.jreast.co.jp/estation/stations/913.html?vm=r"
+  },
+  {
+    "id": "f46",
+    "name": "金沢駅",
+    "area": "石川県",
+    "mapURL": "https://eki.jr-odekake.net/premises?id=0541449"
+  },
+  {
+    "id": "f47",
+    "name": "広島駅",
+    "area": "広島県",
+    "mapURL": "https://eki.jr-odekake.net/premises?id=0800613"
+  },
+  {
+    "id": "f48",
+    "name": "岡山駅",
+    "area": "岡山県",
+    "mapURL": "https://eki.jr-odekake.net/premises?id=0650608"
+  },
+  {
+    "id": "f49",
+    "name": "三ノ宮駅",
+    "area": "兵庫県神戸市",
+    "mapURL": "https://eki.jr-odekake.net/premises?id=0610143"
+  },
+  {
+    "id": "m01",
+    "name": "三井アウトレットパーク 札幌北広島",
+    "area": "北海道",
+    "mapURL": "https://mitsui-shopping-park.com/mop/sapporo/"
+  },
+  {
+    "id": "m02",
+    "name": "イオンモール下田",
+    "area": "青森県",
+    "mapURL": "https://www.aeon.jp/sc/shimoda/"
+  },
+  {
+    "id": "m03",
+    "name": "イオンモール盛岡",
+    "area": "岩手県",
+    "mapURL": "https://www.aeon.jp/sc/morioka/"
+  },
+  {
+    "id": "m04",
+    "name": "イオンモール新利府",
+    "area": "宮城県",
+    "mapURL": "https://www.aeon.jp/sc/shinrifu/"
+  },
+  {
+    "id": "m05",
+    "name": "イオンモール秋田",
+    "area": "秋田県",
+    "mapURL": "https://www.aeon.jp/sc/akita/"
+  },
+  {
+    "id": "m06",
+    "name": "イオンモール天童",
+    "area": "山形県",
+    "mapURL": "https://www.aeon.jp/sc/tendo/"
+  },
+  {
+    "id": "m07",
+    "name": "イオンモールいわき小名浜",
+    "area": "福島県",
+    "mapURL": "https://www.aeon.jp/sc/iwakionahama/"
+  },
+  {
+    "id": "m08",
+    "name": "イオンモール水戸内原",
+    "area": "茨城県",
+    "mapURL": "https://www.aeon.jp/sc/mitouchihara/"
+  },
+  {
+    "id": "m09",
+    "name": "佐野プレミアム・アウトレット",
+    "area": "栃木県",
+    "mapURL": "https://www.premiumoutlets.co.jp/sano/"
+  },
+  {
+    "id": "m10",
+    "name": "イオンモール太田",
+    "area": "群馬県",
+    "mapURL": "https://www.aeon.jp/sc/ota/"
+  },
+  {
+    "id": "m11",
+    "name": "イオンレイクタウン",
+    "area": "埼玉県",
+    "mapURL": "https://www.aeon-laketown.jp/"
+  },
+  {
+    "id": "m12",
+    "name": "三井アウトレットパーク 木更津",
+    "area": "千葉県",
+    "mapURL": "https://mitsui-shopping-park.com/mop/kisarazu/"
+  },
+  {
+    "id": "m14",
+    "name": "ラゾーナ川崎プラザ",
+    "area": "神奈川県",
+    "mapURL": "https://mitsui-shopping-park.com/lazona-kawasaki/"
+  },
+  {
+    "id": "m15",
+    "name": "イオンモール新潟亀田インター",
+    "area": "新潟県",
+    "mapURL": "https://www.aeon.jp/sc/niigatakameda-inter/"
+  },
+  {
+    "id": "m16",
+    "name": "イオンモール高岡",
+    "area": "富山県",
+    "mapURL": "https://www.aeon.jp/sc/takaoka/"
+  },
+  {
+    "id": "m17",
+    "name": "イオンモール白山",
+    "area": "石川県",
+    "mapURL": "https://www.aeon.jp/sc/hakusan/"
+  },
+  {
+    "id": "m18",
+    "name": "ラブリーパートナー エルパ",
+    "area": "福井県",
+    "mapURL": "https://lp-lpa.co.jp/"
+  },
+  {
+    "id": "m19",
+    "name": "イオンモール甲府昭和",
+    "area": "山梨県",
+    "mapURL": "https://www.aeon.jp/sc/kofushowa/"
+  },
+  {
+    "id": "m20",
+    "name": "イオンモール松本",
+    "area": "長野県",
+    "mapURL": "https://www.aeon.jp/sc/matsumoto/"
+  },
+  {
+    "id": "m21",
+    "name": "土岐プレミアム・アウトレット",
+    "area": "岐阜県",
+    "mapURL": "https://www.premiumoutlets.co.jp/toki/"
+  },
+  {
+    "id": "m22",
+    "name": "御殿場プレミアム・アウトレット",
+    "area": "静岡県",
+    "mapURL": "https://www.premiumoutlets.co.jp/gotemba/"
+  },
+  {
+    "id": "m23",
+    "name": "イオンモール常滑",
+    "area": "愛知県",
+    "mapURL": "https://www.aeon.jp/sc/tokoname/"
+  },
+  {
+    "id": "m24",
+    "name": "イオンモール鈴鹿",
+    "area": "三重県",
+    "mapURL": "https://www.aeon.jp/sc/suzuka/"
+  },
+  {
+    "id": "m25",
+    "name": "イオンモール草津",
+    "area": "滋賀県",
+    "mapURL": "https://www.aeon.jp/sc/kusatsu/"
+  },
+  {
+    "id": "m26",
+    "name": "イオンモールKYOTO",
+    "area": "京都府",
+    "mapURL": "https://www.aeon.jp/sc/kyoto/"
+  },
+  {
+    "id": "m27",
+    "name": "三井アウトレットパーク 大阪門真",
+    "area": "大阪府",
+    "mapURL": "https://mitsui-shopping-park.com/mop/osakakadoma/"
+  },
+  {
+    "id": "m28",
+    "name": "神戸三田プレミアム・アウトレット",
+    "area": "兵庫県",
+    "mapURL": "https://www.premiumoutlets.co.jp/kobesanda/"
+  },
+  {
+    "id": "m29",
+    "name": "イオンモール橿原",
+    "area": "奈良県",
+    "mapURL": "https://www.aeon.jp/sc/kashihara/"
+  },
+  {
+    "id": "m30",
+    "name": "イオンモール和歌山",
+    "area": "和歌山県",
+    "mapURL": "https://www.aeon.jp/sc/wakayama/"
+  },
+  {
+    "id": "m31",
+    "name": "イオンモール鳥取北",
+    "area": "鳥取県",
+    "mapURL": "https://www.aeon.jp/sc/tottorikita/"
+  },
+  {
+    "id": "m32",
+    "name": "イオンモール出雲",
+    "area": "島根県",
+    "mapURL": "https://www.aeon.jp/sc/izumo/"
+  },
+  {
+    "id": "m35",
+    "name": "おのだサンパーク",
+    "area": "山口県",
+    "mapURL": "https://sunpark.co.jp/floor/index.html"
+  },
+  {
+    "id": "m38",
+    "name": "イオンモール今治新都市",
+    "area": "愛媛県",
+    "mapURL": "https://www.aeon.jp/sc/imabarishintoshi/"
+  },
+  {
+    "id": "m39",
+    "name": "イオンモール高知",
+    "area": "高知県",
+    "mapURL": "https://www.aeon.jp/sc/kochi/"
+  },
+  {
+    "id": "m41",
+    "name": "鳥栖プレミアム・アウトレット",
+    "area": "佐賀県",
+    "mapURL": "https://www.premiumoutlets.co.jp/tosu/"
+  },
+  {
+    "id": "m42",
+    "name": "アミュプラザ長崎",
+    "area": "長崎県",
+    "mapURL": "https://www.amu-n.co.jp/floor/"
+  },
+  {
+    "id": "m44",
+    "name": "パークプレイス大分",
+    "area": "大分県",
+    "mapURL": "https://shop.parkplace-oita.com/map/f1"
+  },
+  {
+    "id": "m45",
+    "name": "イオンモール宮崎",
+    "area": "宮崎県",
+    "mapURL": "https://www.aeon.jp/sc/miyazaki/"
+  },
+  {
+    "id": "m47",
+    "name": "イオンモール沖縄ライカム",
+    "area": "沖縄県",
+    "mapURL": "https://www.aeon.jp/sc/okinawarycom/"
+  }
+]
