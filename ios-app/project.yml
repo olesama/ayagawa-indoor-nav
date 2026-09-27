@@ -1,0 +1,45 @@
+name: KannaiNavi
+options:
+  bundleIdPrefix: jp.olesama
+  deploymentTarget:
+    iOS: "17.0"
+settings:
+  base:
+    SWIFT_VERSION: 5.0
+    MARKETING_VERSION: 1.0.0
+    CURRENT_PROJECT_VERSION: 1
+targets:
+  KannaiNavi:
+    type: application
+    platform: iOS
+    sources:
+      - path: Sources
+      - path: Resources
+        buildPhase: resources
+        excludes:
+          - Info.plist
+    settings:
+      base:
+        PRODUCT_BUNDLE_IDENTIFIER: jp.olesama.kannainavi
+        PRODUCT_NAME: 館内ナビ
+        ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
+        INFOPLIST_KEY_CFBundleDisplayName: 館内ナビ
+        INFOPLIST_KEY_LSApplicationCategoryType: public.app-category.navigation
+        INFOPLIST_KEY_NSLocationWhenInUseUsageDescription: 現在地に近い施設の表示と館内案内の補助に位置情報を使用します。
+        INFOPLIST_KEY_NSMotionUsageDescription: 歩行に合わせて案内の残り距離を更新するため、モーション情報を使用します。
+        INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents: YES
+        INFOPLIST_KEY_UILaunchScreen_Generation: YES
+        CODE_SIGN_STYLE: Automatic
+    info:
+      path: Resources/Info.plist
+      properties:
+        CFBundleURLTypes:
+          - CFBundleURLName: jp.olesama.kannainavi
+            CFBundleURLSchemes:
+              - kannainavi
+        UISupportedInterfaceOrientations:
+          - UIInterfaceOrientationPortrait
+        UIApplicationSceneManifest:
+          UIApplicationSupportsMultipleScenes: false
+    scheme:
+      testTargets: []
