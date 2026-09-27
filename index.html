@@ -238,6 +238,49 @@ F.f44.map="https://www.jrhokkaido.co.jp/network/station/station.html";
 function isStation(){return STATION_IDS.has(key)}
 function stationAnchors(id){return STATION_MODELS[id]?.anchors||[]}
 function isMappedMall(id=key){return id!=="f0"&&MAJOR_MALL_NAMES.has(F[id]?.name)}
+function facilityKind(id=key){
+ const f=F[id]||{},n=f.name||"",t=f.type||"";
+ if(STATION_IDS.has(id)||/駅$/.test(n))return"station";
+ if(/空港/.test(n))return"airport";
+ if(/モール|タウン|プラザ|シティ|ソラマチ|ハルカス|アウトレット|百貨店/.test(n+t))return"mall";
+ return"building";
+}
+function isApproxFacility(id=key){return id!=="f0"&&!!F[id]}
+function genericAnchors(id=key){
+ if(STATION_IDS.has(id))return stationAnchors(id);
+ if(isMappedMall(id))return mallAnchors(id);
+ const kind=facilityKind(id),f=F[id]||{};
+ if(kind==="airport")return["出発ロビー側入口","到着ロビー側入口","交通アクセス側入口"];
+ if(kind==="station")return["中央改札・主入口","東・北側入口","西・南側入口"];
+ if(kind==="mall")return mallAnchors(id);
+ return["正面入口","中央入口","交通・駐車場側入口"];
+}
+function genericSpan(id=key){
+ const f=F[id]||{},kind=facilityKind(id);
+ if(kind==="airport")return /羽田|成田|関西国際/.test(f.name)?520:300;
+ if(kind==="station")return 180;
+ if(kind==="mall")return mallSpan(id);
+ return 160;
+}
+function genericPosition(p){
+ const seed=[...String(p.name)].reduce((a,c)=>a+c.codePointAt(0),0);
+ return .12+(seed%77)/100;
+}
+function genericApproxMeters(id,p,from){
+ const anchors=genericAnchors(id),i=Math.max(0,anchors.indexOf(from));
+ const fromPos=anchors.length<2?.5:i/(anchors.length-1),toPos=genericPosition(p);
+ const floor=String(p.level||"").match(/(\d+)F/),vertical=floor?Math.max(0,(+floor[1]-1)*18):0;
+ return Math.max(15,Math.round((Math.abs(toPos-fromPos)*genericSpan(id)+25+vertical)/5)*5);
+}
+function genericTargetAnchor(id,p){
+ const anchors=genericAnchors(id),pos=genericPosition(p);
+ return anchors.reduce((best,a,i)=>{const d=Math.abs((anchors.length<2?.5:i/(anchors.length-1))-pos);return d<best.d?{name:a,d}:best},{name:anchors[0],d:Infinity}).name;
+}
+function genericDirectionText(id,p,from){const target=genericTargetAnchor(id,p);return target===from?`${target}周辺が目安です`:`館内表示を確認しながら${target}方面へ進む目安です`}
+function genericPlaces(id){
+ const anchors=genericAnchors(id);
+ return (F[id]?.places||[]).map(raw=>{const p={...raw,category:"場所"};return{...p,official:true,checked:"2026-09-27",detailType:"公式案内掲載地点",locationText:`${raw.name}は公式案内で場所を確認できます。`,estimateConfidence:"C",estimateBasis:"公式案内の掲載地点と施設規模から推定",distanceByAnchor:Object.fromEntries(anchors.map(a=>[a,genericApproxMeters(id,p,a)]))}});
+}
 function mallAnchors(id){
  const f=F[id];if(!f)return[];if(MALL_ANCHOR_OVERRIDES[f.name])return MALL_ANCHOR_OVERRIDES[f.name];
  if(f.type==="アウトレット")return["メインゲート","バス・交通広場側","駐車場側入口"];
@@ -267,7 +310,7 @@ function facilityCoverage(id){
  if(id==="f0")return{label:"詳細ルートあり",className:"route"};
  if(STATION_IDS.has(id))return{label:"概算距離・方面あり",className:"distance"};
  if(isMappedMall(id))return{label:"概算距離・エリア案内あり",className:"distance"};
- return{label:"施設検索のみ",className:"catalogOnly"};
+ return{label:"概算案内あり（要現地確認）",className:"distance"};
 }
 function coverageBadge(id){const s=facilityCoverage(id);return `<span class="coverage ${s.className}">${s.label}</span>`}
 function stationCategoryPosition(category,fromPos){return({"改札":fromPos,"トイレ":.52,"きっぷ":.34,"エレベーター":.58,"コインロッカー":.68})[category]??.5}
@@ -307,7 +350,7 @@ let viewedFloor=1, activePath=[];
 function escapeHtml(s){return String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"})[c])}
 function allPlaces(){
  if(key==="f0")return[...currentFacility().places.filter(p=>p.name!=="1F トイレ"&&p.name!=="2F トイレ"&&p.name!=="3F トイレ"),...AY_AMENITIES];
- const combined=isStation()?[...stationBasePlaces(key),...stationPlaces(key)]:isMappedMall()?[...mallPlaces(key)]:[...(currentFacility().places||[])];
+ const combined=isStation()?[...stationBasePlaces(key),...stationPlaces(key)]:isMappedMall()?[...mallPlaces(key)]:[...genericPlaces(key)];
  return combined.filter((p,i,a)=>a.findIndex(x=>x.name===p.name)===i);
 }
 function prefectureOf(area){const s=String(area||"");const m=s.match(/^(北海道|東京都|京都府|大阪府|.{2,3}県)/);return m?m[1]:s}
@@ -392,9 +435,9 @@ function togglePlacePicker(){const x=document.getElementById("placePicker");if(x
 
 function currentFacility(){return F[key]}
 function renderAnchorChoices(){
- const a=key==="f0"?Object.keys(AY_ANCHORS):STATION_IDS.has(key)?stationAnchors(key):isMappedMall()?mallAnchors(key):[];
+ const a=key==="f0"?Object.keys(AY_ANCHORS):genericAnchors(key);
  anchorsEl.innerHTML=a.map(v=>`<button class="chip ${v===currentAnchor?'active':''}" onclick='setAnchor(${JSON.stringify(v)})'>${escapeHtml(v)}</button>`).join("");
- const warning=document.getElementById("anchorRequired");if(warning){warning.textContent=isMappedMall()?"先に、今いる入口・連絡口を選んでください。":"先に、今いる改札・入口を選んでください。";warning.classList.toggle("hidden",!(isStation()||isMappedMall())||!!currentAnchor)}
+ const warning=document.getElementById("anchorRequired");if(warning){warning.textContent="先に、今いる入口・改札・ロビーを選んでください。";warning.classList.toggle("hidden",key==="f0"||!!currentAnchor)}
  return a;
 }
 function focusCurrentLocation(){
@@ -410,14 +453,14 @@ function init(){
 function changeFacility(k){
   if(!F[k])return;key=k; const x=F[k]; stopNav();viewedFloor=1;activePath=[];facilitySelect.value=k;prefectureSelect.value=prefectureOf(x.area);
  facilityInfo.innerHTML=`<div class="facilityTitle">${x.name}</div><div class="facilitySub">${x.area}${x.type?`・${x.type}`:""}</div>`+
-  coverageBadge(k)+(k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:STATION_IDS.has(k)?`<span class="badge">公式構内図ベースの暫定値</span>`:isMappedMall(k)?`<span class="badge">公式フロア案内ベースの暫定値</span>`:`<span class="badge proto">館内経路は未確認</span>`);
+  coverageBadge(k)+(k==="f0"?`<span class="badge">概略ルート（現地確認が必要）</span>`:`<span class="badge">公式案内＋施設規模からの暫定値</span>`);
  officialMap.href=x.map;
- const dock=document.getElementById("officialMapDock");dock.href=x.map;dock.classList.toggle("hidden",!STATION_IDS.has(k)&&!isMappedMall(k));
- precisionNote.classList.toggle("hidden",k!=="f0"&&!STATION_IDS.has(k)&&!isMappedMall(k));
-  precisionNote.innerHTML=k==="f0"?"図と距離は試作の概算です。青い現在地は手動で選んだ地点で、GPSから館内の階や位置を確定していません。":STATION_IDS.has(k)?"今いる改札・入口を下から選ぶと、設備までの概算距離を更新します。公式構内図の掲載位置と駅規模から推定した目安で、実測値ではありません。":isMappedMall(k)?"今いる入口・連絡口を選ぶと、設備や登録済み地点までの概算距離・向かうエリア・移動手順を表示します。距離は施設規模と設備カテゴリによる暫定モデルで、公式図面の縮尺を実測した値ではありません。":"";
+ const dock=document.getElementById("officialMapDock");dock.href=x.map;dock.classList.remove("hidden");
+ precisionNote.classList.remove("hidden");
+  precisionNote.innerHTML=k==="f0"?"図と距離は試作の概算です。青い現在地は手動で選んだ地点で、GPSから館内の階や位置を確定していません。":"公式案内に掲載された地点と施設規模から距離を概算します。現在地は手動選択です。実測値ではないため、曲がり角・階・立入可能な通路は現地表示と公式マップを優先してください。";
  const places=allPlaces();
  quick.innerHTML=places.slice(0,8).map(p=>`<button class="chip" onclick='quickSearch(${JSON.stringify(p.name)})'>${p.name}</button>`).join("");
-  const a=k==="f0"?Object.keys(AY_ANCHORS):STATION_IDS.has(k)?stationAnchors(k):isMappedMall(k)?mallAnchors(k):[];
+  const a=k==="f0"?Object.keys(AY_ANCHORS):genericAnchors(k);
   currentAnchor=k==="f0"?(a[0]||""):""; currentNode=k==="f0"?AY_ANCHORS[currentAnchor]:""; placeNow.textContent=currentAnchor||"未選択";accuracyNow.textContent=currentAnchor?"手動位置":"要選択";renderAnchorChoices();
   results.innerHTML="";
   renderFacilityCatalog();renderFloorPanel();
@@ -451,20 +494,25 @@ function mallGuideStepsHtml(p){
  const target=mallTargetAnchor(key,p),floor=p.level&&!/施設内|公式/.test(p.level)?`<li>エレベーターまたはエスカレーターで ${escapeHtml(p.level)}へ移動</li>`:"";
  return `<div style="margin-top:10px;padding:11px;border:1px solid #d7e7f8;border-radius:12px;background:#f7fbff"><b>移動の目安</b><ol style="margin:7px 0 0;padding-left:22px;font-size:12px;line-height:1.7"><li>${escapeHtml(currentAnchor)}を出発</li><li>${escapeHtml(target)}方面の館内表示へ進む</li>${floor}<li>${escapeHtml(p.name)}の案内表示を確認</li></ol><span class="small">左右の曲がり方は立っている向きで変わるため、公式フロアガイドを併用してください。</span></div>`;
 }
+function startApproxNavigation(p){
+ const meters=currentEstimateMeters(p)||genericApproxMeters(key,p,currentAnchor);
+ const direction=isStation()?stationDirectionText(key,p,currentAnchor):isMappedMall()?mallDirectionText(key,p,currentAnchor):genericDirectionText(key,p,currentAnchor);
+ const floor=p.level&&!/施設内|公式/.test(p.level)?String(p.level):"";
+ const first=Math.max(5,Math.round(meters*.65/5)*5),last=Math.max(5,meters-first);
+ navSteps=[{arrow:"↑",meters:first,text:direction,next:"館内表示と公式マップを確認"}];
+ if(floor)navSteps.push({arrow:"↟",meters:0,text:`エレベーター等で ${floor}へ`,next:"移動後に案内を続けます"});
+ navSteps.push({arrow:"↑",meters:last,text:`${p.name}の案内表示へ進む`,next:`${p.name}はこの先です`},{arrow:"●",meters:0,text:"到着",next:`${p.name}です`});
+ selected=p;activePath=[];stepIndex=0;stepRemaining=navSteps[0].meters;navCard.classList.remove("hidden");renderStep();renderFloorPanel();
+ const low=Math.max(5,Math.round(meters*.65/5)*5),high=Math.round(meters*1.35/5)*5;
+ results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b> <span class="trustLabel">概算案内</span><div style="margin:10px 0;padding:12px;border-radius:12px;background:#fff5e6"><b>${escapeHtml(currentAnchor)}から概算 約${meters}m</b><br><span class="small">目安 ${low}〜${high}m／実測前。公式案内の掲載地点と施設規模からの推定です。</span><div class="directionBox">🧭 ${escapeHtml(direction)}</div></div><span class="small">歩数検知が許可されている場合、歩行に合わせて残距離が減ります。館内GPSで位置を特定しているわけではありません。</span><div style="margin-top:10px"><a href="${escapeHtml(currentFacility().map)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:11px;border-radius:10px;background:#1378ff;color:white;text-decoration:none;font-weight:800">公式マップで確認する</a></div>${reportButtons(p)}</div>`;
+}
 function startNavByName(name){
   const p=allPlaces().find(x=>x.name===name); if(!p)return;
   if(key==="f0") {viewedFloor=Number(p.level?.match(/\d/)?.[0]||1);startPrecision(p)}
   else {
    stopNav();
-   const estimated=isStation()||isMappedMall();
-   if(estimated&&!currentAnchor){results.innerHTML=`<div class="anchorWarning">距離を出すには、先に今いる${isStation()?"改札・入口":"入口・連絡口"}を選んでください。</div>`;focusCurrentLocation();renderFloorPanel();return}
-   const meters=currentEstimateMeters(p),low=Math.max(5,Math.round(meters*.65/5)*5),high=Math.round(meters*1.35/5)*5;
-   const direction=isStation()?stationDirectionText(key,p,currentAnchor):isMappedMall()?mallDirectionText(key,p,currentAnchor):"";
-   const distanceInfo=estimated&&meters?`<div style="margin:10px 0;padding:12px;border-radius:12px;background:#fff5e6"><b>${escapeHtml(currentAnchor)}から概算 約${meters}m</b><br><span class="small">目安 ${low}〜${high}m／暫定・実測前。${isStation()?"公式構内図の掲載位置と駅規模":"施設規模と設備カテゴリの位置モデル"}からの推定です。</span><div class="directionBox">🧭 ${escapeHtml(direction)}</div></div>`:"";
-   const guide=isMappedMall()?mallGuideStepsHtml(p):"";
-   const info=p.official?`${distanceInfo}${escapeHtml(p.locationText||"公式案内に掲載されています。")}<br><span class="small">公式情報確認日：${escapeHtml(p.checked||"-")}／詳細な曲がり方は公式${isStation()?"構内図":"フロアガイド"}で確認してください</span>${guide}`:`館内の位置と経路は未確認です。`;
-   results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b>${p.detailType?` <span class="trustLabel">${escapeHtml(p.detailType)}</span>`:""}<br>${info}<div style="margin-top:10px"><a href="${escapeHtml(currentFacility().map)}" target="_blank" rel="noopener" style="display:block;text-align:center;padding:11px;border-radius:10px;background:#1378ff;color:white;text-decoration:none;font-weight:800">公式${isStation()?"構内図":"フロアガイド"}で場所を見る</a></div>${reportButtons(p)}</div>`;
-   renderFloorPanel();
+   if(!currentAnchor){results.innerHTML=`<div class="anchorWarning">距離を出すには、先に今いる入口・改札・ロビーを選んでください。</div>`;focusCurrentLocation();renderFloorPanel();return}
+   startApproxNavigation(p);
   }
 }
 function reportButtons(p){return `<div class="reportRow"><button onclick='openCorrectionReport("場所が違う",${JSON.stringify(p.name)})'>場所が違う</button><button onclick='openCorrectionReport("距離が違う",${JSON.stringify(p.name)})'>距離が違う</button><button onclick='openCorrectionReport("設備がない",${JSON.stringify(p.name)})'>設備がない</button></div>`}
@@ -520,7 +568,7 @@ function startPrecision(p){
 function renderStep(){
  if(!selected||!navSteps.length)return;const s=navSteps[stepIndex];
  arrow.textContent=s.arrow;distanceBig.textContent=s.meters>0?Math.round(stepRemaining)+"m":"";
- instruction.textContent=localizedInstruction(s);
+ instruction.textContent=appLang==="ja"&&s.text?s.text:localizedInstruction(s);
  const na=navSteps[stepIndex+1]?.arrow;
  nextText.textContent=(s.meters>0&&stepRemaining<=5&&na==="→")?"⚠️ "+T('in5right'):(s.meters>0&&stepRemaining<=5&&na==="←")?"⚠️ "+T('in5left'):T('next');
  if(s.arrow==='●')nextText.textContent=selected.name;
@@ -533,7 +581,7 @@ function renderStep(){
 function advanceMeters(m){if(!selected)return;const s=navSteps[stepIndex];if(s.meters===0){advanceStep();return}stepRemaining=Math.max(0,stepRemaining-m);if(stepRemaining===0)advanceStep();else renderStep()}
 function advanceStep(){if(stepIndex<navSteps.length-1){stepIndex++;stepRemaining=navSteps[stepIndex].meters;renderStep()}}
 function simulateWalking(){if(autoTimer){clearInterval(autoTimer);autoTimer=null;accuracyNow.textContent="停止";return}accuracyNow.textContent="歩行デモ中";autoTimer=setInterval(()=>{if(selected)advanceMeters(2)},900)}
-function reroute(){if(!selected)return;if(key==="f0")startPrecision(selected)}
+function reroute(){if(!selected)return;if(key==="f0")startPrecision(selected);else startApproxNavigation(selected)}
 function stopNav(){selected=null;navSteps=[];activePath=[];if(autoTimer){clearInterval(autoTimer);autoTimer=null}navCard.classList.add("hidden");renderFloorPanel()}
 function setAnchor(v){currentAnchor=v;placeNow.textContent=v||"未選択";accuracyNow.textContent=v?"手動位置":"要選択";if(key==="f0"){currentNode=AY_ANCHORS[v];viewedFloor=AY_NODES[currentNode].floor}renderAnchorChoices();if(q.value.trim())searchPlace();if(selected)reroute();else renderFloorPanel()}
 async function enableCompass(){try{if(typeof DeviceOrientationEvent!=="undefined"&&typeof DeviceOrientationEvent.requestPermission==="function"){const p=await DeviceOrientationEvent.requestPermission();if(p!=="granted")throw 0}window.addEventListener("deviceorientation",e=>{if(e.alpha!=null){heading=(360-e.alpha)%360;headingNow.textContent=Math.round(heading)+"°"}},true);accuracyNow.textContent="方位ON"}catch(e){accuracyNow.textContent="方位未許可"}}
