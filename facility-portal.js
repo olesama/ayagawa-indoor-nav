@@ -41,13 +41,64 @@ async function loadProfile(){
 function renderHome(){
   const facility=profile.facilities?.name||"全施設";
   const adminTab=profile.role==="admin"?'<button id="tabAdmin" onclick="portalTab(\'admin\')">施設管理</button>':"";
-  $("facilityPortal").innerHTML=`<div class="portalStatus"><b>${esc(profile.display_name||profile.email)}</b><br>${esc(facility)} ／ ${profile.role==="admin"?"管理者":"施設担当者"}</div><div class="portalTabs"><button id="tabChats" class="active" onclick="portalTab('chats')">チャット <span id="portalUnread"></span></button><button id="tabRequest" onclick="portalTab('request')">修正依頼</button>${adminTab}<button onclick="enablePortalNotifications()">通知をON</button><button onclick="portalLogout()">ログアウト</button></div><div id="portalView"></div>`;
+  $("facilityPortal").innerHTML=`<div class="portalStatus"><b>${esc(profile.display_name||profile.email)}</b><br>${esc(facility)} ／ ${profile.role==="admin"?"管理者":"施設担当者"}</div><div class="portalTabs"><button id="tabChats" class="active" onclick="portalTab('chats')">チャット <span id="portalUnread"></span></button><button id="tabContent" onclick="portalTab('content')">マップ・店舗更新</button><button id="tabRequest" onclick="portalTab('request')">修正依頼</button>${adminTab}<button onclick="enablePortalNotifications()">通知をON</button><button onclick="portalLogout()">ログアウト</button></div><div id="portalView"></div>`;
 }
 window.portalTab=function(tab){
-  ["tabChats","tabRequest","tabAdmin"].forEach(id=>$(id)?.classList.remove("active"));
+  ["tabChats","tabContent","tabRequest","tabAdmin"].forEach(id=>$(id)?.classList.remove("active"));
   if(tab==="admin"&&profile.role==="admin"){$("tabAdmin").classList.add("active");renderAdminPanel();return}
+  if(tab==="content"){$("tabContent").classList.add("active");renderContentEditor();return}
   if(tab==="request"){$("tabRequest").classList.add("active");renderRequestForm();}
   else{$("tabChats").classList.add("active");loadConversations();}
+};
+
+async function renderContentEditor(){
+  const view=$("portalView");
+  if(!profile.facility_id&&profile.role!=="admin"){view.innerHTML='<div class="portalStatus">所属施設が設定されていません。</div>';return}
+  view.innerHTML='<p class="small">最新データを読み込み中…</p>';
+  let facilityId=profile.facility_id;
+  if(profile.role==="admin"&&!facilityId){
+    const f=await db.from("facilities").select("id,name").order("created_at").limit(1).maybeSingle();
+    facilityId=f.data?.id;
+  }
+  if(!facilityId){view.innerHTML='<div class="portalStatus">先に「施設管理」で施設を追加してください。</div>';return}
+  const result=await db.from("facility_content").select("*").eq("facility_id",facilityId).maybeSingle();
+  const content=result.data||{},maps=content.floor_maps||{},places=Array.isArray(content.places)?content.places:[];
+  const lines=places.map(p=>`${p.name||""}|${p.level||"施設内"}`).join("\n");
+  view.innerHTML=`<div class="portalStatus"><b>コード不要の更新画面</b><br>保存して公開すると、利用者のアプリは次回起動時に最新版を自動取得します。</div>
+    <input id="contentFacilityId" type="hidden" value="${facilityId}">
+    <div class="portalField"><label>アプリ内の施設番号</label><input id="contentAppKey" value="${esc(content.app_facility_key||"f0")}" ${profile.role==="admin"?"":"readonly"}><small>イオンモール綾川は f0 のまま使用します。</small></div>
+    <div class="portalField"><label>公式マップURL</label><input id="contentMapUrl" type="url" value="${esc(content.official_map_url||"")}" placeholder="https://..."></div>
+    ${[1,2,3].map(f=>`<div class="portalField"><label>${f}F マップ画像</label>${maps[f]?`<img class="portalMapPreview" src="${esc(maps[f])}" alt="${f}F">`:""}<input id="floorFile${f}" type="file" accept="image/jpeg,image/png,image/webp"><input id="floorUrl${f}" type="hidden" value="${esc(maps[f]||"")}"></div>`).join("")}
+    <div class="portalField"><label>店舗・場所一覧</label><textarea id="contentPlaces" rows="12" placeholder="無印良品|1F\nフードコート|3F">${esc(lines)}</textarea><small>1行に1か所。「店舗名|階」の形で入力します。</small></div>
+    <label class="portalCheck"><input id="contentPublished" type="checkbox" ${content.published?"checked":""}> アプリへ公開する</label>
+    <button class="primaryAction" onclick="saveFacilityContent()">保存する</button><div id="contentResult"></div>`;
+}
+
+async function uploadFloorMap(floor,facilityId){
+  const file=$(`floorFile${floor}`).files[0];
+  if(!file)return $(`floorUrl${floor}`).value||null;
+  if(file.size>15*1024*1024)throw new Error(`${floor}Fの画像は15MB以下にしてください。`);
+  const ext=(file.name.split(".").pop()||"jpg").toLowerCase(),path=`${facilityId}/${floor}F-${Date.now()}.${ext}`;
+  const up=await db.storage.from("facility-maps").upload(path,file,{upsert:true,contentType:file.type});
+  if(up.error)throw up.error;
+  return db.storage.from("facility-maps").getPublicUrl(path).data.publicUrl;
+}
+
+window.saveFacilityContent=async function(){
+  const button=document.activeElement?.tagName==="BUTTON"?document.activeElement:null;if(button)button.disabled=true;
+  const result=$("contentResult"),facilityId=$("contentFacilityId").value;
+  result.innerHTML='<p class="small">画像とデータを保存中…</p>';
+  try{
+    const urls=await Promise.all([1,2,3].map(f=>uploadFloorMap(f,facilityId)));
+    const floorMaps={};urls.forEach((url,i)=>{if(url)floorMaps[i+1]=url});
+    const places=$("contentPlaces").value.split(/\n/).map(x=>x.trim()).filter(Boolean).map(line=>{const [name,level]=line.split("|").map(x=>x.trim());return{name,level:level||"施設内"}}).filter(x=>x.name);
+    const payload={facility_id:facilityId,app_facility_key:$("contentAppKey").value.trim()||"f0",official_map_url:$("contentMapUrl").value.trim()||null,floor_maps:floorMaps,places,published:$("contentPublished").checked,updated_at:new Date().toISOString()};
+    const saved=await db.from("facility_content").upsert(payload,{onConflict:"facility_id"});
+    if(saved.error)throw saved.error;
+    result.innerHTML='<div class="portalStatus"><b>保存しました。</b><br>「アプリへ公開する」がONなら、利用者へ自動反映されます。</div>';
+    await renderContentEditor();
+  }catch(error){result.innerHTML=`<div class="portalStatus">保存できませんでした：${esc(error.message)}</div>`}
+  finally{if(button)button.disabled=false}
 };
 
 async function renderAdminPanel(){

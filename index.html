@@ -46,6 +46,7 @@ select,input{font-size:16px}.facility{width:100%;padding:13px;border:1px solid #
 .infoPage h2{font-size:21px;margin:4px 0 8px}.infoPage h3{font-size:16px;margin:20px 0 8px}.infoPage p,.infoPage li{font-size:13px;line-height:1.75}.infoPage ul,.infoPage ol{padding-left:21px}.infoCallout{background:#eef6ff;border:1px solid #cfe2ff;border-radius:14px;padding:12px;font-size:12px;line-height:1.65;margin:10px 0}.plan{border:1px solid var(--line);background:#fff;border-radius:15px;padding:13px;margin:9px 0}.plan b{font-size:16px}.planPrice{font-size:22px;font-weight:900;color:#086bff;margin:5px 0}.primaryAction{display:block;width:100%;border:0;border-radius:14px;background:var(--blue);color:#fff;padding:14px;font-size:15px;font-weight:900;text-align:center;text-decoration:none;margin-top:12px}.primaryAction[disabled]{opacity:.5}.legalLinks{display:flex;gap:8px;flex-wrap:wrap;margin:18px 0 8px}.legalLinks button{border:0;background:transparent;color:#2168b3;text-decoration:underline;font-size:12px;padding:5px}.draftBadge{display:inline-block;border-radius:999px;background:#fff5e6;color:#955600;padding:5px 9px;font-size:10px;font-weight:900}.legalTable{width:100%;border-collapse:collapse;font-size:12px}.legalTable th,.legalTable td{border-bottom:1px solid var(--line);padding:10px 7px;text-align:left;vertical-align:top}.legalTable th{width:34%;color:#56616c}
 .portalShell{display:grid;gap:10px}.portalStatus{border-radius:14px;padding:12px;background:#eef6ff;border:1px solid #cfe2ff;font-size:12px;line-height:1.6}.portalField{display:grid;gap:5px;margin:10px 0}.portalField label{font-size:12px;font-weight:800}.portalField input,.portalField select,.portalField textarea{width:100%;border:1px solid #cbd2d8;border-radius:12px;padding:12px;font:inherit;background:#fff}.portalField textarea{min-height:88px;resize:vertical}.portalTabs{display:flex;gap:6px;overflow:auto}.portalTabs button{border:1px solid #cbd2d8;background:#fff;border-radius:999px;padding:9px 12px;white-space:nowrap;font-weight:800}.portalTabs button.active{background:var(--blue);border-color:var(--blue);color:#fff}.chatList{display:grid;gap:7px}.chatThread{width:100%;border:1px solid var(--line);border-radius:13px;padding:11px;background:#fff;text-align:left}.chatThread b,.chatThread small{display:block}.chatThread small{color:var(--muted);margin-top:4px}.messages{height:min(48vh,420px);overflow:auto;background:#edf2f6;border-radius:15px;padding:10px;display:flex;flex-direction:column;gap:8px}.bubble{max-width:84%;background:#fff;border-radius:14px 14px 14px 4px;padding:9px 11px;font-size:13px;line-height:1.55;box-shadow:0 1px 3px #0001}.bubble.mine{align-self:flex-end;background:#ddecff;border-radius:14px 14px 4px 14px}.bubble small{display:block;color:#6c7780;margin-top:4px;font-size:9px}.chatComposer{display:flex;gap:6px;align-items:end}.chatComposer textarea{flex:1;min-height:44px;max-height:110px;border:1px solid #cbd2d8;border-radius:12px;padding:10px;font:inherit}.chatComposer button{border:0;border-radius:12px;background:var(--blue);color:#fff;padding:12px;font-weight:900}.attachmentLink{display:block;margin-top:6px;color:#1765bd;font-weight:800}.unreadDot{display:inline-grid;place-items:center;min-width:20px;height:20px;padding:0 5px;background:#e62d3c;color:#fff;border-radius:999px;font-size:10px}.requestCard{border:1px solid var(--line);border-radius:13px;padding:11px;background:#fff;margin:7px 0}.requestState{display:inline-block;border-radius:999px;padding:4px 7px;background:#fff5e6;color:#955600;font-size:10px;font-weight:900}
 .portalAdminSection{border-top:1px solid var(--line);padding-top:5px}.portalAdminSection:first-child{border-top:0}.portalAdminSection h3{margin:10px 0}.adminCount,.facilityState{display:inline-block;border-radius:999px;background:#eef6ff;color:#1765bd;padding:3px 7px;font-size:10px}.adminAccountCard{border:1px solid var(--line);border-radius:14px;background:#fff;padding:12px;margin:9px 0}.adminAccountCard>b,.adminAccountCard>small{display:block}.adminAccountCard>small{color:var(--muted);margin-top:3px}.facilityAdminList .requestCard{display:flex;align-items:center;justify-content:space-between;gap:8px}
+.portalMapPreview{display:block;max-width:100%;max-height:220px;object-fit:contain;border:1px solid var(--line);border-radius:12px;margin:6px 0;background:#f5f7f9}.portalCheck{display:flex;align-items:center;gap:8px;font-weight:800;padding:10px 0}.portalCheck input{width:20px;height:20px}.floorMapImage{position:absolute;inset:0;width:100%;height:100%;object-fit:contain;background:#fff}
 </style>
 
 </head>
@@ -388,12 +389,14 @@ function renderFloorPanel(){
  }else{
    floors.innerHTML=[1,2,3].map(f=>`<button type="button" class="${f===viewedFloor?'active':''}" data-floor="${f}">${f}F</button>`).join("");
    map.classList.remove("hidden");
-   const onFloor=places.filter(p=>p.level===`${viewedFloor}F` && AY_NODES[p.target]);
+   const allOnFloor=places.filter(p=>p.level===`${viewedFloor}F`);
+   const onFloor=allOnFloor.filter(p=>AY_NODES[p.target]);
    const edgeLines=AY_EDGES.filter(([a,b,,,type])=>type!=="vertical"&&AY_NODES[a]?.floor===viewedFloor&&AY_NODES[b]?.floor===viewedFloor).map(([a,b])=>`<line x1="${AY_NODES[a].x}" y1="${AY_NODES[a].y}" x2="${AY_NODES[b].x}" y2="${AY_NODES[b].y}" stroke="#bad0e8" stroke-width="2"/>`).join("");
    const pathLines=activePath.slice(1).map((b,i)=>[activePath[i],b]).filter(([a,b])=>AY_NODES[a]?.floor===viewedFloor&&AY_NODES[b]?.floor===viewedFloor).map(([a,b])=>`<line x1="${AY_NODES[a].x}" y1="${AY_NODES[a].y}" x2="${AY_NODES[b].x}" y2="${AY_NODES[b].y}" stroke="#f97316" stroke-width="3"/>`).join("");
-   map.innerHTML=`<svg viewBox="0 0 100 110" preserveAspectRatio="none" aria-hidden="true">${edgeLines}${pathLines}</svg>`+onFloor.map(p=>{const n=AY_NODES[p.target],a=!!p.icon;return `<button type="button" class="mapPlace ${a?'amenity':'shop'}" style="left:${n.x}%;top:${n.y/1.1}%" data-name="${escapeHtml(p.name)}">${p.icon||'🏬'} ${escapeHtml(p.name.replace(/^\dF /,''))}</button>`}).join("")+(AY_NODES[currentNode]?.floor===viewedFloor?`<span class="mapHere" style="left:${AY_NODES[currentNode].x}%;top:${AY_NODES[currentNode].y/1.1}%" title="手動で選んだ現在地"></span>`:"");
-   list.innerHTML=onFloor.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}">${p.icon||'🏬'} ${escapeHtml(p.name)}<small>タップして経路を表示</small></button>`).join("");
-   legend.textContent="概略図：青は手動で選んだ現在地、オレンジは試作経路です。公式図面との位置合わせや屋内測位は未検証です。";
+   const floorImage=currentFacility().floorMaps?.[viewedFloor];
+   map.innerHTML=(floorImage?`<img class="floorMapImage" src="${escapeHtml(floorImage)}" alt="${viewedFloor}F フロアマップ">`:`<svg viewBox="0 0 100 110" preserveAspectRatio="none" aria-hidden="true">${edgeLines}${pathLines}</svg>`)+onFloor.map(p=>{const n=AY_NODES[p.target],a=!!p.icon;return `<button type="button" class="mapPlace ${a?'amenity':'shop'}" style="left:${n.x}%;top:${n.y/1.1}%" data-name="${escapeHtml(p.name)}">${p.icon||'🏬'} ${escapeHtml(p.name.replace(/^\dF /,''))}</button>`}).join("")+(AY_NODES[currentNode]?.floor===viewedFloor?`<span class="mapHere" style="left:${AY_NODES[currentNode].x}%;top:${AY_NODES[currentNode].y/1.1}%" title="手動で選んだ現在地"></span>`:"");
+   list.innerHTML=allOnFloor.map(p=>`<button type="button" data-name="${escapeHtml(p.name)}">${p.icon||'🏬'} ${escapeHtml(p.name)}<small>${p.target?'タップして経路を表示':'施設の最新登録情報'}</small></button>`).join("");
+   legend.textContent=floorImage?"施設が公開した最新のフロアマップです。":"概略図：青は手動で選んだ現在地、オレンジは試作経路です。公式図面との位置合わせや屋内測位は未検証です。";
  }
  floors.querySelectorAll("[data-floor]").forEach(b=>b.addEventListener("click",()=>showFloor(b.dataset.floor)));
  [map,list].forEach(el=>el.querySelectorAll("[data-name]").forEach(b=>b.addEventListener("click",()=>startNavByName(b.dataset.name))));
@@ -508,7 +511,11 @@ function startApproxNavigation(p){
 }
 function startNavByName(name){
   const p=allPlaces().find(x=>x.name===name); if(!p)return;
-  if(key==="f0") {viewedFloor=Number(p.level?.match(/\d/)?.[0]||1);startPrecision(p)}
+  if(key==="f0") {
+   viewedFloor=Number(p.level?.match(/\d/)?.[0]||1);
+   if(!p.target){results.innerHTML=`<div class="result"><b>${escapeHtml(p.name)}</b><span>${escapeHtml(p.level||"施設内")}・施設が公開した最新情報です。経路は位置合わせ完了後に利用できます。</span></div>`;renderFloorPanel();return}
+   startPrecision(p)
+  }
   else {
    stopNav();
    if(!currentAnchor){results.innerHTML=`<div class="anchorWarning">距離を出すには、先に今いる入口・改札・ロビーを選んでください。</div>`;focusCurrentLocation();renderFloorPanel();return}
@@ -1037,8 +1044,25 @@ function startPremiumCheckout(){
 
 
 
+const REMOTE_CONTENT={url:"https://odlybanyfxymkegeyjhp.supabase.co",key:"sb_publishable_sbr_VADLwB-cNKnnDggf8A_cAOcCLCh"};
+async function loadPublishedFacilityContent(){
+ try{
+  const response=await fetch(`${REMOTE_CONTENT.url}/rest/v1/facility_content?published=eq.true&select=app_facility_key,official_map_url,floor_maps,places,updated_at`,{headers:{apikey:REMOTE_CONTENT.key,Authorization:`Bearer ${REMOTE_CONTENT.key}`},cache:"no-store"});
+  if(!response.ok)return;
+  const rows=await response.json();
+  rows.forEach(row=>{
+   const id=row.app_facility_key,base=F[id];if(!base)return;
+   const previous=base.places||[];
+   const places=Array.isArray(row.places)&&row.places.length?row.places.map(p=>({...previous.find(x=>x.name===p.name),...p})):previous;
+   F[id]={...base,map:row.official_map_url||base.map,floorMaps:row.floor_maps||{},places,remoteUpdatedAt:row.updated_at};
+  });
+  if(F[key])changeFacility(key);
+ }catch(error){console.warn("施設の公開データを取得できませんでした",error)}
+}
+
 initLanguages();
 init();
+loadPublishedFacilityContent();
 
 window.addEventListener("load",()=>{
   try{
